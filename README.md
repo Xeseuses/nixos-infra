@@ -8,13 +8,14 @@ Things to know:
   
    Infrastructure Naming:
    
-   Hosts are named after the bookserie Discus
-   - 'Discus' - Router
-   - 'Bouke' - Services node #1
-   - 'Tjerk Jr.' - Services node #2
-   - 'Ruurd' - Services node #3
-   - 'Tjerk Sr.' - Big server
-   - 'Jan Numri - Gaming PC
-   - 'Elise' - Laptop
-   - 'Porte Alegre'- VPS
+   Host names:
+
+   - 'Orion' - Router
+   - 'Andromeda' - Services node #1
+   - 'Caelum' - Services node #2
+   - 'Eridanus' - Services node #3
+   - 'Horologium' - Big server
+   - 'Orion' - Gaming PC
+   - 'Vela' - Laptop
+   - 'Lyra'- VPS
 
