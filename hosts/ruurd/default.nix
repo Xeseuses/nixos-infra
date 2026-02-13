@@ -24,5 +24,9 @@
   # Enables proprietary firmware
   hardware.enableRedistributableFirmware = true;
 	
- 
-
+  asthrossystems = {
+    info = "Beelink EQ12, Intel N100, 16GB RAM";
+    isImpermanence = false;
+    isSecureBoot = false;
+    isCrypted = false;
+    };
