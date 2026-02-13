@@ -24,7 +24,7 @@
         modules = [
           ./modules/options.nix
           disko.nixosModules.disko
-          ./hosts/eridanus
+          ./default.nix
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
         ];
