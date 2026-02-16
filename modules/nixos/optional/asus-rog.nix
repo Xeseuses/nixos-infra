@@ -23,7 +23,7 @@ lib.mkIf config.asthrossystems.features.asusRog {
     supergfxctl      # GPU switching
     
     # GUI for asusctl
-    rog-control-center
+    #rog-control-center
   ];
   
   # Enable firmware updates
