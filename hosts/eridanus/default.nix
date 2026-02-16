@@ -53,7 +53,7 @@
           };
         };
       };
-    }
+    };
         
     storage = {
       rootDisk = "/dev/nvme0n1";
