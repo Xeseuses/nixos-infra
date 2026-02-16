@@ -2,6 +2,7 @@ keys:
   # Your personal key (for encrypting/decrypting locally)
   - &admin age126y7n5guy5ezvegpu6luttnu6qp0utu4acmzcuruzxww4ku0e54srul0xa
   - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
+  - &vela age1tpau3s6rpvr6zq5cxcddmlkeluxwxs37eefnkv6jsf7lx67dw5wscuev0s
 
 creation_rules:
   # Default: encrypt for admin (you)
@@ -10,3 +11,4 @@ creation_rules:
       - age:
           - *admin
           - *eridanus
+          - *vela
