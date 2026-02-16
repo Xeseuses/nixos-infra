@@ -84,7 +84,7 @@
  
     # Resume from hibernate
     resumeDevice = "/dev/mapper/cryptroot";
-    kernelParams = [ "resume_offset=???" ];  # Will calculate after install
+   # kernelParams = [ "resume_offset=???" ];  # Will calculate after install
   };
 
   # === Networking ===
