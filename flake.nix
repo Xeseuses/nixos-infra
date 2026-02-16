@@ -29,6 +29,9 @@
 	  # Common modules
           ./modules/nixos/common
    
+ 	  # Add backup module 
+          ./modules/nixos/optional/backup.nix
+
  	  # Disko
           disko.nixosModules.disko
 

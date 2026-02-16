@@ -26,6 +26,34 @@
       secureBoot = false;
       encryption = false;
     };
+   
+    # Enable backups
+    backup = {
+      enable = true
+      
+      targets = {
+       # Backup system config
+       system = {
+         repository = "/var/backups/restic/system"
+         paths = [
+           "/home/xeseuses/nixos-infra"
+	   "/etc/nixos"
+   	 ];
+         schedule = "daily";
+       };
+      
+       # Backup user data
+          home = {
+            repository = "/var/backups/restic/home";
+            paths = [
+              "/home/xeseuses/Documents"
+              "/home/xeseuses/.ssh"
+            ];
+            schedule = "daily";
+          };
+        };
+      };
+    };
     
     storage = {
       rootDisk = "/dev/nvme0n1";
