@@ -27,22 +27,22 @@
       encryption = false;
     };
    
-    # Enable backups
-    backup = {
-      enable = true
-      
-      targets = {
-       # Backup system config
-       system = {
-         repository = "/var/backups/restic/system"
-         paths = [
-           "/home/xeseuses/nixos-infra"
-	   "/etc/nixos"
-   	 ];
-         schedule = "daily";
-       };
-      
-       # Backup user data
+   # Enable backups
+      backup = {
+        enable = true;
+        
+        targets = {
+          # Backup system config
+          system = {
+            repository = "/var/backups/restic/system";
+            paths = [
+              "/home/xeseuses/nixos-infra"  # Your flake repo
+              "/etc/nixos"                  # Any manual configs
+            ];
+            schedule = "daily";
+          };
+          
+          # Backup user data
           home = {
             repository = "/var/backups/restic/home";
             paths = [
@@ -54,7 +54,7 @@
         };
       };
     };
-    
+        
     storage = {
       rootDisk = "/dev/nvme0n1";
       filesystem = "ext4";
