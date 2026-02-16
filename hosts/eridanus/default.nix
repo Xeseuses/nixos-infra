@@ -12,36 +12,35 @@
     secrets = {
       "users/xeseuses/hashedPassword" = {
         neededForUsers = true;
-     };
+      };
     };
-  };	
+  };
 
   # === Custom Options ===
   asthrossystems = {
     hostInfo = "Beelink EQ12, Intel N100, 16GB RAM, 2TB NVMe";
-    isServer = true;  # This is a server
-    
+    isServer = true;
+
     features = {
       impermanence = false;
       secureBoot = false;
       encryption = false;
-    };
-   
-   # Enable backups
+
+      # Enable backups
       backup = {
         enable = true;
-        
+
         targets = {
           # Backup system config
           system = {
             repository = "/var/backups/restic/system";
             paths = [
-              "/home/xeseuses/nixos-infra"  # Your flake repo
-              "/etc/nixos"                  # Any manual configs
+              "/home/xeseuses/nixos-infra"
+              "/etc/nixos"
             ];
             schedule = "daily";
           };
-          
+
           # Backup user data
           home = {
             repository = "/var/backups/restic/home";
@@ -54,15 +53,15 @@
         };
       };
     };
-        
+
     storage = {
       rootDisk = "/dev/nvme0n1";
       filesystem = "ext4";
     };
-    
+
     networking = {
-      primaryInterface = "enp1s0";  # Adjust if different
-      staticIP = null;  # Use DHCP for now
+      primaryInterface = "enp1s0";
+      staticIP = null;
     };
   };
 
@@ -73,12 +72,13 @@
   };
 
   # === Networking ===
-  networking.hostName = "eridanus";  
-  
-   # === User Password from SOPS ===
-  users.users.xeseuses.hashedPasswordFile = 
+  networking.hostName = "eridanus";
+
+  # === User Password from SOPS ===
+  users.users.xeseuses.hashedPasswordFile =
     config.sops.secrets."users/xeseuses/hashedPassword".path;
 
   # === State Version ===
   system.stateVersion = "24.11";
-  }
+}
+
