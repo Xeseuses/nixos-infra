@@ -2,23 +2,26 @@
   description = "NixOS Infrastructure";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
-    
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     nixos-hardware.url = "github:NixOS/nixos-hardware";
-    
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
-    sops-nix.url = "github:Mic92/sops-nix";
-  };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };  # ← YOU WERE MISSING THIS
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, ... }: {
     nixosConfigurations = {
       eridanus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        
+
         modules = [
           ./modules/options.nix
           disko.nixosModules.disko
@@ -31,3 +34,4 @@
     };
   };
 }
+
