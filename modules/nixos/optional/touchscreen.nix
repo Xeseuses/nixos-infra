@@ -21,7 +21,7 @@ lib.mkIf config.asthrossystems.features.touchscreen {
     libinput-gestures
     
     # Stylus/pen support
-    xournal  # Note-taking
+    #xournal  # Note-taking
     krita    # Drawing
   ];
   
