@@ -69,22 +69,17 @@
 
   # === Boot ===
   boot = {
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
-    
-    # Quiet boot (prettier)
-    kernelParams = [ 
-      "quiet" 
-      "splash"
-      "nvidia-drm.modeset=1"  # Required for NVIDIA Wayland
-    ];
+  loader.systemd-boot.enable = true;
+  loader.efi.canTouchEfiVariables = true;
   
-    # Early KMS for NVIDIA
-    initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
- 
-    # Resume from hibernate
-    resumeDevice = "/dev/mapper/cryptroot";
-   # kernelParams = [ "resume_offset=???" ];  # Will calculate after install
+  kernelParams = [ 
+    "quiet" 
+    "splash"
+    "nvidia-drm.modeset=1"
+  ];
+  
+  # Resume from hibernate
+  resumeDevice = "/dev/mapper/cryptroot";
   };
 
   # === Networking ===
