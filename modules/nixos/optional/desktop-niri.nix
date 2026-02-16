@@ -46,7 +46,7 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
   fonts = {
     packages = with pkgs; [
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       font-awesome
       (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" ]; })
     ];
