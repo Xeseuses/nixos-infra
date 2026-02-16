@@ -31,8 +31,8 @@ Hosts named after constellations and celestial objects:
 | **Eridanus** | Server | Beelink EQ12 (16GB) | Testing / Development |
 | **Horologium** | Server | Custom (i5-13500, RTX 3060, 16GB, 4x2TB SSD) | ZFS storage, MicroVMs (HA, Arr stack), Jellyfin |
 | **lyra** | VPS | Racknerd | Caddy reverse proxy |
-| **Pavo** | Desktop | Minisforum SER 8 (Ryzen 7 8745HS) | Gaming PC (dual-boot Windows) |
-| **Vela** | Laptop | TBD | Mobile workstation |
+| **Pavo** | Desktop | Beelink SER 8 (Ryzen 7 8745HS) | Gaming PC (dual-boot Windows) |
+| **Vela** | Laptop | ROG Flow Z13 (2022) | Mobile workstation |
 
 ### Network Topology
 ```
