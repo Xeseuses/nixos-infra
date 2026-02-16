@@ -1,4 +1,3 @@
-# hosts/caelum/default.nix
 { config, lib, pkgs, ... }:
 {
   imports = [
@@ -81,6 +80,7 @@
     htop
     curl
     wget
+    sops
   ];
 
 }
