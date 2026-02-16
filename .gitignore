@@ -1,2 +1,26 @@
-secrets/*.yaml.dec
-.key
+# SOPS - Never commit private keys!
+*.key
+keys.txt
+key.txt
+secrets/*.dec
+*.yaml.dec
+
+# Nix build results
+result
+result-*
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Local testing
+.direnv/
+.envrc
+
+# Backup files
+*.bak
+*.backup

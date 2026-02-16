@@ -5,6 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+  
+    impermanence.url = "github:nix-community/impermanence";
 
     disko = {
       url = "github:nix-community/disko";
@@ -44,6 +46,33 @@
 	  # Hardware
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
+
+	vela = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          
+     
+   	  # Impermanence
+          impermanence.nixosModules.impermanence
+
+          # Laptop modules
+          ./modules/nixos/optional/backup.nix
+          ./modules/nixos/optional/laptop.nix
+          ./modules/nixos/optional/desktop-kde.nix
+          ./modules/nixos/optional/touchscreen.nix
+          ./modules/nixos/optional/graphics-intel.nix
+          ./modules/nixos/optional/asus-rog.nix
+          
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/vela
+          
+          # Hardware support
+          nixos-hardware.nixosModules.common-cpu-intel
+          nixos-hardware.nixosModules.common-pc-laptop
+          nixos-hardware.nixosModules.common-pc-laptop-ssd
         ];
       };
     };

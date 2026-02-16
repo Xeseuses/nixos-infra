@@ -1,22 +1,90 @@
 # modules/nixos/optional/impermanence.nix
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
-# Only apply this config if impermanence is enabled
-lib.mkIf config.myinfra.features.impermanence {
+lib.mkIf config.asthrossystems.features.impermanence {
   
-  # Import impermanence module
-  imports = [
-    "${inputs.impermanence}/nixos.nix"
-  ];
-
+  # Impermanence setup
+  environment.persistence."/persist" = {
+    hideMounts = true;
+    
+    directories = [
+      # System
+      "/var/lib/nixos"
+      "/var/lib/systemd/coredump"
+      
+      # NetworkManager
+      "/etc/NetworkManager/system-connections"
+      
+      # Bluetooth
+      "/var/lib/bluetooth"
+      
+      # SOPS keys
+      "/var/lib/sops-nix"
+      
+      # Backups
+      "/var/backups"
+      
+      # Supergfxctl (ASUS GPU switching)
+      "/var/lib/supergfxd"
+    ];
+    
+    files = [
+      # Machine ID
+      "/etc/machine-id"
+      
+      # SSH host keys
+      "/etc/ssh/ssh_host_ed25519_key"
+      "/etc/ssh/ssh_host_ed25519_key.pub"
+      "/etc/ssh/ssh_host_rsa_key"
+      "/etc/ssh/ssh_host_rsa_key.pub"
+    ];
+    
+    # User data
+    users.xeseuses = {
+      directories = [
+        # Important user files
+        "Documents"
+        "Downloads"
+        "Pictures"
+        "Videos"
+        "Music"
+        
+        # Development
+        "nixos-infra"
+        "code"
+        
+        # Config directories that should persist
+        ".ssh"
+        ".gnupg"
+        
+        # Application data
+        { directory = ".local/share/niri"; mode = "0700"; }
+        ".mozilla"
+        ".thunderbird"
+        ".config/discord"
+        ".config/Code"
+        
+        # Cache we want to keep (optional)
+        ".cache/nix"
+      ];
+      
+      files = [
+        # Shell history
+        ".bash_history"
+        ".zsh_history"
+      ];
+    };
+  };
+  
   # Wipe root on boot
   boot.initrd.postDeviceCommands = lib.mkAfter ''
     mkdir /btrfs_tmp
-    mount /dev/root_vg/root /btrfs_tmp
-    if [[ -e /btrfs_tmp/root ]]; then
-        mkdir -p /btrfs_tmp/old_roots
-        timestamp=$(date --date="@$(stat -c %Y /btrfs_tmp/root)" "+%Y-%m-%-d_%H:%M:%S")
-        mv /btrfs_tmp/root "/btrfs_tmp/old_roots/$timestamp"
+    mount /dev/mapper/cryptroot /btrfs_tmp -o subvol=/
+    if [[ -e /btrfs_tmp/@-blank ]]; then
+        mkdir -p /btrfs_tmp/old
+        timestamp=$(date --date="@$(stat -c %Y /btrfs_tmp/@)" "+%Y%m%d%H%M%S")
+        mv /btrfs_tmp/@ "/btrfs_tmp/old/$timestamp"
+        btrfs subvolume snapshot /btrfs_tmp/@-blank /btrfs_tmp/@
     fi
 
     delete_subvolume_recursively() {
@@ -27,44 +95,15 @@ lib.mkIf config.myinfra.features.impermanence {
         btrfs subvolume delete "$1"
     }
 
-    for i in $(find /btrfs_tmp/old_roots/ -maxdepth 1 -mtime +30); do
+    for i in $(find /btrfs_tmp/old/ -maxdepth 1 -mtime +30); do
         delete_subvolume_recursively "$i"
     done
 
-    btrfs subvolume create /btrfs_tmp/root
     umount /btrfs_tmp
   '';
-
-  # What to persist
-  environment.persistence."/persist" = {
-    hideMounts = true;
-    directories = [
-     
-    # System state
-
-      "/var/log"
-      "/var/lib/nixos"
-      "/var/lib/systemd/coredump"
-    
-    # Network state
-
-      "/etc/NetworkManager/system-connections"
-
-    # Services
-    
-    ];
-
-    files = [
-      "/etc/machine-id"
-      "/etc/ssh/ssh_host_ed25519_key"
-      "/etc/ssh/ssh_host_rsa_key"
-      ".bashrc"
-    ];
-  };
-
-  # Home directory persistence
-  programs.fuse.userAllowOther = true;
   
-  # Ensure /persist exists
-  fileSystems."/persist".neededForBoot = true;
+  # Create persist directories on first boot
+  systemd.tmpfiles.rules = [
+    "d /persist/home/xeseuses 0700 xeseuses users"
+  ];
 }

@@ -20,6 +20,7 @@
     isRouter = lib.mkEnableOption "router functionality";
     isServer = lib.mkEnableOption "server functionality";
     isDesktop = lib.mkEnableOption "desktop functionality";
+    isLaptop = lib.mkEnableOption "laptop functionality";
 
     # === Features (can combine) ===
     features = {
@@ -28,6 +29,22 @@
       encryption = lib.mkEnableOption "disk encryption";
       microVMs = lib.mkEnableOption "MicroVM host capabilities";
       
+      touchscreen = lib.mkEnableOption "touchscreen support";
+      asusRog = lib.mkEnableOption "ASUS ROG hardware support";
+      noctalia = lib.mkEnableOption "Noctalia shell for niri";
+   
+      desktop = lib.mkOption {
+        type = lib.types.enum [ "none" "kde" "gnome" "niri" ];
+        default = "none";
+        description = "Desktop environment";
+      };
+ 
+      graphics = lib.mkOption {
+        type = lib.types.enum [ "intel" "nvidia" "hybrid" ];
+        default = "intel";
+        description = "Graphics configuration";
+      };
+ 
       backup = {
         enable = lib.mkEnableOption "automated backups";
         
