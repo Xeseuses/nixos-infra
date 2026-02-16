@@ -33,7 +33,6 @@ lib.mkIf config.asthrossystems.features.asusRog {
   environment.persistence."/persist" = lib.mkIf config.asthrossystems.features.impermanence {
     directories = [
       "/var/lib/asusd"
-      "/var/lib/supergfxd"
     ];
   };
 }
