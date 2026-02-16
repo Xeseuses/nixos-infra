@@ -13,10 +13,7 @@ lib.mkIf config.asthrossystems.isLaptop {
   services.logind = {
     lidSwitch = "suspend";
     lidSwitchExternalPower = "suspend";
-    extraConfig = ''
-      HandlePowerKey=suspend
-    '';
-  };
+   };
   
   # Thermal management
   services.thermald.enable = true;

@@ -38,6 +38,6 @@
    };
  
   # Enable SSH agent
-  startAgent = true;
+ #  startAgent = true;
  };
 }
