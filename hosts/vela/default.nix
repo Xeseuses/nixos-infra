@@ -33,7 +33,7 @@
       noctalia = true;
 
       desktop = "niri";              # ← Niri compositor
-      graphics = "nvidia-hybrid";    # ← Intel + NVIDIA
+      graphics = "hybrid";    # ← Intel + NVIDIA
  
       backup = {
         enable = true;
