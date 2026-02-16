@@ -1,23 +1,53 @@
-# modules/nixos/common/default.nix
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, ...}:
 {
   imports = [
-    ./nix.nix
-    ./ssh.nix
-    ./users.nix
+     ./nix.nix
+     ./ssh.nix
+     ./users.nix
+     ./locale.nix
+     ./networking.nix
   ];
+
+  enviroment.systemPackages = with pgks; [
   
-  # Common settings for ALL NixOS machines
+  # Editors
+  vim
+  nano
+
+  # Version control
+  git  
+
+  # System utilities 
+  htop
+  btop
+  wget
+  curl
+  rsync
+  tree
   
-  # Enable firmware
-  hardware.enableRedistributableFirmware = true;
+  # Network tools
+  dig
+  nmap
+
+  # File management
+  unzip
+  zip
+
+  # Process managament
+  killall
+ 
+  # Misc
+  tmux
+  screen
   
-  # Timezone
-  time.timeZone = lib.mkDefault "Europe/Amsterdam";  # Adjust to your timezone
+  ];
+ 
+  # Enable man pages
+  documentation.man.enable = true;
+  documentation.dev.enable = true;
   
-  # Locale
-  i18n.defaultLocale = "en_US.UTF-8";
-  
-  # Console keymap
-  console.keyMap = "us";
+  hardware.enableRedistributableFirmware = lib.mkDefault true;
+
 }
+
+  

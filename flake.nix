@@ -15,7 +15,7 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  };  # ← YOU WERE MISSING THIS
+  }; 
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, ... }: {
     nixosConfigurations = {
@@ -23,10 +23,22 @@
         system = "x86_64-linux";
 
         modules = [
+     	  # Custom Options
           ./modules/options.nix
+	  
+	  # Common modules
+          ./modules/nixos/common
+   
+ 	  # Disko
           disko.nixosModules.disko
+
+	  # Sops
           sops-nix.nixosModules.sops
+	 
+ 	  # Host config
           ./hosts/eridanus
+	
+	  # Hardware
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
         ];
