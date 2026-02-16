@@ -11,10 +11,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    sops-nix.url = "github:Mic92/sops-nix";
   };
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, ... }: {
