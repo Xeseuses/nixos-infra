@@ -1,0 +1,12 @@
+keys:
+  # Your personal key (for encrypting/decrypting locally)
+  - &admin age126y7n5guy5ezvegpu6luttnu6qp0utu4acmzcuruzxww4ku0e54srul0xa
+  - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
+
+creation_rules:
+  # Default: encrypt for admin (you)
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *eridanus
