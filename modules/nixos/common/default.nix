@@ -8,7 +8,7 @@
      ./networking.nix
   ];
 
-  enviroment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
   
   # Editors
   vim
