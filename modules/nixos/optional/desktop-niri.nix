@@ -83,7 +83,7 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
     nautilus  # GNOME Files
     
     # Browsers
-    firefox-wayland
+    firefox
     
     # Media
     mpv
