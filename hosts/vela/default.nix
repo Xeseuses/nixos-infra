@@ -72,12 +72,7 @@
   loader.systemd-boot.enable = true;
   loader.efi.canTouchEfiVariables = true;
   
-  initrd.luks.devices."cryptroot" = {
-    device = "/dev/disk/by-uuid/ec1d3768-acc1-48f2-86cf-3b1172b4741c";
-    allowDiscards = true;
-    preLVM = true;
-  };
-    kernelParams = [ 
+  kernelParams = [ 
     "quiet" 
     "splash"
     "nvidia-drm.modeset=1"
