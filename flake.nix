@@ -41,8 +41,14 @@
       vela = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          ./modules/nixos/optional/backup.nix
           disko.nixosModules.disko
-	  ./hosts/vela
+          sops-nix.nixosModules.sops
+          ./hosts/vela
+          nixos-hardware.nixosModules.common-cpu-intel
+          nixos-hardware.nixosModules.common-pc-ssdvela = nixpkgs.lib.nixosSystem {
         ];
       };
       
