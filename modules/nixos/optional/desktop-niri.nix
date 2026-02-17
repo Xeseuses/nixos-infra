@@ -78,8 +78,6 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
     playerctl
     brightnessctl
     discord
-    telegram-desktop
-    vscode
     neofetch
     btop
   ];
