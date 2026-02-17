@@ -42,21 +42,21 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
   hardware.bluetooth.powerOnBoot = true;
   services.blueman.enable = true;
 
-  # Fonts (fixed package names)
   fonts = {
-    packages = with pkgs; [
-      noto-fonts
-      noto-fonts-color-emoji    # ← Fixed rename!
-      font-awesome
-      (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" ]; })
-    ];
-    fontconfig.defaultFonts = {
-      monospace = [ "JetBrainsMono Nerd Font" ];
-      sansSerif = [ "Noto Sans" ];
-      serif     = [ "Noto Serif" ];
-      emoji     = [ "Noto Color Emoji" ];
-    };
+  packages = with pkgs; [
+    noto-fonts
+    noto-fonts-color-emoji
+    font-awesome
+    nerd-fonts.jetbrains-mono    # ← New format!
+    nerd-fonts.fira-code         # ← New format!
+  ];
+  fontconfig.defaultFonts = {
+    monospace = [ "JetBrainsMono Nerd Font" ];
+    sansSerif = [ "Noto Sans" ];
+    serif     = [ "Noto Serif" ];
+    emoji     = [ "Noto Color Emoji" ];
   };
+};
 
   environment.systemPackages = with pkgs; [
     niri
