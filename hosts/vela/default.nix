@@ -72,6 +72,17 @@
   loader.systemd-boot.enable = true;
   loader.efi.canTouchEfiVariables = true;
   
+   initrd = {
+    availableKernelModules = [ 
+      "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod"
+    ];
+    
+    luks.devices."cryptroot" = {
+      device = "/dev/nvme0n1p2";  # Direct, no labels!
+      allowDiscards = true;
+    };
+  };
+
   kernelParams = [ 
     "quiet" 
     "splash"
