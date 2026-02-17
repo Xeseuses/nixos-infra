@@ -3,22 +3,21 @@
 
 lib.mkIf (config.asthrossystems.features.desktop == "niri") {
 
-  # Niri compositor
   programs.niri.enable = true;
 
-  # Login manager
+  # Login manager (fixed package name)
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
         user = "greeter";
       };
     };
   };
 
   # Audio
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;  # Fixed rename
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -43,11 +42,11 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
   hardware.bluetooth.powerOnBoot = true;
   services.blueman.enable = true;
 
-  # Fonts
+  # Fonts (fixed package names)
   fonts = {
     packages = with pkgs; [
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji    # ← Fixed rename!
       font-awesome
       (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" ]; })
     ];
@@ -59,46 +58,28 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
     };
   };
 
-  # Desktop packages
   environment.systemPackages = with pkgs; [
-    # Niri essentials
     niri
-    fuzzel          # App launcher
-    waybar          # Status bar
-    mako            # Notifications
-    swaylock        # Screen locker
-    swayidle        # Idle manager
-    grim            # Screenshots
-    slurp           # Region select
-    wl-clipboard    # Clipboard
-
-    # Terminal
+    fuzzel
+    waybar
+    mako
+    swaylock
+    swayidle
+    grim
+    slurp
+    wl-clipboard
     foot
     alacritty
-
-    # File manager
     nautilus
-
-    # Browser
     firefox
-
-    # Media
     mpv
     imv
-
-    # Audio control
     pavucontrol
     playerctl
     brightnessctl
-
-    # Communication
     discord
     telegram-desktop
-
-    # Dev
     vscode
-
-    # Utils
     neofetch
     btop
   ];
