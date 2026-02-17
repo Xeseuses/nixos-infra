@@ -4,8 +4,7 @@
    enable = true;
    
    settings = {
-   #PermitRootLogin = "prohibit-password";
-   PermitRootLogin = "yes";
+   PermitRootLogin = "prohibit-password";
    PasswordAuthentication = lib.mkDefault true; # Can override per-host
    
 
