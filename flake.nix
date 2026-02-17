@@ -42,29 +42,9 @@
         system = "x86_64-linux";
         modules = [
           ./modules/options.nix
-          ./modules/nixos/common
-          
-          # Impermanence
-          impermanence.nixosModules.impermanence
-          
-          # Laptop modules
-          ./modules/nixos/optional/impermanence.nix
-          ./modules/nixos/optional/backup.nix
-          ./modules/nixos/optional/laptop.nix
-          ./modules/nixos/optional/desktop-niri.nix
-          ./modules/nixos/optional/noctalia.nix
-          ./modules/nixos/optional/touchscreen.nix
-          ./modules/nixos/optional/graphics-nvidia-hybrid.nix
-          ./modules/nixos/optional/asus-rog.nix
-          
           disko.nixosModules.disko
-          sops-nix.nixosModules.sops
-          ./hosts/vela
-          
-          # Hardware
-          nixos-hardware.nixosModules.common-cpu-intel
-          nixos-hardware.nixosModules.common-pc-laptop
-          nixos-hardware.nixosModules.common-pc-laptop-ssd
+	  ./hosts/vela
+	  nixos-hardware.nixosModules.common-cpu-intel
         ];
       };
       

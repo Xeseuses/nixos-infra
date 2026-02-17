@@ -1,116 +1,88 @@
-# hosts/vela/default.nix
+# hosts/vela/default.nix - MINIMAL VERSION
 { config, pkgs, ... }:
 {
-  imports = [
-    ./disk-config.nix
-  ];
+  imports = [ ./disk-config.nix ];
 
-  # === SOPS Configuration ===
-  sops = {
-    defaultSopsFile = ../../secrets/secrets.yaml;
-    age.keyFile = "/var/lib/sops-nix/key.txt";
-    
-    secrets = {
-      "users/xeseuses/hashedPassword" = {
-        neededForUsers = true;
-      };
-    };
-  };
-
-  # === Custom Options ===
-  asthrossystems = {
-    hostInfo = "ASUS ROG Flow Z13, Intel i7-12700H, 16GB RAM, Touchscreen";
-    
-    isDesktop = true;
-    isLaptop = true;
-    
-    features = {
-      impermanence = true;
-      secureBoot = false;
-      encryption = true;
-      touchscreen = true;
-      asusRog = true;
-      noctalia = true;
-
-      desktop = "niri";              # ← Niri compositor
-      graphics = "hybrid";    # ← Intel + NVIDIA
- 
-      backup = {
-        enable = true;
-        targets = {
-          system = {
-            repository = "/var/backups/restic/system";
-            paths = [ "/home/xeseuses/nixos-infra" ];
-            schedule = "daily";
-          };
-          home = {
-            repository = "/var/backups/restic/home";
-            paths = [
-              "/home/xeseuses/Documents"
-              "/home/xeseuses/Pictures"
-              "/home/xeseuses/.ssh"
-            ];
-            schedule = "daily";
-          };
-        };
-      };
-    };
-    
-    storage = {
-      rootDisk = "/dev/nvme0n1";
-      filesystem = "btrfs";
-    };
-    
-    networking = {
-      primaryInterface = "wlo1";  # WiFi (check during install)
-      staticIP = null;
-    };
-  };
-
-  # === Boot ===
   boot = {
-  loader.systemd-boot.enable = true;
-  loader.efi.canTouchEfiVariables = true;
-  
-   initrd = {
-    availableKernelModules = [ 
-      "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod"
-    ];
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
     
-    luks.devices."cryptroot" = {
-      device = "/dev/nvme0n1p2";  # Direct, no labels!
-      allowDiscards = true;
+    initrd = {
+      availableKernelModules = [
+        "xhci_pci"
+        "thunderbolt" 
+        "nvme"
+        "usb_storage"
+        "sd_mod"
+        "btrfs"
+      ];
+      
+      luks.devices."cryptroot" = {
+        device = "/dev/nvme0n1p2";
+        allowDiscards = true;
+      };
     };
-  };
-
-  kernelParams = [ 
-    "quiet" 
-    "splash"
-    "nvidia-drm.modeset=1"
-  ];
-  
-  # Resume from hibernate
-  resumeDevice = "/dev/mapper/cryptroot";
-  };
-
-  # === Networking ===
-  networking.hostName = "vela";
-  networking.networkmanager.wifi.powersave = true;
-
-  # === User ===
-  users.users.xeseuses = {
-    # Password from SOPS
-    hashedPasswordFile = config.sops.secrets."users/xeseuses/hashedPassword".path;
     
-    # Create home directory in /persist
-    home = "/persist/home/xeseuses";
+    kernelModules = [ "kvm-intel" ];
   };
 
-  # Symlink /home/xeseuses -> /persist/home/xeseuses
-  systemd.tmpfiles.rules = [
-    "L+ /home/xeseuses - - - - /persist/home/xeseuses"
-  ];
+  # Minimal filesystems (let disko handle the rest)
+  fileSystems."/" = {
+    device = "/dev/mapper/cryptroot";
+    fsType = "btrfs";
+    options = [ "subvol=@" "compress=zstd" "noatime" ];
+  };
+  
+  fileSystems."/boot" = {
+    device = "/dev/nvme0n1p1";
+    fsType = "vfat";
+  };
+  
+  fileSystems."/persist" = {
+    device = "/dev/mapper/cryptroot";
+    fsType = "btrfs";
+    options = [ "subvol=@persist" "compress=zstd" "noatime" ];
+    neededForBoot = true;
+  };
+  
+  fileSystems."/nix" = {
+    device = "/dev/mapper/cryptroot";
+    fsType = "btrfs";
+    options = [ "subvol=@nix" "compress=zstd" "noatime" ];
+  };
+  
+  fileSystems."/var/log" = {
+    device = "/dev/mapper/cryptroot";
+    fsType = "btrfs";
+    options = [ "subvol=@log" "compress=zstd" "noatime" ];
+    neededForBoot = true;
+  };
+  
+  swapDevices = [{
+    device = "/.swapvol/swapfile";
+  }];
 
-    # === State Version ===
+  networking.hostName = "vela";
+  networking.networkmanager.enable = true;
+  
+  time.timeZone = "Europe/Amsterdam";
+  
+  users.users.root.initialPassword = "nixos";
+  
+  users.users.xeseuses = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    initialPassword = "nixos";
+    openssh.authorizedKeys.keys = [
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDiAHl5MuIuTJHR+CciMPIzF1JNNQMwKvi6hzhHfn7tBG+7SmV2+djMh9YosRbaeI6vYoXAq7QPKUUzSbeex4dO2PvCSRHOOrlRMT790Gyg4biG2nMSWDusMkG17zykUTCH29Xi0HD6rk5VzwFJqVyJY/iEIlA02l3BwjHdqemsjwnkSkEjRGLRw1vVVKak9Pii+4GkgCKpI2js4V4C94urbiUqbBABa/lAM0CKWiF2ftLmQbcoSlkEsvF5eRQXKQTbMjcQ7BdSabNveXP+KxqdizRYZEfZSmPI+kUA4nKRFqqLBVg0krKYhOJB2mV+K7ycKEjLxy/gEiS2wRmBq5i9sP5jqjGuk59dRwQr5N9vEvO9hg39Zr0iTvALTUhUqfbViXCJPU4R0PnxSm2yiVhrWfGCrq0fHZ+cBDnu8YKI1vvpFqqUzZaQnSttJ0gyjuJhNKAG8zX4zFfqxYdaN9NmKJCCzfj5NO/FmzSKoOdCMqpTAZlkaYk4zPi6THfewp1rkxOKrOaSS74YCY6VJeN4Cl+/gjFCMpDE3oTujxrQ1sZfjFlkGwbBUb77UZdPEmvWrijPRiTPjpcR7wTzmUNnrKs+oYm5FdbzG7aaI03jEwuefqGOikwiY7WSLTZ1EfDaqp0I5li7I+0CbGNmEU0gNEW5U1G5FItCPnS4fpcrtw=="
+    ];
+  };
+  
+  security.sudo.wheelNeedsPassword = false;
+  
+  services.openssh.enable = true;
+  
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  
   system.stateVersion = "24.11";
 }
