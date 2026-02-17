@@ -2,31 +2,24 @@
 { config, lib, pkgs, ... }:
 
 lib.mkIf (config.asthrossystems.features.desktop == "niri") {
-  
+
   # Niri compositor
-  programs.niri = {
-    enable = true;
-    package = pkgs.niri;
-  };
-  
-  # Required for Wayland
-  programs.xwayland.enable = true;
-  
-  # Enable Wayland session
+  programs.niri.enable = true;
+
+  # Login manager
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd niri-session";
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
         user = "greeter";
       };
     };
   };
-  
-  # Enable sound with Pipewire
+
+  # Audio
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
-  
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -34,83 +27,79 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
     pulse.enable = true;
     jack.enable = true;
   };
-  
-  # XDG portal (for screen sharing, file pickers, etc.)
+
+  # XDG portals
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-gnome
+    ];
     config.common.default = "*";
   };
-  
+
+  # Bluetooth
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+  services.blueman.enable = true;
+
   # Fonts
   fonts = {
     packages = with pkgs; [
       noto-fonts
-      noto-fonts-color-emoji
+      noto-fonts-emoji
       font-awesome
+      (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" ]; })
     ];
-    
-    fontconfig = {
-      defaultFonts = {
-        serif = [ "Noto Serif" ];
-        sansSerif = [ "Noto Sans" ];
-        monospace = [ "JetBrainsMono Nerd Font" ];
-        emoji = [ "Noto Color Emoji" ];
-      };
+    fontconfig.defaultFonts = {
+      monospace = [ "JetBrainsMono Nerd Font" ];
+      sansSerif = [ "Noto Sans" ];
+      serif     = [ "Noto Serif" ];
+      emoji     = [ "Noto Color Emoji" ];
     };
   };
-  
-  # Essential desktop packages
+
+  # Desktop packages
   environment.systemPackages = with pkgs; [
-    # Niri ecosystem
+    # Niri essentials
     niri
-    waybar  # Status bar (or use noctalia's built-in)
-    fuzzel  # Application launcher
-    mako    # Notification daemon
-    swaylock  # Screen locker
-    swayidle  # Idle manager
-    grim    # Screenshots
-    slurp   # Region selector
-    wl-clipboard  # Clipboard
-    
+    fuzzel          # App launcher
+    waybar          # Status bar
+    mako            # Notifications
+    swaylock        # Screen locker
+    swayidle        # Idle manager
+    grim            # Screenshots
+    slurp           # Region select
+    wl-clipboard    # Clipboard
+
     # Terminal
-    foot    # Fast Wayland terminal
-    alacritty  # Alternative terminal
-    
+    foot
+    alacritty
+
     # File manager
-    nautilus  # GNOME Files
-    
-    # Browsers
+    nautilus
+
+    # Browser
     firefox
-    
+
     # Media
     mpv
-    imv  # Image viewer
-    
-    # Utilities
-    pavucontrol  # Audio control
-    brightnessctl  # Brightness
-    playerctl    # Media control
-    
+    imv
+
+    # Audio control
+    pavucontrol
+    playerctl
+    brightnessctl
+
     # Communication
     discord
     telegram-desktop
-    
-    # Development
+
+    # Dev
     vscode
-    
-    # System
-    htop
-    btop
+
+    # Utils
     neofetch
+    btop
   ];
-  
-  # Persist niri config
-  environment.persistence."/persist" = lib.mkIf config.asthrossystems.features.impermanence {
-    users.xeseuses.directories = [
-      ".config/niri"
-      ".config/waybar"
-      ".config/foot"
-    ];
-  };
 }

@@ -21,6 +21,10 @@
     hostInfo = "ASUS ROG Flow Z13, i7-12700H, RTX 3050, 16GB RAM";
     isDesktop = true;
     isLaptop = true;
+   
+    features = {
+      desktop = "niri";
+   };
   };
 
   boot = {

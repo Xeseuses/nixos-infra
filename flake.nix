@@ -46,9 +46,9 @@
           ./modules/nixos/optional/backup.nix
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          ./modules/nixos/optional/desktop-niri.nix    # ← Add
+          ./modules/nixos/optional/laptop.nix   
           ./hosts/vela
-          nixos-hardware.nixosModules.common-cpu-intel
-          nixos-hardware.nixosModules.common-pc-ssd
         ];
       };
       
