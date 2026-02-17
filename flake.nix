@@ -48,7 +48,7 @@
           sops-nix.nixosModules.sops
           ./hosts/vela
           nixos-hardware.nixosModules.common-cpu-intel
-          nixos-hardware.nixosModules.common-pc-ssdvela = nixpkgs.lib.nixosSystem {
+          nixos-hardware.nixosModules.common-pc-ssd
         ];
       };
       

@@ -1,10 +1,11 @@
+# hosts/vela/disk-config.nix
 { ... }:
 {
   disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/nvme0n1";  # ← Adjust to your disk
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions = {
