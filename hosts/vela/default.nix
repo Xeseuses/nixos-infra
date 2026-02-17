@@ -72,6 +72,11 @@
   loader.systemd-boot.enable = true;
   loader.efi.canTouchEfiVariables = true;
   
+  initrd.luks.devices."cryptroot" = {
+    device = "/dev/disk/by-partlabel/disk-main-root";
+    allowDiscards = true;  # SSD TRIM
+  };
+
   kernelParams = [ 
     "quiet" 
     "splash"
