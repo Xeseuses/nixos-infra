@@ -1,4 +1,4 @@
-# hosts/vela/default.nix - CORRECT MINIMAL VERSION
+# hosts/vela/default.nix
 { config, pkgs, ... }:
 {
   imports = [ ./disk-config.nix ];
@@ -6,34 +6,13 @@
   boot = {
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    
-    initrd = {
-      availableKernelModules = [
-        "xhci_pci"
-        "thunderbolt"
-        "nvme"
-        "usb_storage"
-        "sd_mod"
-        "btrfs"
-      ];
-      
-      luks.devices."cryptroot" = {
-        device = "/dev/nvme0n1p2";
-        allowDiscards = true;
-      };
-    };
-    
-    kernelModules = [ "kvm-intel" ];
+    # NOTHING ELSE - let disko handle LUKS completely!
   };
-
-  # NO fileSystems here - disko handles it!
-  # NO swapDevices here - disko handles it!
 
   networking.hostName = "vela";
   networking.networkmanager.enable = true;
-  
   time.timeZone = "Europe/Amsterdam";
-  
+
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
