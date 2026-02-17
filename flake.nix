@@ -46,7 +46,9 @@
           ./modules/nixos/optional/backup.nix
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
-          ./modules/nixos/optional/desktop-niri.nix    # ← Add
+ 	  impermanence.nixosModules.impermanence    
+          ./modules/nixos/optional/impermanence.nix 
+          ./modules/nixos/optional/desktop-niri.nix  
           ./modules/nixos/optional/laptop.nix   
           ./hosts/vela
         ];

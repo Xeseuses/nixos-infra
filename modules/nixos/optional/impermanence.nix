@@ -1,77 +1,55 @@
 # modules/nixos/optional/impermanence.nix
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, ... }:
 
 lib.mkIf config.asthrossystems.features.impermanence {
   
-  # Impermanence setup
   environment.persistence."/persist" = {
     hideMounts = true;
     
     directories = [
-      # System
       "/var/lib/nixos"
       "/var/lib/systemd/coredump"
-      
-      # NetworkManager
       "/etc/NetworkManager/system-connections"
-      
-      # Bluetooth
       "/var/lib/bluetooth"
-      
-      # SOPS keys
       "/var/lib/sops-nix"
-      
-      # Backups
-      "/var/backups"
-      
-      # Supergfxctl (ASUS GPU switching)
-      "/var/lib/supergfxd"
     ];
     
     files = [
-      # Machine ID
       "/etc/machine-id"
-      
-      # SSH host keys
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
       "/etc/ssh/ssh_host_rsa_key"
       "/etc/ssh/ssh_host_rsa_key.pub"
     ];
     
-    # User data
     users.xeseuses = {
       directories = [
-        # Important user files
         "Documents"
         "Downloads"
         "Pictures"
         "Videos"
         "Music"
-        
-        # Development
         "nixos-infra"
-        "code"
-        
-        # Config directories that should persist
         ".ssh"
         ".gnupg"
         
-        # Application data
-        { directory = ".local/share/niri"; mode = "0700"; }
+        # Niri config
+        { directory = ".config/niri"; mode = "0700"; }
+        ".config/waybar"
+        ".config/foot"
+        ".config/fuzzel"
+        
+        # Apps
         ".mozilla"
-        ".thunderbird"
         ".config/discord"
         ".config/Code"
         
-        # Cache we want to keep (optional)
+        # Cache
         ".cache/nix"
       ];
       
       files = [
-        # Shell history
         ".bash_history"
-        ".zsh_history"
       ];
     };
   };
@@ -102,7 +80,6 @@ lib.mkIf config.asthrossystems.features.impermanence {
     umount /btrfs_tmp
   '';
   
-  # Create persist directories on first boot
   systemd.tmpfiles.rules = [
     "d /persist/home/xeseuses 0700 xeseuses users"
   ];
