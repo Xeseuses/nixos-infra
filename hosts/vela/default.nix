@@ -6,11 +6,11 @@
   boot = {
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    # NOTHING ELSE - let disko handle LUKS completely!
   };
 
   networking.hostName = "vela";
   networking.networkmanager.enable = true;
+
   time.timeZone = "Europe/Amsterdam";
 
   users.users.xeseuses = {

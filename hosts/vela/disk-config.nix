@@ -1,82 +1,54 @@
-{ ... }:
+cat flake.nix
+# flake.nix
 {
-  disko.devices = {
-    disk = {
-      main = {
-        type = "disk";
-        device = "/dev/nvme0n1";
-        content = {
-          type = "gpt";
-          partitions = {
-            
-            # Boot partition
-            boot = {
-              size = "512M";
-              type = "EF00";
-              content = {
-                type = "filesystem";
-                format = "vfat";
-                mountpoint = "/boot";
-              };
-            };
-            
-            # Encrypted root
-            root = {
-              size = "100%";
-              content = {
-                type = "luks";
-                name = "cryptroot";
-                
-                settings = {
-                  allowDiscards = true;
-                };
-                
-                content = {
-                  type = "btrfs";
-                  extraArgs = [ "-f" ];
-                  
-                  subvolumes = {
-                    "@" = {
-                      mountpoint = "/";
-                      mountOptions = [ "compress=zstd" "noatime" ];
-                    };
-                    
-                    "@persist" = {
-                      mountpoint = "/persist";
-                      mountOptions = [ "compress=zstd" "noatime" ];
-                    };
-                    
-                    "@nix" = {
-                      mountpoint = "/nix";
-                      mountOptions = [ "compress=zstd" "noatime" ];
-                    };
-                    
-                    "@log" = {
-                      mountpoint = "/var/log";
-                      mountOptions = [ "compress=zstd" "noatime" ];
-                    };
-                    
-                    "@swap" = {
-                      mountpoint = "/.swapvol";
-                      swap.swapfile.size = "16G";
-                    };
-                  };
-                  
-                  postCreateHook = ''
-                    MNTPOINT=$(mktemp -d)
-                    mount -t btrfs /dev/mapper/cryptroot "$MNTPOINT" -o subvol=/
-                    trap 'umount $MNTPOINT; rm -rf $MNTPOINT' EXIT
-                    btrfs subvolume snapshot -r "$MNTPOINT/@" "$MNTPOINT/@-blank"
-                  '';
-                };
-              };
-            };
-          };
-        };
+  description = "NixOS Infrastructure";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+     sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Impermanence
+    impermanence.url = "github:nix-community/impermanence";
+  };
+
+  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, ... }: {
+    nixosConfigurations = {
+
+      eridanus = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          ./modules/nixos/optional/backup.nix
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/eridanus
+          nixos-hardware.nixosModules.common-cpu-intel
+          nixos-hardware.nixosModules.common-pc-ssd
+        ];
       };
+
+      vela = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          disko.nixosModules.disko
+          ./hosts/vela
+          nixos-hardware.nixosModules.common-cpu-intel
+        ];
+      };
+
     };
   };
-  
-  fileSystems."/persist".neededForBoot = true;
-  fileSystems."/var/log".neededForBoot = true;
 }
