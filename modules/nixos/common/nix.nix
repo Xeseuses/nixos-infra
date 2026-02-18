@@ -15,10 +15,12 @@
      # Substituters (binart cache servers)
      substituters = [
        "https://cache.nixos.org"
+       "https://eridanus.home.arpa:5000"
      ];
     
     trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+   	"cache.home.arpa:dcmEsNlnkWaKUVNpU+s0sDC6W7+2JvaVKGu8fSRnbNE="
       ];
     };
     
