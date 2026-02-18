@@ -33,11 +33,13 @@ lib.mkIf config.asthrossystems.features.impermanence {
         ".ssh"
         ".gnupg"
         
-        # Niri config
+        # Niri and desktop configs
         { directory = ".config/niri"; mode = "0700"; }
-        ".config/waybar"
-        ".config/foot"
-        ".config/fuzzel"
+        { directory = ".config/waybar"; mode = "0700"; }
+        { directory = ".config/foot"; mode = "0700"; }
+        { directory = ".config/fuzzel"; mode = "0700"; }
+        { directory = ".config/mako"; mode = "0700"; }
+        { directory = ".config/swaylock"; mode = "0700"; }  # ← Add 
         
         # Apps
         ".mozilla"

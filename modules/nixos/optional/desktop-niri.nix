@@ -59,26 +59,53 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
 };
 
   environment.systemPackages = with pkgs; [
-    niri
-    fuzzel
-    waybar
-    mako
-    swaylock
-    swayidle
-    grim
-    slurp
-    wl-clipboard
-    foot
-    alacritty
-    nautilus
-    firefox
-    mpv
-    imv
-    pavucontrol
-    playerctl
-    brightnessctl
-    discord
-    neofetch
-    btop
+ 
+  # Core niri
+  niri
+  fuzzel
+  waybar
+  mako
+  swaylock-effects  # Better than plain swaylock
+  swayidle
+  grim
+  slurp
+  wl-clipboard
+  
+  # Terminals
+  foot
+  alacritty
+  
+  # File manager
+  nautilus
+  
+  # Browsers
+  firefox
+  
+  # Media
+  mpv
+  imv
+  
+  # Audio/brightness
+  pavucontrol
+  playerctl
+  brightnessctl
+  pamixer  # CLI volume control
+  
+  # Utils
+  neofetch
+  btop
+  wev  # Wayland event viewer (for debugging keys)
+  wl-gammactl  # Night light
+  wlsunset  # Automatic night light
+  
+  # Theming
+  adwaita-icon-theme
+  gnome-themes-extra
+  
+  # Screenshot tools
+  swappy  # Annotate screenshots
+  
+  # Notifications
+  libnotify  # For notify-send
   ];
 }
