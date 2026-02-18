@@ -2,61 +2,58 @@
 { lib, ... }:
 {
   options.asthrossystems = {
-    # === Machine Information ===
+    
     hostInfo = lib.mkOption {
       type = lib.types.str;
       default = "";
-      description = "Human-readable description of this machine's hardware";
-      example = "Beelink EQ12, Intel N100, 16GB RAM, 500GB NVMe";
+      description = "Human-readable host information";
     };
-
+    
     flakePath = lib.mkOption {
-      type = lib.types.path;
+      type = lib.types.str;
       default = "/home/xeseuses/nixos-infra";
-      description = "Path to the nixos-infra repository on this machine";
+      description = "Path to the flake repository";
     };
-
-    # === Machine Type (only one should be true) ===
+    
     isRouter = lib.mkEnableOption "router functionality";
     isServer = lib.mkEnableOption "server functionality";
     isDesktop = lib.mkEnableOption "desktop functionality";
     isLaptop = lib.mkEnableOption "laptop functionality";
-
-    # === Features (can combine) ===
+    
     features = {
-      impermanence = lib.mkEnableOption "impermanence (wipe root on boot)";
+      impermanence = lib.mkEnableOption "impermanence (ephemeral root)";
       secureBoot = lib.mkEnableOption "secure boot with lanzaboote";
-      encryption = lib.mkEnableOption "disk encryption";
-      microVMs = lib.mkEnableOption "MicroVM host capabilities";
-      
+      encryption = lib.mkEnableOption "full disk encryption";
+      microVMs = lib.mkEnableOption "microVM support";
       touchscreen = lib.mkEnableOption "touchscreen support";
-      asusRog = lib.mkEnableOption "ASUS ROG hardware support";
-      noctalia = lib.mkEnableOption "Noctalia shell for niri";
-   
+      asusRog = lib.mkEnableOption "ASUS ROG laptop support";
+      
       desktop = lib.mkOption {
         type = lib.types.enum [ "none" "kde" "gnome" "niri" ];
         default = "none";
-        description = "Desktop environment";
+        description = "Desktop environment to use";
       };
- 
+      
       graphics = lib.mkOption {
-        type = lib.types.enum [ "intel" "nvidia" "hybrid" ];
-        default = "intel";
-        description = "Graphics configuration";
+        type = lib.types.enum [ "none" "intel" "amd" "nvidia" "nvidia-hybrid" ];
+        default = "none";
+        description = "Graphics driver configuration";
       };
- 
+      
+      # Binary cache - at THIS level, not nested!
       binaryCache = {
         enable = lib.mkEnableOption "binary cache server";
-    
+        
         server = lib.mkOption {
-        type = lib.types.str;
-        default = "cache.home.arpa";
-        description = "Cache server hostname";
+          type = lib.types.str;
+          default = "cache.home.arpa";
+          description = "Cache server hostname";
+        };
       };
-     };
- 
+      
+      # Backup is separate
       backup = {
-        enable = lib.mkEnableOption "automated backups";
+        enable = lib.mkEnableOption "restic backups";
         
         targets = lib.mkOption {
           type = lib.types.attrsOf (lib.types.submodule {
@@ -65,100 +62,69 @@
                 type = lib.types.str;
                 description = "Restic repository path";
               };
-              
               paths = lib.mkOption {
                 type = lib.types.listOf lib.types.str;
-                default = [];
                 description = "Paths to backup";
               };
-              
-              schedule = lib.mkOption {
-                type = lib.types.str;
-                default = "daily";
-                description = "Backup schedule (systemd timer format)";
+              timerConfig = lib.mkOption {
+                type = lib.types.attrsOf lib.types.str;
+                default = { OnCalendar = "daily"; };
+                description = "Systemd timer configuration";
               };
             };
           });
           default = {};
-          description = "Backup target definitions";
+          description = "Backup targets";
         };
       };
     };
-
-    # === Networking ===
+    
     networking = {
       vlans = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
+        type = lib.types.listOf lib.types.int;
         default = [];
-        description = "VLANs this machine should be connected to";
-        example = [ "server" "management" ];
+        description = "VLAN IDs to configure";
       };
-
+      
       primaryInterface = lib.mkOption {
         type = lib.types.str;
         default = "eth0";
-        description = "Primary network interface name";
+        description = "Primary network interface";
       };
-
+      
       staticIP = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
-        description = "Static IP address if not using DHCP";
-        example = "10.0.10.5/24";
+        description = "Static IP address";
       };
     };
-
-    # === Storage ===
+    
     storage = {
       rootDisk = lib.mkOption {
         type = lib.types.str;
-        description = "Main disk device for OS installation";
-        example = "/dev/nvme0n1";
+        default = "/dev/sda";
+        description = "Root disk device";
       };
-
+      
       filesystem = lib.mkOption {
-        type = lib.types.enum [ "ext4" "btrfs" "zfs" "xfs" ];
+        type = lib.types.enum [ "ext4" "btrfs" "zfs" ];
         default = "ext4";
         description = "Root filesystem type";
       };
-
-      zfs = lib.mkOption {
-        type = lib.types.nullOr (lib.types.submodule {
-          options = {
-            poolName = lib.mkOption {
-              type = lib.types.str;
-              default = "tank";
-              description = "ZFS pool name";
-            };
-
-            topology = lib.mkOption {
-              type = lib.types.enum [ "mirror" "raidz1" "raidz2" "stripe" ];
-              default = "mirror";
-              description = "ZFS pool topology";
-            };
-
-            disks = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              description = "List of disks for ZFS pool";
-              example = [ "/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" ];
-            };
-          };
-        });
-        default = null;
-        description = "ZFS configuration (if using ZFS)";
-      };
-    };
-
-    # === Services ===
-    services = {
-      reverseProxy = {
-        enable = lib.mkEnableOption "reverse proxy (Caddy)";
+      
+      zfs = {
+        enable = lib.mkEnableOption "ZFS storage pool";
         
-        upstreamHost = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-          description = "Hostname of upstream server to proxy to";
-          example = "router";
+        poolName = lib.mkOption {
+          type = lib.types.str;
+          default = "tank";
+          description = "ZFS pool name";
+        };
+        
+        datasets = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [];
+          description = "ZFS datasets to create";
         };
       };
     };
