@@ -65,7 +65,8 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
   fuzzel
   waybar
   mako
-  swaylock-effects  # Better than plain swaylock
+  swaylock-effects
+  swaybg
   swayidle
   grim
   slurp
