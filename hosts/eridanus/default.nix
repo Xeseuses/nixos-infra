@@ -30,7 +30,7 @@
       backup = {
         enable = true;
 
-        binaryCache = {
+      binaryCache = {
         enable = true;
         server = "cache.home.arpa";  # Or use eridanus.home.arpa
        };
