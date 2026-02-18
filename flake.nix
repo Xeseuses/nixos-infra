@@ -19,6 +19,11 @@
   
     # Impermanence
     impermanence.url = "github:nix-community/impermanence";
+   
+    # noctalia
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, ... }: {
@@ -50,6 +55,7 @@
           ./modules/nixos/optional/impermanence.nix 
           ./modules/nixos/optional/desktop-niri.nix  
           ./modules/nixos/optional/laptop.nix   
+          noctalia.nixosModules.default
           ./hosts/vela
         ];
       };

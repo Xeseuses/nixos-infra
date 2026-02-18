@@ -5,6 +5,11 @@ lib.mkIf (config.asthrossystems.features.desktop == "niri") {
 
   programs.niri.enable = true;
 
+  # Enable noctalia
+  programs.noctalia = {
+    enable = true;
+  };
+
   # Login manager (fixed package name)
   services.greetd = {
     enable = true;
