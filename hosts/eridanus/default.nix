@@ -25,15 +25,15 @@
       impermanence = false;
       secureBoot = false;
       encryption = false;
-
+   
+     binaryCache = {
+      enable = true;
+      server = "cache.home.arpa";
+     };
+   
       # Enable backups
       backup = {
         enable = true;
-
-      binaryCache = {
-        enable = true;
-        server = "cache.home.arpa";  # Or use eridanus.home.arpa
-       };
 
         targets = {
           # Backup system config
