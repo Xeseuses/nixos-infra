@@ -46,7 +46,7 @@
     isNormalUser = true;
     extraGroups = [ "wheel" "audio" "video" ];
    # hashedPasswordFile = config.sops.secrets."users/xeseuses/hashedPassword".path;
-    
+    initialPassword = "1234"; 
     # Home directory in /persist with impermanence
     home = "/persist/home/xeseuses";
     
