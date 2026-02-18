@@ -54,8 +54,8 @@
               "/home/xeseuses/Documents"
               "/home/xeseuses/.ssh"
             ];
-            timerConfig = { OnCalendar = "daily"; };
           };
+          schedule = "daily";
         };
       };
     };
