@@ -32,6 +32,7 @@
       
       eridanus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit noctalia; };
         modules = [
           ./modules/options.nix
           ./modules/nixos/common
