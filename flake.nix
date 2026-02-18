@@ -57,7 +57,6 @@
           ./modules/nixos/optional/impermanence.nix 
           ./modules/nixos/optional/desktop-niri.nix  
           ./modules/nixos/optional/laptop.nix   
-	  ./modules/nixos/optional/noctalia.nix
           ./hosts/vela
         ];
       };

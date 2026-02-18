@@ -3,13 +3,17 @@
 
 lib.mkIf (config.asthrossystems.features.desktop == "niri") {
 
+  
+  imports = lib.optionals (config.asthrossystems.features.noctalia) [
+    inputs.noctalia.nixosModules.default
+  ];
+
   programs.niri.enable = true;
 
-  # Enable noctalia
-  programs.noctalia = {
+  programs.noctalia = lib.mkIf config.asthrossystems.features.noctalia {
     enable = true;
   };
-
+ 
   # Login manager (fixed package name)
   services.greetd = {
     enable = true;
