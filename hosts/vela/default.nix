@@ -7,15 +7,15 @@
   ];
 
   # === SOPS ===
-  sops = {
-    defaultSopsFile = ../../secrets/secrets.yaml;
-    age.keyFile = "/var/lib/sops-nix/key.txt";
-    secrets = {
-      "users/xeseuses/hashedPassword" = {
-        neededForUsers = true;
-      };
-    };
-  };
+  #sops = {
+  #  defaultSopsFile = ../../secrets/secrets.yaml;
+  #  age.keyFile = "/var/lib/sops-nix/key.txt";
+  #  secrets = {
+  #    "users/xeseuses/hashedPassword" = {
+  #      neededForUsers = true;
+  #    };
+  #  };
+  #};
 
   # === Custom Options ===
   asthrossystems = {
@@ -45,7 +45,7 @@
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" "audio" "video" ];
-    hashedPasswordFile = config.sops.secrets."users/xeseuses/hashedPassword".path;
+   # hashedPasswordFile = config.sops.secrets."users/xeseuses/hashedPassword".path;
     
     # Home directory in /persist with impermanence
     home = "/persist/home/xeseuses";
