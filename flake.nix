@@ -32,6 +32,7 @@
           ./modules/options.nix
           ./modules/nixos/common
           ./modules/nixos/optional/backup.nix
+          ./modules/nixos/optional/binary-cache.nix
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
           ./hosts/eridanus

@@ -45,6 +45,15 @@
         description = "Graphics configuration";
       };
  
+      binaryCache = {
+        enable = lib.mkEnableOption "binary cache server";
+    
+        server = lib.mkOption {
+        type = lib.types.str;
+        default = "cache.home.arpa";
+        description = "Cache server hostname";
+      };
+ 
       backup = {
         enable = lib.mkEnableOption "automated backups";
         
