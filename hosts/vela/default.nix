@@ -9,7 +9,7 @@
   # === SOPS ===
   sops = {
     defaultSopsFile = ../../secrets/secrets.yaml;
-    age.keyFile = "/var/lib/sops-nix/key.txt";
+    age.keyFile = "/persist/var/lib/sops-nix/key.txt";
     secrets = {
       "users/xeseuses/hashedPassword" = {
         neededForUsers = true;
