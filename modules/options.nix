@@ -53,6 +53,7 @@
         default = "cache.home.arpa";
         description = "Cache server hostname";
       };
+     };
  
       backup = {
         enable = lib.mkEnableOption "automated backups";
