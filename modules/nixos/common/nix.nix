@@ -15,7 +15,7 @@
      # Substituters (binart cache servers)
      substituters = [
        "https://cache.nixos.org"
-       "https://eridanus.home.arpa:5000"
+       "http://10.40.40.104:5000"
      ];
     
     trusted-public-keys = [
