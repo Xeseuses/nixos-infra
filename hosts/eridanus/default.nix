@@ -1,4 +1,3 @@
-# hosts/eridanus/default.nix
 { config, lib, pkgs, ... }:
 {
   imports = [
@@ -44,7 +43,7 @@
               "/home/xeseuses/nixos-infra"
               "/etc/nixos"
             ];
-  	    schedule = "daily";
+            schedule = "daily";
           };
 
           # Backup user data
@@ -54,8 +53,8 @@
               "/home/xeseuses/Documents"
               "/home/xeseuses/.ssh"
             ];
+            schedule = "daily";
           };
-          schedule = "daily";
         };
       };
     };
@@ -93,3 +92,4 @@
   # === State Version ===
   system.stateVersion = "24.11";
 }
+
