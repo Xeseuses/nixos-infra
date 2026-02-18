@@ -56,7 +56,14 @@
           ./hosts/vela
         ];
       };
-      
-    };
+      orion = nixpkgs.lib.nixosSystem {
+	system = "x86_64-linux";
+	modules = [
+           ./modules/options.nix
+	   ./modules/nixos/common
+	   disko.nixosModules.disko
+	   ./hosts/orion
+	 ];
+	};
   };
 }
