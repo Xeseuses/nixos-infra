@@ -27,12 +27,12 @@
    };
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, ... }: {
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, noctalia, ... }: {
     nixosConfigurations = {
       
       eridanus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit noctalia; };
+        specialArgs = { inherit inputs; };
         modules = [
           ./modules/options.nix
           ./modules/nixos/common
@@ -57,7 +57,7 @@
           ./modules/nixos/optional/impermanence.nix 
           ./modules/nixos/optional/desktop-niri.nix  
           ./modules/nixos/optional/laptop.nix   
-          noctalia.nixosModules.default
+	  ./modules/nixos/optional/noctalia.nix
           ./hosts/vela
         ];
       };

@@ -27,6 +27,7 @@
       desktop = "niri";
       impermanence = true;      # ← Enable!
       encryption = true;         # ← Enable!
+      noctalia = true;
     };
     
     storage = {
