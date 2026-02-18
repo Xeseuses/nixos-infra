@@ -2,8 +2,7 @@ keys:
   # Your personal key (for encrypting/decrypting locally)
   - &admin age126y7n5guy5ezvegpu6luttnu6qp0utu4acmzcuruzxww4ku0e54srul0xa
   - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
-  - &vela age1k9949rex8zk5h9ppke2x5ut3j0xmmh8s4ssl8jwuq4qtl2vwsdksnuru6p
-
+  - &vela age13auxyy4qyr2euvytezaa38wpvgeygptu90jq6ky777wkrgyy7sxssh8znp
 creation_rules:
   # Default: encrypt for admin (you)
   - path_regex: secrets/.*\.yaml$
