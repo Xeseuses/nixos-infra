@@ -20,14 +20,10 @@
     # Impermanence
     impermanence.url = "github:nix-community/impermanence";
    
-    # noctalia
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-   };
+    
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, noctalia, ... }: {
+  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, ... }: {
     nixosConfigurations = {
       
       eridanus = nixpkgs.lib.nixosSystem {
