@@ -24,6 +24,7 @@
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
+   };
   };
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, ... }: {
