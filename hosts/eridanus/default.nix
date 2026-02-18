@@ -44,7 +44,7 @@
               "/home/xeseuses/nixos-infra"
               "/etc/nixos"
             ];
-            timerConfig = { OnCalendar = "daily"; };
+  	    schedule = "daily";
           };
 
           # Backup user data
