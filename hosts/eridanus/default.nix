@@ -87,7 +87,7 @@
     interfaces.enp1s0 = {
       useDHCP = false;
       ipv4.addresses = [{
-        address = "10.40.40.104";
+        address = "10.40.40.105";
         prefixLength = 24;
       }];
     };
