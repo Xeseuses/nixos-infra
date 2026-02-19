@@ -78,5 +78,7 @@
 	   sops-nix.nixosModules.sops
     	   ./hosts/andromeda
          ];  
+       };
+    };
   };
 }
