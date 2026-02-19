@@ -3,6 +3,8 @@ keys:
   - &admin age126y7n5guy5ezvegpu6luttnu6qp0utu4acmzcuruzxww4ku0e54srul0xa
   - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
   - &vela age13auxyy4qyr2euvytezaa38wpvgeygptu90jq6ky777wkrgyy7sxssh8znp
+  - &andromeda age17k4whyzw486kgy30r5awv7n2q0wl6rr4ejgadzt3zmy24n7c2y3s6qncyz
+
 creation_rules:
   # Default: encrypt for admin (you)
   - path_regex: secrets/.*\.yaml$
@@ -11,3 +13,4 @@ creation_rules:
           - *admin
           - *eridanus
           - *vela
+          - *andromeda
