@@ -19,18 +19,24 @@
   networking = {
     hostName = "andromeda";
     
-    # Disable NetworkManager on bridge interfaces
+    # Disable NetworkManager on bridge interface
     networkmanager.enable = true;
-    networkmanager.unmanaged = [ "br0" "enp1s0" ];
+    networkmanager.unmanaged = [ "br0" "enp2s0" ];
     
-    # Create bridge over enp1s0
-    bridges.br0.interfaces = [ "enp1s0" ];
+    # Create bridge on enp2s0
+    bridges.br0.interfaces = [ "enp2s0" ];
     
-    # Bridge gets DHCP (or set static)
-    interfaces.br0.useDHCP = true;
+    # Configure bridge with current IP
+    interfaces.br0 = {
+      useDHCP = false;
+      ipv4.addresses = [{
+        address = "10.40.40.104";
+        prefixLength = 24;
+      }];
+    };
     
-    # Disable WiFi since we're using wired now
-    interfaces.wlo1.useDHCP = false;
+    defaultGateway = "10.40.40.1";
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
     
     firewall = {
       enable = true;
@@ -39,7 +45,7 @@
     };
   };
 
-  # === Virtualization ===
+  # Virtualization
   virtualisation.libvirtd = {
     enable = true;
     qemu = {
