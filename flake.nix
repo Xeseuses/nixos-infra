@@ -72,8 +72,11 @@
        andromeda = nixpkgs.lib.nixosSystem {
 	 system = "x86_64-linux";
 	 modules = [
-	   microvm.nixosModules.host
 	   ./modules/options.nix
-	   ./hosts/andromeda
+	   ./modules/nixos/common
+	   disko.nixosModules.disko
+	   sops-nix.nixosModules.sops
+    	   ./hosts/andromeda
+         ];  
   };
 }

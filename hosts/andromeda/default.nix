@@ -1,24 +1,31 @@
 { config, lib, pkgs, ... }:
-
 {
   imports = [
     ./hardware-configuration.nix
     ./disk-config.nix
-    ../../modules/nixos/common
-    ../../modules/nixos/optional/microvm-haos.nix
   ];
 
   asthrossystems = {
     hostInfo = "andromeda - Beelink EQ12 - Home Assistant host";
     isServer = true;
-
+    
     features = {
-      # Keeping it simple like eridanus - no encryption, no impermanence
       impermanence = false;
       encryption = false;
       binaryCache.enable = false;
+      
+      # Home Assistant microVM
+      homeAssistant = {
+        enable = true;
+        skyConnect = {
+          vendorId = "10c4";  # Find with: lsusb
+          productId = "ea60";
+        };
+        macAddress = "02:00:00:00:00:01";
+        ipAddress = "10.40.10.50";
+      };
     };
-
+    
     storage = {
       rootDisk = "/dev/nvme0n1";
       filesystem = "ext4";
@@ -27,27 +34,14 @@
 
   networking.hostName = "andromeda";
 
-  # microvm.nix host capability
-  microvm.host.enable = true;
-
-  # HAOS microvm - defined in modules/nixos/optional/microvm-haos.nix
-  asthrossystems.homeAssistant = {
-    enable = true;
-
-    # Sky Connect USB dongle - find with: lsusb | grep -i nabu
-    # Usually: 10c4:ea60 (Silicon Labs CP210x) or 1a86:55d4
-    # Fill in after first boot on andromeda: lsusb
-    skyConnect = {
-      vendorId = "10c4";
-      productId = "ea60";
-    };
-
-    # HAOS gets its own IP on VLAN 10 via bridge
-    # Set a static IP for your HAOS instance here
-    macAddress = "02:00:00:00:00:01"; # deterministic, change if needed
+  # SOPS for restic password
+  sops = {
+    defaultSopsFile = ../../secrets/secrets.yaml;
+    age.keyFile = "/var/lib/sops-nix/key.txt";
+    secrets."restic/andromeda" = {};
   };
 
-  # Restic backup of HAOS persistent volume to eridanus
+  # Restic backup
   services.restic.backups.haos = {
     repository = "sftp:xeseuses@10.40.40.104:/var/backups/restic/andromeda-haos";
     paths = [ "/var/lib/microvms/haos/shares/haos-data" ];
@@ -63,8 +57,5 @@
     ];
   };
 
-  sops.secrets."restic/andromeda" = {};
-
   system.stateVersion = "24.11";
 }
-
