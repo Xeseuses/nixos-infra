@@ -38,23 +38,8 @@
   # ============================================
   # Networking (host)
   # ============================================
-
-  networking = {
-  hostName = "andromeda";
-  useDHCP = false;
-  interfaces.ens1 = {
-    useDHCP = false;
-    ipv4.addresses = [{
-      address = "10.30.30.124";
-      prefixLength = 24;
-    }];
-  };
-  defaultGateway = {
-    address = "10.30.30.1";
-    interface = "ens1";
-  };
-  nameservers = [ "1.1.1.1" "8.8.8.8" ];
-};
+   
+    networking.hostName = "andromeda";
 
   # ============================================
   # Users
