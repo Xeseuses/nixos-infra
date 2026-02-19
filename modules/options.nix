@@ -71,7 +71,35 @@
           description = "Backup targets";
         };
       };
-      
+      homeAssistant = {
+       enable = lib.mkEnableOption "Home Assistant microVM";
+
+       skyConnect = {
+        vendorId = lib.mkOption {
+         type = lib.types.str;
+         default = "10c4";
+         description = "USB vendor ID for Sky Connect";
+      };
+
+       productId = lib.mkOption {
+        type = lib.types.str;
+        default = "ea60";
+        description = "USB product ID for Sky Connect";
+      };
+    };
+
+    macAddress = lib.mkOption {
+      type = lib.types.str;
+      default = "02:00:00:00:00:01";
+      description = "MAC address for HAOS VM";
+    };
+
+    ipAddress = lib.mkOption {
+      type = lib.types.str;
+      default = "10.40.10.50";
+      description = "Static IP for HAOS";
+    };
+  };
       # Router features
       router = {
         enable = lib.mkEnableOption "router functionality";
@@ -191,34 +219,5 @@
         };
       };
     };
-    homeAssistant = {
-    enable = lib.mkEnableOption "Home Assistant microVM";
-    
-    skyConnect = {
-      vendorId = lib.mkOption {
-        type = lib.types.str;
-        default = "10c4";
-        description = "USB vendor ID for Sky Connect";
-      };
-      
-      productId = lib.mkOption {
-        type = lib.types.str;
-        default = "ea60";
-        description = "USB product ID for Sky Connect";
-      };
-    };
-    
-    macAddress = lib.mkOption {
-      type = lib.types.str;
-      default = "02:00:00:00:00:01";
-      description = "MAC address for HAOS VM";
-    };
-    
-    ipAddress = lib.mkOption {
-      type = lib.types.str;
-      default = "10.40.10.50";
-      description = "Static IP for HAOS";
-    };
-   };
   };
 }

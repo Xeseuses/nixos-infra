@@ -5,6 +5,13 @@
     ./disk-config.nix
   ];
 
+  boot = {
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+  };
+
   asthrossystems = {
     hostInfo = "andromeda - Beelink EQ12 - Home Assistant host";
     isServer = true;
