@@ -42,7 +42,7 @@
     firewall = {
       enable = true;
       allowedTCPPorts = [ 8123 ];
-      trustedInterfaces = [ "br0" ];
+      trustedInterfaces = [ "br0" "wg0" ];
     };
   };
 
