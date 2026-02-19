@@ -15,16 +15,13 @@
   asthrossystems = {
     hostInfo = "andromeda - Beelink EQ12 - Home Assistant host";
     isServer = true;
-
+    
     features = {
       impermanence = false;
       encryption = false;
       binaryCache.enable = false;
-
-      # Disable microVM for now - set up manually first
-      # homeAssistant.enable = false;
     };
-
+    
     storage = {
       rootDisk = "/dev/nvme0n1";
       filesystem = "ext4";
@@ -32,20 +29,18 @@
   };
 
   networking = {
-  hostName = "andromeda";
-
-  # Current network: 10.30.30.0/24 (pfSense)
-  interfaces.ens1 = {
-    useDHCP = false;
-    ipv4.addresses = [{
-      address = "10.30.30.124";  # ← Changed from 10.40.30.124
-      prefixLength = 24;
-    }];
+    hostName = "andromeda";
+    interfaces.ens1 = {
+      useDHCP = false;
+      ipv4.addresses = [{
+        address = "10.30.30.124";
+        prefixLength = 24;
+      }];
+    };
+    defaultGateway = "10.30.30.1";
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
-  defaultGateway = "10.30.30.1";  # ← pfSense gateway
-  nameservers = [ "1.1.1.1" "8.8.8.8" ];
- };
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
@@ -55,7 +50,6 @@
     ];
   };
 
-  # SOPS
   sops = {
     defaultSopsFile = ../../secrets/secrets.yaml;
     age.keyFile = "/var/lib/sops-nix/key.txt";
@@ -65,42 +59,107 @@
     };
   };
 
-  # Simple Home Assistant via Docker (not microVM yet)
-  virtualisation.docker.enable = true;
+  # ============================================
+  # MicroVM Setup - Declarative Hosts Approach
+  # ============================================
+  
+  microvm.host.enable = true;
 
-  systemd.services.homeassistant = {
-    description = "Home Assistant";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "docker.service" ];
-
-    serviceConfig = {
-      Type = "simple";
-      ExecStartPre = "${pkgs.docker}/bin/docker pull ghcr.io/home-assistant/home-assistant:stable";
-      ExecStart = ''
-        ${pkgs.docker}/bin/docker run --rm \
-          --name homeassistant \
-          --network host \
-          --privileged \
-          -v /var/lib/homeassistant:/config \
-          -v /etc/localtime:/etc/localtime:ro \
-          --device /dev/ttyUSB0:/dev/ttyUSB0 \
-          ghcr.io/home-assistant/home-assistant:stable
-      '';
-      ExecStop = "${pkgs.docker}/bin/docker stop homeassistant";
-      Restart = "always";
-      RestartSec = "10s";
-    };
+  # Declare microVM using the declarativeHosts approach
+  systemd.services."microvm@haos" = {
+    wantedBy = [ "microvms.target" ];
   };
 
-  # Create HA config directory
+  # Create the microVM state directory
   systemd.tmpfiles.rules = [
-    "d /var/lib/homeassistant 0755 root root -"
+    "d /var/lib/microvms 0755 root root -"
+    "d /var/lib/microvms/haos 0755 root root -"
+    "d /var/lib/microvms/haos/config 0755 root root -"
+    "f /var/lib/microvms/haos/flake.nix 0644 root root -"
   ];
 
-  # Restic backup
+  # Write the microVM flake to disk
+  environment.etc."microvms/haos/flake.nix".text = ''
+    {
+      inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+      inputs.microvm.url = "github:astro/microvm.nix";
+      
+      outputs = { self, nixpkgs, microvm }: {
+        nixosConfigurations.haos = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            microvm.nixosModules.microvm
+            {
+              microvm = {
+                hypervisor = "qemu";
+                vcpu = 2;
+                mem = 2048;
+                
+                volumes = [{
+                  image = "haos.img";
+                  mountPoint = "/var";
+                  size = 10240;
+                }];
+                
+                shares = [{
+                  source = "/var/lib/microvms/haos/config";
+                  mountPoint = "/config";
+                  tag = "config";
+                  proto = "virtiofs";
+                }];
+                
+                interfaces = [{
+                  type = "tap";
+                  id = "haos-tap";
+                  mac = "02:00:00:00:00:01";
+                }];
+                
+                qemu.extraArgs = [
+                  "-device" "usb-host,vendorid=0x10c4,productid=0xea60"
+                ];
+              };
+              
+              networking = {
+                hostName = "haos";
+                useDHCP = false;
+                interfaces.haos-tap.ipv4.addresses = [{
+                  address = "10.30.30.125";
+                  prefixLength = 24;
+                }];
+                defaultGateway = "10.30.30.1";
+                nameservers = [ "1.1.1.1" ];
+              };
+              
+              virtualisation.docker.enable = true;
+              
+              systemd.services.homeassistant = {
+                wantedBy = [ "multi-user.target" ];
+                after = [ "docker.service" ];
+                serviceConfig = {
+                  ExecStartPre = "''${pkgs.docker}/bin/docker pull ghcr.io/home-assistant/home-assistant:stable";
+                  ExecStart = "''${pkgs.docker}/bin/docker run --rm --name homeassistant --network host --privileged -v /config:/config --device /dev/ttyUSB0 ghcr.io/home-assistant/home-assistant:stable";
+                  ExecStop = "''${pkgs.docker}/bin/docker stop homeassistant";
+                  Restart = "always";
+                };
+              };
+              
+              system.stateVersion = "24.11";
+            }
+          ];
+        };
+      };
+    }
+  '';
+
+  # Copy flake to var
+  system.activationScripts.microvm-haos-setup = lib.stringAfter [ "etc" ] ''
+    mkdir -p /var/lib/microvms/haos
+    cp /etc/microvms/haos/flake.nix /var/lib/microvms/haos/
+  '';
+
   services.restic.backups.haos = {
     repository = "sftp:xeseuses@10.40.40.104:/var/backups/restic/andromeda-haos";
-    paths = [ "/var/lib/homeassistant" ];
+    paths = [ "/var/lib/microvms/haos/config" ];
     passwordFile = config.sops.secrets.restic_password.path;
     timerConfig = {
       OnCalendar = "03:00";
