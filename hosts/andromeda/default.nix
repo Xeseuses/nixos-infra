@@ -18,16 +18,32 @@
 
   networking = {
     hostName = "andromeda";
+    
+    # Disable NetworkManager on bridge interfaces
     networkmanager.enable = true;
-    firewall.allowedTCPPorts = [ 8123 ];
+    networkmanager.unmanaged = [ "br0" "enp1s0" ];
+    
+    # Create bridge over enp1s0
+    bridges.br0.interfaces = [ "enp1s0" ];
+    
+    # Bridge gets DHCP (or set static)
+    interfaces.br0.useDHCP = true;
+    
+    # Disable WiFi since we're using wired now
+    interfaces.wlo1.useDHCP = false;
+    
+    firewall = {
+      enable = true;
+      allowedTCPPorts = [ 8123 ];
+      trustedInterfaces = [ "br0" ];
+    };
   };
 
-  # === Virtualization for Home Assistant OS ===
+  # === Virtualization ===
   virtualisation.libvirtd = {
     enable = true;
     qemu = {
       package = pkgs.qemu_kvm;
-      # OVMF is now included by default - removed ovmf config!
       swtpm.enable = true;
       runAsRoot = false;
     };
