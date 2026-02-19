@@ -62,6 +62,27 @@
     }
   ];
 };
+  
+  # Enable IP forwarding
+boot.kernel.sysctl = {
+  "net.ipv4.ip_forward" = 1;
+};
+
+# NAT to forward traffic from wg0 to br0
+networking.nat = {
+  enable = true;
+  internalInterfaces = [ "br0" ];
+  externalInterface = "wg0";
+  
+  forwardPorts = [
+    {
+      sourcePort = 8123;
+      destination = "10.40.40.115:8123";
+      proto = "tcp";
+    }
+  ];
+};
+
   # Virtualization
   virtualisation.libvirtd = {
     enable = true;
