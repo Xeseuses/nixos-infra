@@ -48,7 +48,7 @@
 
   # Add after networking section
   networking.wireguard.interfaces.wg0 = {
-  ips = [ "10.100.0.2/24" ];  # andromeda side of tunnel
+  ips = [ "10.200.0.2/24" ];  # andromeda side of tunnel
   
   privateKeyFile = "/var/lib/wireguard/private.key";
   
