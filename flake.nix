@@ -69,18 +69,17 @@
 	   ./hosts/orion
 	 ];
 	};
-       andromeda = nixpkgs.lib.nixosSystem {
-	 system = "x86_64-linux";
-	 specialArgs = { inherit microvm; };
-	 modules = [
-	   ./modules/options.nix
-	   ./modules/nixos/common
-	   disko.nixosModules.disko
-	   sops-nix.nixosModules.sops
-  	   microvm.nixosModules.host
-    	   ./hosts/andromeda
-         ];  
-       };
+      andromeda = nixpkgs.lib.nixosSystem {
+      	system = "x86_64-linux";
+      	modules = [
+           ./modules/options.nix
+           ./modules/nixos/common
+           disko.nixosModules.disko
+           ./hosts/andromeda
+           nixos-hardware.nixosModules.common-cpu-intel
+           nixos-hardware.nixosModules.common-pc-ssd
+      ];
+    };
     };
   };
 }

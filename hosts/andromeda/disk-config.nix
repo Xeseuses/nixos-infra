@@ -1,14 +1,11 @@
+# hosts/andromeda/disk-config.nix
 { ... }:
-
-# Simple ext4 layout, mirroring eridanus.
-# andromeda doesn't need impermanence - HAOS data lives in the microvm share,
-# and the NixOS host itself is stateless enough that a rebuild recovers it.
 {
   disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/nvme0n1";
+        device = "/dev/sda";  # Beelink uses NVMe
         content = {
           type = "gpt";
           partitions = {
@@ -36,4 +33,3 @@
     };
   };
 }
-
