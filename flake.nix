@@ -22,7 +22,7 @@
     
     microvm = {
       url = "github:astro/microvm.nix";
-      inputs.nixpkgs.follows = "nixpkgs"; # share your nixpkgs, avoid duplication
+      inputs.nixpkgs.follows = "nixpkgs";
     }; 
     
   };
@@ -75,6 +75,7 @@
            ./modules/options.nix
            ./modules/nixos/common
            disko.nixosModules.disko
+	   microvm.nixosModules.host
            ./hosts/andromeda
            nixos-hardware.nixosModules.common-cpu-intel
            nixos-hardware.nixosModules.common-pc-ssd
