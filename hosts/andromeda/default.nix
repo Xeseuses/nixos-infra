@@ -22,7 +22,8 @@
     # Disable NetworkManager on bridge interface
     networkmanager.enable = true;
     networkmanager.unmanaged = [ "br0" "enp2s0" ];
-    
+    networkmanager.dns = "none";  # ← ADD THIS LINE!
+
     # Create bridge on enp2s0
     bridges.br0.interfaces = [ "enp2s0" ];
     
@@ -45,6 +46,22 @@
     };
   };
 
+  # Add after networking section
+  networking.wireguard.interfaces.wg0 = {
+  ips = [ "10.100.0.2/24" ];  # andromeda side of tunnel
+  
+  privateKeyFile = "/var/lib/wireguard/private.key";
+  
+  peers = [
+    {
+      # lyra (VPS)
+      publicKey = "LYRA_PUBLIC_KEY_HERE";  # We'll generate this
+      allowedIPs = [ "0.0.0.0/0" ];  # Route all traffic through VPS (optional)
+      endpoint = "YOUR_VPS_IP:51820";
+      persistentKeepalive = 25;
+    }
+  ];
+};
   # Virtualization
   virtualisation.libvirtd = {
     enable = true;
