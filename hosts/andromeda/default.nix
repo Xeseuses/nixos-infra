@@ -27,17 +27,14 @@
     enable = true;
     qemu = {
       package = pkgs.qemu_kvm;
-      ovmf.enable = true;
-      ovmf.packages = [ pkgs.OVMFFull.fd ];
+      # OVMF is now included by default - removed ovmf config!
       swtpm.enable = true;
       runAsRoot = false;
     };
   };
 
-  # Install virt-manager for GUI management
   programs.virt-manager.enable = true;
 
-  # Users
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" "libvirtd" "kvm" ];
