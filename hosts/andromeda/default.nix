@@ -83,6 +83,30 @@ networking.nat = {
   ];
 };
 
+services.nginx = {
+  enable = true;
+  
+  virtualHosts."ha-proxy" = {
+    listen = [
+      { addr = "10.200.0.2"; port = 8123; }
+    ];
+    
+    locations."/" = {
+      proxyPass = "http://10.40.40.115:8123";
+      proxyWebsockets = true;
+      
+      extraConfig = ''
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+      '';
+    };
+  };
+};
+
   # Virtualization
   virtualisation.libvirtd = {
     enable = true;
