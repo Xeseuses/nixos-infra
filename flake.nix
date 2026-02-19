@@ -71,6 +71,7 @@
 	};
        andromeda = nixpkgs.lib.nixosSystem {
 	 system = "x86_64-linux";
+	 specialArgs = { inherit microvm; };
 	 modules = [
 	   ./modules/options.nix
 	   ./modules/nixos/common
