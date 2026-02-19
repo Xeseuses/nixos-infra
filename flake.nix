@@ -76,6 +76,7 @@
 	   ./modules/nixos/common
 	   disko.nixosModules.disko
 	   sops-nix.nixosModules.sops
+  	   microvm.nixosModules.host
     	   ./hosts/andromeda
          ];  
        };
