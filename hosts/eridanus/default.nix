@@ -66,7 +66,7 @@
 
     networking = {
       primaryInterface = "enp1s0";
-      staticIP = 10.40.40.104;
+      staticIP = null;
     };
   };
 
@@ -77,29 +77,9 @@
   };
 
   # === Networking ===
-  networking = {
-    hostName = "eridanus";
-    
-    # Disable DHCP globally
-    useDHCP = false;
-    
-    # Configure static IP on enp1s0
-    interfaces.enp1s0 = {
-      useDHCP = false;
-      ipv4.addresses = [{
-        address = "10.40.40.105";
-        prefixLength = 24;
-      }];
-    };
-    
-    # Set gateway and DNS
-    defaultGateway = "10.40.40.1";
-    
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ 22 5000 ];  # SSH + binary cache
-    };
-  };
+   
+  networking.hostName = "eridanus";
+
   # === User Configuration ===
   users.users.xeseuses = {
     isNormalUser = true;
