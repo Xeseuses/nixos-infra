@@ -19,11 +19,15 @@
   
     # Impermanence
     impermanence.url = "github:nix-community/impermanence";
-   
+    
+    microvm = {
+      url = "github:astro/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs"; # share your nixpkgs, avoid duplication
+    }; 
     
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, ... }: {
+  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, ... }: {
     nixosConfigurations = {
       
       eridanus = nixpkgs.lib.nixosSystem {
@@ -65,5 +69,11 @@
 	   ./hosts/orion
 	 ];
 	};
+       andromeda = nixpkgs.lib.nixosSystem {
+	 system = "x86_64-linux";
+	 modules = [
+	   microvm.nixosModules.host
+	   ./modules/options.nix
+	   ./hosts/andromeda
   };
 }
