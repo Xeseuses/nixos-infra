@@ -95,8 +95,6 @@
         ./modules/options.nix
 	./modules/nixos.common
 	./hosts/caelum
-        nixos-hardware.nixosModules.common-cpu-intel
-	nixos.hardware.nixosModules.common-pc-ssd
      ];
     };	
     };
