@@ -93,7 +93,7 @@
       system = "x86_64-linux";
       modules = [
         ./modules/options.nix
-	./modules/nixos.common
+	./modules/nixos/common
 	./hosts/caelum
      ];
     };	
