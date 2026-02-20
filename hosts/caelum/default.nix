@@ -128,7 +128,7 @@ in
     htop
     ncdu
     ffmpeg-full
-    python3Full
+    python315
   ];
 
   security.sudo.wheelNeedsPassword = false;
