@@ -1,4 +1,12 @@
 { config, pkgs, ... }:
+let
+  pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+    django
+    pillow
+    sqlparse
+    gunicorn
+  ]);
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -76,6 +84,7 @@
     htop
     ncdu
     ffmpeg-full
+    python315
   ];
 
   users.users.xeseuses = {
@@ -91,4 +100,43 @@
   services.openssh.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion = "23.11"; # Keep original to preserve data
+}
+
+sops.secrets.solibieb_env = {
+    owner = "solibieb";
+  };
+
+  users.users.solibieb = {
+    isSystemUser = true;
+    group = "solibieb";
+    home = "/var/lib/solibieb";
+  };
+  users.groups.solibieb = {};
+
+  systemd.services.solibieb = {
+    description = "Solibieb Django App";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = {
+      DJANGO_SETTINGS_MODULE = "solibieb_portal.settings";
+    };
+    serviceConfig = {
+      ExecStart = "${pythonEnv}/bin/gunicorn --workers 2 --bind 127.0.0.1:2335 solibieb_portal.wsgi:application";
+      WorkingDirectory = "/var/lib/solibieb";
+      User = "solibieb";
+      Group = "solibieb";
+      Restart = "on-failure";
+      EnvironmentFile = config.sops.secrets.solibieb_env.path;
+    };
+  };
+
+  services.nginx = {
+    enable = true;
+    virtualHosts."solibieb" = {
+      listen = [{ addr = "10.200.0.3"; port = 2335; }];
+      locations."/static/".alias = "/var/lib/solibieb/static/";
+      locations."/media/".alias = "/var/lib/solibieb/media/";
+      locations."/".proxyPass = "http://127.0.0.1:2335";
+    };
+  };
 }
