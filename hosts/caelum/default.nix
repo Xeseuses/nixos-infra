@@ -42,28 +42,30 @@
 
   # Samba share - keeping from old config
   services.samba = {
-    enable = true;
-    openFirewall = true;
-    shares = {
-      myshare = {
-        path = "/srv/shared";
-        browseable = "yes";
-        "read only" = "no";
-        "guest ok" = "no";
-        "create mask" = "0644";
-        "directory mask" = "0755";
-        "force user" = "xeseuses";
-      };
+  enable = true;
+  openFirewall = true;
+  settings = {
+    myshare = {
+      path = "/srv/shared";
+      browseable = "yes";
+      "read only" = "no";
+      "guest ok" = "no";
+      "create mask" = "0644";
+      "directory mask" = "0755";
+      "force user" = "xeseuses";
     };
   };
+};
 
-  # Intel GPU for Immich transcoding
-  hardware.opengl = {
-    enable = true;
-    extraPackages = with pkgs; [
-      intel-media-driver
-    ];
-  };
+  hardware.graphics = {
+  enable = true;
+  extraPackages = with pkgs; [
+    intel-media-driver
+    vaapiIntel
+    vaapiVdpau
+    libvdpau-va-gl
+  ];
+};
 
   environment.systemPackages = with pkgs; [
     git
