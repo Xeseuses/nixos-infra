@@ -74,7 +74,6 @@
     htop
     ncdu
     ffmpeg-full
-    python3Full
   ];
 
   users.users.xeseuses = {
