@@ -65,23 +65,23 @@ in
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
-      intel-media-driver
-      intel-vaapi-driver
-      libva-vdpau-driver
-      libvdpau-va-gl
-    ];
-  };
+	      intel-media-driver
+	      intel-vaapi-driver
+	      libva-vdpau-driver
+	      libvdpau-va-gl
+	    ];
+	  };
 
-  # Solibieb user
-  users.users.solibieb = {
-    isSystemUser = true;
-    group = "solibieb";
-    home = "/var/lib/solibieb";
-  };
-  users.groups.solibieb = {};
+	  # Solibieb user
+	  users.users.solibieb = {
+	    isSystemUser = true;
+	    group = "solibieb";
+	    home = "/var/lib/solibieb";
+	  };
+	  users.groups.solibieb = {};
 
-  # Solibieb Django service
-  systemd.services.solibieb = {
+	  # Solibieb Django service
+	  systemd.services.solibieb = {
     description = "Solibieb Django App";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
@@ -89,13 +89,13 @@ in
       DJANGO_SETTINGS_MODULE = "solibieb_portal.settings";
     };
     serviceConfig = {
-      ExecStart = "${pythonEnv}/bin/gunicorn --workers 2 --bind 127.0.0.1:2335 solibieb_portal.wsgi:application";
-      WorkingDirectory = "/var/lib/solibieb";
-      User = "solibieb";
-      Group = "solibieb";
-      Restart = "on-failure";
-      # Simple env file instead of sops for now
-      EnvironmentFile = "/var/lib/solibieb/.env";
+       ExecStartPre = "${pythonEnv}/bin/python manage.py collectstatic --noinput";
+    ExecStart = "${pythonEnv}/bin/gunicorn --workers 2 --bind 127.0.0.1:2335 solibieb_portal.wsgi:application";
+    WorkingDirectory = "/var/lib/solibieb";
+    User = "solibieb";
+    Group = "solibieb";
+    Restart = "on-failure";
+    EnvironmentFile = "/var/lib/solibieb/.env";
     };
   };
 
