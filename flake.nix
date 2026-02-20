@@ -79,8 +79,16 @@
            ./hosts/andromeda
            nixos-hardware.nixosModules.common-cpu-intel
            nixos-hardware.nixosModules.common-pc-ssd
+           ];
+         };
+     lyra = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./modules/options.nix
+        ./modules/nixos/common
+        ./hosts/lyra
       ];
-    };
+    };      
     };
   };
 }

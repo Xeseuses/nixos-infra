@@ -18,16 +18,10 @@
 
   networking = {
     hostName = "andromeda";
-    
-    # Disable NetworkManager on bridge interface
     networkmanager.enable = true;
     networkmanager.unmanaged = [ "br0" "enp2s0" ];
     networkmanager.dns = "none";  # ← ADD THIS LINE!
-
-    # Create bridge on enp2s0
     bridges.br0.interfaces = [ "enp2s0" ];
-    
-    # Configure bridge with current IP
     interfaces.br0 = {
       useDHCP = false;
       ipv4.addresses = [{
@@ -35,18 +29,14 @@
         prefixLength = 24;
       }];
     };
-    
     defaultGateway = "10.40.40.1";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
-    
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 8123 ];
+      allowedTCPPorts = [ 22 ];
       trustedInterfaces = [ "br0" "wg0" ];
     };
   };
-
-  # Add after networking section
   networking.wireguard.interfaces.wg0 = {
   ips = [ "10.200.0.2/24" ];  # andromeda side of tunnel
   
@@ -68,21 +58,6 @@ boot.kernel.sysctl = {
   "net.ipv4.ip_forward" = 1;
 };
 
-# NAT to forward traffic from wg0 to br0
-networking.nat = {
-  enable = true;
-  internalInterfaces = [ "br0" ];
-  externalInterface = "wg0";
-  
-  forwardPorts = [
-    {
-      sourcePort = 8123;
-      destination = "10.40.40.115:8123";
-      proto = "tcp";
-    }
-  ];
-};
-
 services.nginx = {
   enable = true;
   
@@ -100,9 +75,7 @@ services.nginx = {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-      '';
+       '';
     };
   };
 };
