@@ -1,178 +1,136 @@
 # NixOS Infrastructure
 
-My declarative NixOS infrastructure using flakes, managed as code.
+My fully declarative NixOS homelab, managed as code using flakes.
 
 ## 🏗️ Architecture
 
 ### Design Principles
-- **Declarative**: Everything defined in Nix
-- **Reproducible**: Same config = same system
-- **Version Controlled**: All config in git
-- **Encrypted Secrets**: Using SOPS with age
+- **Declarative**: Everything defined in Nix — no manual configuration
+- **Reproducible**: Same config = same system, every time
+- **Version Controlled**: All changes tracked in git
+- **Encrypted Secrets**: SOPS with age encryption
 - **Modular**: Reusable modules across machines
 
 ### Technology Stack
-- **NixOS 24.11**: Base operating system
-- **Flakes**: For dependency management
+- **NixOS 26.05**: Base operating system
+- **Flakes**: Dependency management and reproducibility
 - **SOPS**: Secret management
 - **Disko**: Declarative disk partitioning
 - **Restic**: Automated backups
+- **WireGuard**: VPN tunnels between home and VPS
+- **Caddy**: Automatic HTTPS reverse proxy
 
-## 🖥️ Infrastructure
+---
 
-### Naming Convention
+## 🖥️ Fleet
+
 Hosts named after constellations and celestial objects:
 
-| Hostname | Type | Hardware | Role |
-|----------|------|----------|------|
-| **Orion** | Router | Protectli Vault 4W4C | Network gateway, VLANs, IPv6 tunnel |
-| **Andromeda** | Server | Beelink EQ12 (16GB) | Immich, Audiobookshelf, Django |
-| **Caelum** | Server | Beelink EQ12 (16GB) | Spare |
-| **Eridanus** | Server | Beelink EQ12 (16GB) | Testing / Development |
-| **Horologium** | Server | Custom (i5-13500, RTX 3060, 16GB, 4x2TB SSD) | ZFS storage, MicroVMs (HA, Arr stack), Jellyfin |
-| **lyra** | VPS | Racknerd | Caddy reverse proxy |
-| **Pavo** | Desktop | Beelink SER 8 (Ryzen 7 8745HS) | Gaming PC (dual-boot Windows) |
-| **Vela** | Laptop | ROG Flow Z13 (2022) | Mobile workstation |
+| Hostname | Hardware | Role | Status |
+|----------|----------|------|--------|
+| **orion** | Protectli VP2420 | NixOS Router (VLANs, nftables, Kea DHCP) | ✅ Live |
+| **eridanus** | Beelink EQ12 | Binary cache + backups | ✅ Live |
+| **vela** | ASUS ROG Flow Z13 | Encrypted laptop (Niri desktop) | ✅ Live |
+| **andromeda** | Beelink EQ12 | Home Assistant VM host | ✅ Live |
+| **caelum** | Beelink EQ12 | Immich, Audiobookshelf, Solibieb | ✅ Live |
+| **lyra** | RackNerd VPS | Caddy reverse proxy + WireGuard server | ✅ Live |
+| **horologium** | Custom (i5-13500, RTX 3060) | Jellyfin, Arr stack, ZFS storage | 📅 Planned |
+| **vega** | Minisforum SER8 | Gaming PC (dual-boot) | 📅 Planned |
 
-### Network Topology
+---
+
+## 🌐 Network
+
 ```
-Internet → FritzBox (Modem) → orion (NixOS Router) → Mikrotik Switch
-                                          ↓
-                        VLANs: 10 (Server), 20 (Guest), 30 (Management), 40 (IoT)
+Internet → FritzBox → orion (NixOS Router) → Mikrotik Switch
+                           ↓
+              VLANs: 10 (LAN) · 20 (Guest) · 30 (Management)
+                     40 (Servers) · 50 (IoT) · 99 (Quarantine)
 ```
 
-**IPv6**: Hurricane Electric tunnel (2001:470:xxxx::/48)
+**Public services** (via lyra VPS + WireGuard tunnel):
 
-**VPN**: Management + Guest VLANs route through Mullvad
+| Domain | Service |
+|--------|---------|
+| ha.xesh.cc | Home Assistant |
+| immich.xesh.cc | Immich (photos) |
+| audiobooks.xesh.cc | Audiobookshelf |
+| solibieb.nl | Django web app |
 
-## 📁 Repository Structure
+**Firewall policy** (nftables, default-drop):
+- Management + LAN → anywhere (trusted)
+- Servers → WAN + IoT
+- IoT + Guest → WAN only
+- HA VM → specific sensor pinholes on Management VLAN
+
+---
+
+## 📁 Structure
+
 ```
 nixos-infra/
-├── flake.nix                 # Main flake configuration
-├── flake.lock               # Locked dependencies
-├── .sops.yaml               # SOPS configuration
-├── README.md
-│
+├── flake.nix                 # All hosts defined here
+├── flake.lock
+├── .sops.yaml                # Age key configuration
 ├── secrets/
-│   └── secrets.yaml         # Encrypted secrets (SOPS)
-│
+│   └── secrets.yaml          # Encrypted with SOPS
 ├── modules/
-│   ├── options.nix          # Custom option declarations
-│   │
+│   ├── options.nix           # Custom asthrossystems.* options
 │   └── nixos/
-│       ├── common/          # Shared across all machines
-│       │   ├── default.nix  # Imports all common modules
-│       │   ├── nix.nix      # Nix daemon settings
-│       │   ├── ssh.nix      # SSH configuration
-│       │   ├── users.nix    # User management
-│       │   ├── locale.nix   # Timezone/locale
-│       │   └── networking.nix  # Basic networking
-│       │
-│       ├── server/          # Server-specific common config
-│       │
-│       └── optional/        # Feature modules
-│           └── backup.nix   # Restic backup configuration
-│
+│       ├── common/           # Loaded on every host
+│       └── optional/         # Feature modules (backup, impermanence, etc.)
 └── hosts/
-    ├── eridanus/
-    │   ├── default.nix      # Host configuration
-    │   └── disk-config.nix  # Disko disk layout
-    ├── andromeda/
-    ├── horologium/
-    └── ...
+    ├── orion/                # Router
+    ├── eridanus/             # Binary cache
+    ├── vela/                 # Laptop
+    ├── andromeda/            # HA host
+    └── caelum/               # Services
 ```
+
+---
 
 ## 🚀 Usage
 
-### Deploy to a Machine
+### Deploy to a host
 ```bash
-# From local machine (or on the target machine)
-cd ~/nixos-infra
-
-# Pull latest changes
-git pull
-
-# Rebuild system
+# Locally
 sudo nixos-rebuild switch --flake .#hostname
 
-# Or deploy remotely
-nixos-rebuild switch --flake .#eridanus \
-  --target-host username@eridanus \
-  --use-remote-sudo
+# Remotely
+nixos-rebuild switch --flake .#hostname \
+  --target-host user@host --use-remote-sudo
 ```
 
-### Add a New Machine
+### Add a new machine
+1. Create `hosts/newhost/` with `default.nix` and `disk-config.nix`
+2. Add to `flake.nix`
+3. Generate age key on machine, add to `.sops.yaml`
+4. Re-encrypt: `sops updatekeys secrets/secrets.yaml`
+5. Deploy!
 
-1. Create host directory: `hosts/newhost/`
-2. Add `default.nix` and `disk-config.nix`
-3. Generate age key on the machine
-4. Add age key to `.sops.yaml`
-5. Re-encrypt secrets: `sops updatekeys secrets/secrets.yaml`
-6. Add to `flake.nix`
-7. Deploy!
-
-### Manage Secrets
+### Manage secrets
 ```bash
-# Edit secrets (decrypts automatically)
-sops secrets/secrets.yaml
-
-# Add new machine key
-sops updatekeys secrets/secrets.yaml
+sops secrets/secrets.yaml        # Edit (auto-decrypts)
+sops updatekeys secrets/secrets.yaml  # Add new machine key
 ```
 
-### Backups
-```bash
-# List backups
-sudo restic -r /var/backups/restic/system snapshots
-
-# Restore specific file
-sudo restic -r /var/backups/restic/system restore latest \
-  --target /tmp/restore \
-  --path /specific/file
-
-# Manual backup
-sudo systemctl start restic-backups-system.service
-```
+---
 
 ## 🔐 Security
 
-- **Secrets**: Encrypted with SOPS (age encryption)
-- **SSH**: Key-based authentication only
-- **Sudo**: Passwordless for wheel group (convenience on home network)
-- **Firewall**: Enabled on all machines
-- **Updates**: Automatic security updates enabled
+- Secrets encrypted with SOPS + age (never plaintext in git)
+- SSH key-only authentication
+- Full disk encryption on mobile hosts (vela)
+- nftables default-drop firewall on router
+- WireGuard for all external service exposure (no open ports at home)
 
-## 🛠️ Technologies Used
+---
 
-### Core
-- **NixOS**: Declarative Linux distribution
-- **Nix Flakes**: Reproducible dependency management
-- **Home Manager**: User environment management (future)
-
-### Infrastructure
-- **Disko**: Declarative disk partitioning
-- **SOPS**: Secret management with age encryption
-- **Restic**: Incremental backups
-
-### Services (Planned)
-- **ZFS**: RAID10 storage with snapshots
-- **MicroVMs**: Isolated service containers
-- **Caddy**: Reverse proxy
-- **WireGuard**: VPN tunnels
-
-## 📚 Resources
+## 📚 References
 
 - [NixOS Manual](https://nixos.org/manual/nixos/stable/)
-- [Nix Pills](https://nixos.org/guides/nix-pills/)
-- [SOPS-nix](https://github.com/Mic92/sops-nix)
 - [Disko](https://github.com/nix-community/disko)
-- [SwarselSystems](https://github.com/Swarsel/nixos-config) (inspiration)
+- [SOPS-nix](https://github.com/Mic92/sops-nix)
+- [SwarselSystems](https://github.com/Swarsel/nixos-config) — architecture inspiration
+- [ruiiiijiiiiang/nixos-config](https://github.com/ruiiiijiiiiang/nixos-config) — router + nftables inspiration
 
-## 📄 License
-
-Personal infrastructure - not licensed for reuse.
-
-## 🙏 Acknowledgments
-
-- NixOS community
-- SwarselSystems for architecture inspiration

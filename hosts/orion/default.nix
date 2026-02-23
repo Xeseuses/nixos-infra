@@ -72,6 +72,7 @@
           iifname "vlan10" accept
           iifname "vlan40" oifname "enp1s0" accept
           iifname "vlan40" oifname "vlan50" accept
+	  iifname "vlan40" oifname "vlan30" ip saddr 10.40.40.115 ip daddr { 10.40.30.111, 10.40.30.115 } accept
           iifname "vlan50" oifname "enp1s0" accept
           iifname "vlan20" oifname "enp1s0" accept
         }
