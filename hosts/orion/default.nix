@@ -1,52 +1,188 @@
-# hosts/orion/default.nix - BOOTSTRAP VERSION
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
   ];
 
-  # Basic system info
   asthrossystems = {
-    hostInfo = "Protectli VP2420 Router";
+    hostInfo = "Protectli VP2420 - NixOS Router";
     isRouter = true;
   };
 
   boot = {
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
+    kernel.sysctl = {
+      "net.ipv4.ip_forward" = 1;
+      "net.ipv4.conf.all.forwarding" = 1;
+    };
   };
 
-  # Network - SIMPLE for now
   networking = {
     hostName = "orion";
+    networkmanager.enable = false;
     useDHCP = false;
-    
-    # LAN interface gets static IP for management
-    interfaces.ens1 = {
-      useDHCP = false;
-      ipv4.addresses = [{
-        address = "10.40.30.1";  # Router IP on management VLAN
-        prefixLength = 24;
-      }];
+
+    interfaces.enp1s0.useDHCP = true;  # WAN - FritzBox
+    interfaces.ens1.useDHCP = false;   # LAN trunk - no IP, VLANs ride on top
+
+    vlans = {
+      vlan10 = { id = 10; interface = "ens1"; };  # LAN
+      vlan20 = { id = 20; interface = "ens1"; };  # Guest
+      vlan30 = { id = 30; interface = "ens1"; };  # Management
+      vlan40 = { id = 40; interface = "ens1"; };  # Servers
+      vlan50 = { id = 50; interface = "ens1"; };  # IoT
     };
-    
-    # WAN gets DHCP from FritzBox
-    interfaces.enp1s0.useDHCP = true;
+
+    interfaces = {
+      vlan10 = {
+        useDHCP = false;
+        ipv4.addresses = [{ address = "10.40.10.1"; prefixLength = 24; }];
+      };
+      vlan20 = {
+        useDHCP = false;
+        ipv4.addresses = [{ address = "10.40.20.1"; prefixLength = 24; }];
+      };
+      vlan30 = {
+        useDHCP = false;
+        ipv4.addresses = [{ address = "10.40.30.1"; prefixLength = 24; }];
+      };
+      vlan40 = {
+        useDHCP = false;
+        ipv4.addresses = [{ address = "10.40.40.1"; prefixLength = 24; }];
+      };
+      vlan50 = {
+        useDHCP = false;
+        ipv4.addresses = [{ address = "10.40.50.1"; prefixLength = 24; }];
+      };
+    };
+
+    nat = {
+      enable = true;
+      externalInterface = "enp1s0";
+      internalInterfaces = [ "vlan10" "vlan20" "vlan30" "vlan40" "vlan50" ];
+    };
+
+    nftables = {
+      enable = true;
+      tables.orion-forward = {
+        family = "ip";
+        content = ''
+          chain forward {
+            type filter hook forward priority 0; policy drop;
+
+            # Allow established/related return traffic
+            ct state established,related accept
+
+            # Management (VLAN30) - trusted, goes anywhere
+            iifname "vlan30" accept
+
+            # LAN (VLAN10) - trusted, goes anywhere
+            iifname "vlan10" accept
+
+            # Servers (VLAN40) - WAN + IoT only
+            iifname "vlan40" oifname "enp1s0" accept
+            iifname "vlan40" oifname "vlan50" accept
+
+            # IoT (VLAN50) - WAN only, no access to other VLANs
+            iifname "vlan50" oifname "enp1s0" accept
+
+            # Guest (VLAN20) - WAN only, fully isolated
+            iifname "vlan20" oifname "enp1s0" accept
+          }
+        '';
+      };
+    };
+
+    firewall = {
+      enable = true;
+      interfaces = {
+        vlan10 = {
+          allowedTCPPorts = [ 22 53 ];
+          allowedUDPPorts = [ 53 67 ];
+        };
+        vlan30 = {
+          allowedTCPPorts = [ 22 53 ];
+          allowedUDPPorts = [ 53 67 ];
+        };
+        vlan40 = {
+          allowedTCPPorts = [ 53 ];
+          allowedUDPPorts = [ 53 67 ];
+        };
+        vlan50 = {
+          allowedTCPPorts = [ 53 ];
+          allowedUDPPorts = [ 53 67 ];
+        };
+        vlan20 = {
+          allowedUDPPorts = [ 67 ];
+        };
+      };
+    };
   };
 
-  # Enable IP forwarding
-  boot.kernel.sysctl = {
-    "net.ipv4.ip_forward" = 1;
-  };
-
-  # Temporary firewall (allow SSH)
-  networking.firewall = {
+  services.kea.dhcp4 = {
     enable = true;
-    allowedTCPPorts = [ 22 ];
+    settings = {
+      interfaces-config.interfaces = [
+        "vlan10" "vlan20" "vlan30" "vlan40" "vlan50"
+      ];
+      valid-lifetime = 86400;
+      subnet4 = [
+        {
+          id = 10;
+          subnet = "10.40.10.0/24";
+          pools = [{ pool = "10.40.10.100 - 10.40.10.200"; }];
+          option-data = [
+            { name = "routers"; data = "10.40.10.1"; }
+            { name = "domain-name-servers"; data = "1.1.1.1"; }
+          ];
+        }
+        {
+          id = 20;
+          subnet = "10.40.20.0/24";
+          pools = [{ pool = "10.40.20.100 - 10.40.20.200"; }];
+          option-data = [
+            { name = "routers"; data = "10.40.20.1"; }
+            { name = "domain-name-servers"; data = "1.1.1.1"; }
+          ];
+        }
+        {
+          id = 30;
+          subnet = "10.40.30.0/24";
+          pools = [{ pool = "10.40.30.100 - 10.40.30.200"; }];
+          option-data = [
+            { name = "routers"; data = "10.40.30.1"; }
+            { name = "domain-name-servers"; data = "1.1.1.1"; }
+          ];
+        }
+        {
+          id = 40;
+          subnet = "10.40.40.0/24";
+          pools = [{ pool = "10.40.40.100 - 10.40.40.200"; }];
+          reservations = [
+            { hw-address = "e8:ff:1e:d2:b0:2f"; ip-address = "10.40.40.104"; hostname = "andromeda"; }
+            { hw-address = "7c:83:34:b9:7c:04"; ip-address = "10.40.40.101"; hostname = "caelum"; }
+            { hw-address = "7c:83:34:b9:b8:52"; ip-address = "10.40.40.117"; hostname = "eridanus"; }
+          ];
+          option-data = [
+            { name = "routers"; data = "10.40.40.1"; }
+            { name = "domain-name-servers"; data = "1.1.1.1"; }
+          ];
+        }
+        {
+          id = 50;
+          subnet = "10.40.50.0/24";
+          pools = [{ pool = "10.40.50.100 - 10.40.50.200"; }];
+          option-data = [
+            { name = "routers"; data = "10.40.50.1"; }
+            { name = "domain-name-servers"; data = "1.1.1.1"; }
+          ];
+        }
+      ];
+    };
   };
 
-  # User
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
@@ -59,6 +195,5 @@
   security.sudo.wheelNeedsPassword = false;
   services.openssh.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  
   system.stateVersion = "24.11";
 }

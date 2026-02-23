@@ -19,7 +19,11 @@
   networking = {
     hostName = "andromeda";
     networkmanager.enable = true;
-    networkmanager.unmanaged = [ "enp1s0" "br0" "wlo1" ];
+    networkmanager.unmanaged = [
+      "interface-name:br0"
+      "interface-name:enp1s0"
+      "interface-name:wlo1"
+    ];
     networkmanager.dns = "none";  # ← ADD THIS LINE!
     bridges.br0.interfaces = [ "enp1s0" ];
     interfaces.br0 = {
@@ -29,6 +33,7 @@
         prefixLength = 24;
       }];
     };
+    interfaces.enp1s0.useDHCP = false;
     defaultGateway = "10.40.40.1";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
     firewall = {
@@ -39,9 +44,9 @@
   };
   networking.wireguard.interfaces.wg0 = {
   ips = [ "10.200.0.2/24" ];  # andromeda side of tunnel
-  
+
   privateKeyFile = "/var/lib/wireguard/private.key";
-  
+
   peers = [
     {
       # lyra (VPS)
@@ -52,7 +57,7 @@
     }
   ];
 };
-  
+
   # Enable IP forwarding
 boot.kernel.sysctl = {
   "net.ipv4.ip_forward" = 1;
@@ -60,16 +65,16 @@ boot.kernel.sysctl = {
 
 services.nginx = {
   enable = true;
-  
+
   virtualHosts."ha-proxy" = {
     listen = [
       { addr = "10.200.0.2"; port = 8123; }
     ];
-    
+
     locations."/" = {
       proxyPass = "http://10.40.40.115:8123";
       proxyWebsockets = true;
-      
+
       extraConfig = ''
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
