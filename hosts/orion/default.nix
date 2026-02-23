@@ -117,10 +117,11 @@
         vlan20 = {
           allowedUDPPorts = [ 67 ];
         };
-	checkReversePath = false;
       };
     };
   };
+
+  networking.firewall.checkReversePath = false;
 
   systemd.services.kea-dhcp4-server = {
   after = [ "network-addresses.target" ];
