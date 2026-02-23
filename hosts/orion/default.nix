@@ -3,7 +3,7 @@
 {
   imports = [
     ./disk-config.nix
- #   ./hardware-configuration.nix
+    ./hardware-configuration.nix
   ];
 
   # Basic system info
