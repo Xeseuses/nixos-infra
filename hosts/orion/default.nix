@@ -58,42 +58,36 @@
       };
     };
 
-    nat = {
-      enable = true;
-      externalInterface = "enp1s0";
-      internalInterfaces = [ "vlan10" "vlan20" "vlan30" "vlan40" "vlan50" ];
-    };
-
+    
     nftables = {
-      enable = true;
-      tables.orion-forward = {
-        family = "ip";
-        content = ''
-          chain forward {
-            type filter hook forward priority 0; policy drop;
-
-            # Allow established/related return traffic
-            ct state established,related accept
-
-            # Management (VLAN30) - trusted, goes anywhere
-            iifname "vlan30" accept
-
-            # LAN (VLAN10) - trusted, goes anywhere
-            iifname "vlan10" accept
-
-            # Servers (VLAN40) - WAN + IoT only
-            iifname "vlan40" oifname "enp1s0" accept
-            iifname "vlan40" oifname "vlan50" accept
-
-            # IoT (VLAN50) - WAN only, no access to other VLANs
-            iifname "vlan50" oifname "enp1s0" accept
-
-            # Guest (VLAN20) - WAN only, fully isolated
-            iifname "vlan20" oifname "enp1s0" accept
-          }
-        '';
-      };
+  enable = true;
+  tables = {
+    orion-forward = {
+      family = "ip";
+      content = ''
+        chain forward {
+          type filter hook forward priority 0; policy drop;
+          ct state established,related accept
+          iifname "vlan30" accept
+          iifname "vlan10" accept
+          iifname "vlan40" oifname "enp1s0" accept
+          iifname "vlan40" oifname "vlan50" accept
+          iifname "vlan50" oifname "enp1s0" accept
+          iifname "vlan20" oifname "enp1s0" accept
+        }
+      '';
     };
+    orion-nat = {
+      family = "ip";
+      content = ''
+        chain postrouting {
+          type nat hook postrouting priority srcnat; policy accept;
+          iifname { "vlan10", "vlan20", "vlan30", "vlan40", "vlan50" } oifname "enp1s0" masquerade
+        }
+      '';
+    };
+  };
+}; 
 
     firewall = {
       enable = true;
