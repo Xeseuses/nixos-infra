@@ -19,9 +19,9 @@
   networking = {
     hostName = "andromeda";
     networkmanager.enable = true;
-    networkmanager.unmanaged = [ "br0" "wlo1" ];
+    networkmanager.unmanaged = [ "enp1s0" "br0" "wlo1" ];
     networkmanager.dns = "none";  # ← ADD THIS LINE!
-    bridges.br0.interfaces = [ "enp2s0" ];
+    bridges.br0.interfaces = [ "enp1s0" ];
     interfaces.br0 = {
       useDHCP = false;
       ipv4.addresses = [{
