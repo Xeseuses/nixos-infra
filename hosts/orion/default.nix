@@ -117,6 +117,7 @@
         vlan20 = {
           allowedUDPPorts = [ 67 ];
         };
+	checkReversePath = false;
       };
     };
   };
