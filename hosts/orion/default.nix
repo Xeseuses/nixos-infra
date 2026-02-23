@@ -121,6 +121,11 @@
     };
   };
 
+  systemd.services.kea-dhcp4-server = {
+  after = [ "network-addresses.target" ];
+  wants = [ "network-addresses.target" ];
+  };
+
   services.kea.dhcp4 = {
     enable = true;
     settings = {
