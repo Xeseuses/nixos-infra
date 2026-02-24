@@ -149,5 +149,8 @@
       Persistent = true;
     };
   };
+  systemd.tmpfiles.rules = [
+    "f /var/lib/unbound/blocklist.conf 0644 unbound unbound -"
+  ];
 }
 
