@@ -28,7 +28,8 @@ in
     networkmanager.enable = true;
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 2283 13378 2335 ];
+      allowedTCPPorts = [ 22 2283 13378 2335 8443 8080 ];
+      allowedUDPPorts = [ 3478 10001 ];
       trustedInterfaces = [ "wg0" ];
     };
   };
@@ -44,8 +45,68 @@ in
     }];
   };
 
+  # ── Docker ────────────────────────────────────────────────────────────────
   virtualisation.docker.enable = true;
+  virtualisation.oci-containers.backend = "docker";
 
+  # Create isolated Docker network for UniFi + MongoDB to talk to each other
+  systemd.services.init-unifi-network = {
+    description = "Create docker network for unifi";
+    after = [ "docker.service" ];
+    requires = [ "docker.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.Type = "oneshot";
+    serviceConfig.RemainAfterExit = true;
+    script = ''
+      ${pkgs.docker}/bin/docker network inspect unifi-net >/dev/null 2>&1 || \
+      ${pkgs.docker}/bin/docker network create unifi-net
+    '';
+  };
+
+  virtualisation.oci-containers.containers = {
+
+    # UniFi Network Application
+    unifi = {
+      image = "lscr.io/linuxserver/unifi-network-application:latest";
+      dependsOn = [ "unifi-db" ];
+      environment = {
+        PUID = "1000";
+        PGID = "1000";
+        TZ = "Europe/Amsterdam";
+        MONGO_USER = "unifi";
+        MONGO_PASS = "unifipass";
+        MONGO_HOST = "unifi-db";
+        MONGO_PORT = "27017";
+        MONGO_DBNAME = "unifi";
+        MONGO_AUTHSOURCE = "admin";
+      };
+      volumes = [ "/var/lib/unifi:/config" ];
+      ports = [
+        "8443:8443"   # Web UI (HTTPS)
+        "8080:8080"   # AP inform port — APs phone home here
+        "3478:3478/udp" # STUN
+        "10001:10001/udp" # AP discovery
+      ];
+      extraOptions = [ "--network=unifi-net" ];
+    };
+
+    # MongoDB for UniFi (must be 4.4 — newer versions unsupported by UniFi)
+    unifi-db = {
+      image = "mongo:4.4";
+      volumes = [
+        "/var/lib/unifi-db:/data/db"
+        "/var/lib/unifi-db-init:/docker-entrypoint-initdb.d"
+      ];
+      environment = {
+        MONGO_INITDB_ROOT_USERNAME = "root";
+        MONGO_INITDB_ROOT_PASSWORD = "rootpass";
+      };
+      extraOptions = [ "--network=unifi-net" ];
+    };
+
+  };
+
+  # ── Samba ─────────────────────────────────────────────────────────────────
   services.samba = {
     enable = true;
     openFirewall = true;
@@ -62,26 +123,26 @@ in
     };
   };
 
+  # ── Hardware / GPU ────────────────────────────────────────────────────────
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
-	      intel-media-driver
-	      intel-vaapi-driver
-	      libva-vdpau-driver
-	      libvdpau-va-gl
-	    ];
-	  };
+      intel-media-driver
+      intel-vaapi-driver
+      libva-vdpau-driver
+      libvdpau-va-gl
+    ];
+  };
 
-	  # Solibieb user
-	  users.users.solibieb = {
-	    isSystemUser = true;
-	    group = "solibieb";
-	    home = "/var/lib/solibieb";
-	  };
-	  users.groups.solibieb = {};
+  # ── Solibieb ──────────────────────────────────────────────────────────────
+  users.users.solibieb = {
+    isSystemUser = true;
+    group = "solibieb";
+    home = "/var/lib/solibieb";
+  };
+  users.groups.solibieb = {};
 
-	  # Solibieb Django service
-	  systemd.services.solibieb = {
+  systemd.services.solibieb = {
     description = "Solibieb Django App";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
@@ -89,27 +150,28 @@ in
       DJANGO_SETTINGS_MODULE = "solibieb_portal.settings";
     };
     serviceConfig = {
-       ExecStartPre = "${pythonEnv}/bin/python manage.py collectstatic --noinput";
-    ExecStart = "${pythonEnv}/bin/gunicorn --workers 2 --bind 127.0.0.1:2335 solibieb_portal.wsgi:application";
-    WorkingDirectory = "/var/lib/solibieb";
-    User = "solibieb";
-    Group = "solibieb";
-    Restart = "on-failure";
-    EnvironmentFile = "/var/lib/solibieb/.env";
+      ExecStartPre = "${pythonEnv}/bin/python manage.py collectstatic --noinput";
+      ExecStart = "${pythonEnv}/bin/gunicorn --workers 2 --bind 127.0.0.1:2335 solibieb_portal.wsgi:application";
+      WorkingDirectory = "/var/lib/solibieb";
+      User = "solibieb";
+      Group = "solibieb";
+      Restart = "on-failure";
+      EnvironmentFile = "/var/lib/solibieb/.env";
     };
   };
 
-  # nginx to serve static/media and proxy to gunicorn
+  # nginx — solibieb moved to port 8081 (8080 now used by UniFi AP inform)
   services.nginx = {
     enable = true;
     virtualHosts."solibieb" = {
-      listen = [{ addr = "10.200.0.3"; port = 8080; }];
+      listen = [{ addr = "10.200.0.3"; port = 8081; }];
       locations."/static/".alias = "/var/lib/solibieb/static/";
       locations."/media/".alias = "/var/lib/solibieb/media/";
       locations."/".proxyPass = "http://127.0.0.1:2335";
     };
   };
 
+  # ── Users ─────────────────────────────────────────────────────────────────
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" "docker" ];
@@ -119,6 +181,7 @@ in
     ];
   };
 
+  # ── Packages ──────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     git
     vim
@@ -131,8 +194,10 @@ in
     python315
   ];
 
+  # ── Misc ──────────────────────────────────────────────────────────────────
   security.sudo.wheelNeedsPassword = false;
   services.openssh.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion = "23.11";
 }
+
