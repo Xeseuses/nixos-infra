@@ -153,6 +153,9 @@
           id = 30;
           subnet = "10.40.30.0/24";
           pools = [{ pool = "10.40.30.100 - 10.40.30.200"; }];
+          reservations = [
+          { hw-address = "f4:e2:c6:20:08:d6"; ip-address = "10.40.30.120"; hostname = "unifi-ap"; }
+          ];
           option-data = [
             { name = "routers"; data = "10.40.30.1"; }
             { name = "domain-name-servers"; data = "1.1.1.1"; }
