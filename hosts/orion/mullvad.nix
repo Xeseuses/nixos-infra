@@ -1,9 +1,8 @@
 { config, pkgs, ... }:
 {
   # ── Mullvad WireGuard VPN ─────────────────────────────────────────────────
-  # Routes VLANs 10/20/30/50 through Mullvad. VLAN 40 (Servers) bypasses VPN
+  # Routes VLANs 10/20/30/40/50 through Mullvad. VLAN 40 (Servers) bypasses VPN
   # to keep WireGuard tunnels to lyra stable.
-  # Kill switch: if mullvad0 goes down, affected VLANs lose internet (no leak).
 
   networking.wireguard.interfaces.mullvad0 = {
     ips = [ "10.75.35.38/32" ];
@@ -16,9 +15,12 @@
       persistentKeepalive = 25;
     }];
 
-    # Route VLANs 10/20/30/50 through mullvad0 instead of enp1s0
     postSetup = ''
-      # Create a separate routing table for VPN traffic
+      # WireGuard adds a default route to the main table because of allowedIPs = 0.0.0.0/0
+      # Remove it immediately — orion's own traffic must use the FritzBox default route
+      ${pkgs.iproute2}/bin/ip route del default dev mullvad0 2>/dev/null || true
+
+      # Route VLANs 10/20/30/50 through mullvad0 via a separate routing table
       ${pkgs.iproute2}/bin/ip route add default dev mullvad0 table 100
       ${pkgs.iproute2}/bin/ip rule add from 10.40.10.0/24 lookup 100 priority 100
       ${pkgs.iproute2}/bin/ip rule add from 10.40.20.0/24 lookup 100 priority 100
@@ -35,8 +37,7 @@
     '';
   };
 
-   
-  # NAT for mullvad0 — masquerade VPN VLAN traffic behind Mullvad IP
+  # NAT for mullvad0 — masquerade VLAN traffic behind Mullvad IP
   networking.nftables.tables.mullvad-nat = {
     family = "ip";
     content = ''
