@@ -28,7 +28,7 @@
       ProtectHome = true;
 	
       BindReadOnlyPaths = [
-    	"/var/lib/kea/kea-leases4.csv"
+    	"/var/lib/kea/"
       ];
 
     };
