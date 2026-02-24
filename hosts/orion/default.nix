@@ -5,7 +5,6 @@
     ./hardware-configuration.nix
     ./kea-leases-viewer.nix  # DHCP lease dashboard on port 9090
     ./unbound.nix              # Recursive DNS + local hostnames + ad-blocking
-    ./mullvad.nix              # Mullvad VPN for VLANs 10/20/30/50
   ];
 
   asthrossystems = {
@@ -69,8 +68,8 @@
           family = "ip";
           content = ''
             chain postrouting {
- 	      type nat hook postrouting priority srcnat; policy accept;
-              iifname "vlan40" oifname "enp1s0" masquerade
+  	      type nat hook postrouting priority srcnat; policy accept;
+              iifname { "vlan10", "vlan20", "vlan30", "vlan40", "vlan50" } oifname "enp1s0" masquerade
             }
           '';
         };
