@@ -82,12 +82,9 @@
            ];
          };
      lyra = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ./modules/options.nix
-        ./modules/nixos/common
-        ./hosts/lyra
-      ];
+       system = "x86_64-linux";
+       modules = [ ./hosts/lyra/default.nix ];
+       specialArgs = { inherit inputs; };
     };      
     caelum = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";

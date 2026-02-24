@@ -1,66 +1,82 @@
-# hosts/lyra/default.nix
 { config, pkgs, ... }:
 {
   imports = [
-    # VPS providers usually generate this
+    ./disk-config.nix
     ./hardware-configuration.nix
   ];
 
   asthrossystems = {
-    hostInfo = "VPS - Reverse Proxy Server";
+    hostInfo = "Hetzner CX23 - Reverse Proxy + VPN Server";
     isServer = true;
   };
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/vda";  # Adjust for your VPS!
+  boot = {
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
+  };
 
   networking = {
     hostName = "lyra";
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 80 443 51820 ];  # SSH, HTTP, HTTPS, WireGuard
-      allowedUDPPorts = [ 51820 ];  # WireGuard
+      allowedTCPPorts = [ 22 80 443 ];
+      allowedUDPPorts = [ 51821 ];  # WireGuard
+      trustedInterfaces = [ "wg0" ];
     };
   };
 
-  # === WireGuard VPN Tunnel ===
+  # ── WireGuard Server ──────────────────────────────────────────────────────
+  # Hub for andromeda (10.200.0.2) and caelum (10.200.0.3)
+
   networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.100.0.1/24" ];  # VPS side of tunnel
-    listenPort = 51820;
-    
+    ips = [ "10.200.0.1/24" ];
+    listenPort = 51821;
     privateKeyFile = "/var/lib/wireguard/private.key";
-    
+
     peers = [
       {
-        # andromeda (Home Assistant server)
-        publicKey = "ANDROMEDA_PUBLIC_KEY_HERE";  # We'll generate this
-        allowedIPs = [ "10.100.0.2/32" "10.40.40.0/24" ];  # Allow andromeda + home network
-        persistentKeepalive = 25;
+        # andromeda
+        publicKey = "Su/GnnDxSCnUpH45jTO3dwZVHk7/VskvwkDscpBISEA=";
+        allowedIPs = [ "10.200.0.2/32" "10.40.40.0/24" ];  # includes HA VM subnet
+      }
+      {
+        # caelum
+        publicKey = "XxG5b+JPvLebcaD49ggCjfcqcElkCa5OAdLWCeQTQz8=";
+        allowedIPs = [ "10.200.0.3/32" ];
       }
     ];
   };
 
-  # === Caddy Reverse Proxy ===
+  # ── Caddy Reverse Proxy ───────────────────────────────────────────────────
+
   services.caddy = {
     enable = true;
-    
-    virtualHosts."ha.xesh.cc" = {
-      extraConfig = ''
-        reverse_proxy 10.100.0.2:8123 {
-          header_up Host {host}
-          header_up X-Real-IP {remote}
-          header_up X-Forwarded-For {remote}
-          header_up X-Forwarded-Proto {scheme}
-        }
-      '';
+    virtualHosts = {
+      "ha.xesh.cc" = {
+        extraConfig = "reverse_proxy 10.200.0.2:8123";
+      };
+      "immich.xesh.cc" = {
+        extraConfig = "reverse_proxy 10.200.0.3:2283";
+      };
+      "audiobooks.xesh.cc" = {
+        extraConfig = "reverse_proxy 10.200.0.3:13378";
+      };
+      "solibieb.nl" = {
+        extraConfig = "reverse_proxy 10.200.0.3:8081";
+      };
     };
-    
-    # Add more domains as needed
-    # virtualHosts."immich.xesh.cc" = {
-    #   extraConfig = ''
-    #     reverse_proxy 10.100.0.3:2283
-    #   '';
-    # };
+  };
+
+  # ── SSH Bastion ───────────────────────────────────────────────────────────
+  # Allows jumping to internal hosts via: ssh -J xeseuses@lyra xeseuses@10.40.x.x
+  # Note: internal hosts only reachable if they're in the WireGuard subnet
+
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+    };
   };
 
   users.users.xeseuses = {
@@ -72,8 +88,7 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
-  services.openssh.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.05";
 }
+
