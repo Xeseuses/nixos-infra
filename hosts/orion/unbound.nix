@@ -84,8 +84,17 @@
         ];
       };
 
-      # Use root hints for true recursive resolution (no upstream forwarder)
       # Unbound will resolve directly from root servers
+      forward-zone = [
+        {
+          name = ".";
+          forward-tls-upstream = true;
+          forward-addr = [
+            "9.9.9.9@853#dns.quad9.net"
+            "149.112.112.112@853#dns.quad9.net"
+          ];
+        }
+      ];
     };
   };
 
