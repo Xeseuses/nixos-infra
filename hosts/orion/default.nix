@@ -138,7 +138,7 @@
           reservations = [
             { hw-address = "e8:ff:1e:d2:b0:2f"; ip-address = "10.40.40.104"; hostname = "andromeda"; }
             { hw-address = "7c:83:34:b9:7c:04"; ip-address = "10.40.40.101"; hostname = "caelum"; }
-            { hw-address = "7c:83:34:b9:b8:52"; ip-address = "10.40.40.117"; hostname = "eridanus"; }
+            { hw-address = "7c:83:34:b9:b8:51"; ip-address = "10.40.40.117"; hostname = "eridanus"; }
           ];
           option-data = [
             { name = "routers"; data = "10.40.40.1"; }
