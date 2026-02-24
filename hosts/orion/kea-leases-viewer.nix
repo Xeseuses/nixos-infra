@@ -22,15 +22,9 @@
       Group = "nogroup";
       DynamicUser = false;
 
-      NoNewPrivileges = true;
-
-      ProtectSystem = "full";
+      ProtectSystem = false;
       ProtectHome = true;
-	
-      BindReadOnlyPaths = [
-    	"/var/lib/kea/"
-      ];
-
+      NoNewPrivileges = true;
     };
   };
 }
