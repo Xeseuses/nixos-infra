@@ -78,7 +78,7 @@ in
         MONGO_HOST = "unifi-db";
         MONGO_PORT = "27017";
         MONGO_DBNAME = "unifi";
-        MONGO_AUTHSOURCE = "unifi";
+        MONGO_AUTHSOURCE = "admin";
       };
       volumes = [ "/var/lib/unifi:/config" ];
       ports = [
