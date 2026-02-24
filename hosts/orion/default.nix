@@ -159,7 +159,7 @@
           option-data = [
             { name = "routers"; data = "10.40.30.1"; }
             { name = "domain-name-servers"; data = "1.1.1.1"; }
-	    { name = "vendor-encapsulated-options"; data = "01:04:0a:28:28:65"; }
+	    { name = "vendor-encapsulated-options"; data = "01:04:0a:28:28:65"; csv-format = false; }
           ];
         }
         {
