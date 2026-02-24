@@ -22,10 +22,16 @@ VLAN_MAP = {
 
 # Known reservations from Kea config
 RESERVATIONS = {
+     # Servers
     "f4:e2:c6:20:08:d6": ("10.40.30.120", "unifi-ap"),
     "e8:ff:1e:d2:b0:2f": ("10.40.40.104", "andromeda"),
     "7c:83:34:b9:7c:04": ("10.40.40.101", "caelum"),
     "7c:83:34:b9:b8:51": ("10.40.40.117", "eridanus"),
+    "52:54:00:f6:33:94": ("10.40.40.115", "home-assistant"),
+    # IoT
+    "08:a6:f7:93:66:ec": ("10.40.50.100", "everything-presence-lite"),
+    "b0:81:84:2b:d8:9c": ("10.40.50.101", "bed-presence-mk1"),
+    "54:ef:44:6e:6f:b0": ("10.40.50.103", "aqara-hub-m3"),
 }
 # Reverse map: ip -> hostname for reserved IPs
 RESERVED_IPS = {ip: (mac, name) for mac, (ip, name) in RESERVATIONS.items()}
