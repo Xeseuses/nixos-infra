@@ -12,15 +12,21 @@
     description = "Kea DHCP Lease Dashboard";
     after = [ "network.target" "kea-dhcp4-server.service" ];
     wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
+   
+     serviceConfig = {
       ExecStart = "${pkgs.python3}/bin/python3 ${./kea-leases-viewer.py}";
       Restart = "on-failure";
       RestartSec = "5s";
-      DynamicUser = true;
-      ReadOnlyPaths = [ "/var/lib/kea" ];
+      
+      User = "nobody";
+      Group = "nogroup";
+      DynamicUser = false;
+
       NoNewPrivileges = true;
       ProtectSystem = "strict";
       ProtectHome = true;
+
+      ReadOnlyPaths = [ "/var/lib/kea/kea-leases4.csv" ];
     };
   };
 }
