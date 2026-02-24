@@ -35,21 +35,7 @@
     '';
   };
 
-  # Kill switch: block VPN VLANs from using enp1s0 directly
-  # If mullvad0 is down, traffic hits this rule and is dropped
-  networking.nftables.tables.mullvad-killswitch = {
-  family = "ip";
-  content = ''
-    chain killswitch {
-      type filter hook forward priority -1; policy accept;
-      # Allow traffic going through the VPN tunnel
-      iifname { "vlan10", "vlan20", "vlan30", "vlan50" } oifname "mullvad0" accept
-      # Block VPN VLANs from exiting via WAN directly (kill switch)
-      iifname { "vlan10", "vlan20", "vlan30", "vlan50" } oifname "enp1s0" drop
-    }
-  '';
-};
- 
+   
   # NAT for mullvad0 — masquerade VPN VLAN traffic behind Mullvad IP
   networking.nftables.tables.mullvad-nat = {
     family = "ip";
