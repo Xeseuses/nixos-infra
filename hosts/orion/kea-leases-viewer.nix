@@ -23,10 +23,14 @@
       DynamicUser = false;
 
       NoNewPrivileges = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
 
-      ReadOnlyPaths = [ "/var/lib/kea/kea-leases4.csv" ];
+      ProtectSystem = "full";
+      ProtectHome = true;
+	
+      BindReadOnlyPaths = [
+    	"/var/lib/kea/kea-leases4.csv"
+      ];
+
     };
   };
 }
