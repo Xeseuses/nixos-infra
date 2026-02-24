@@ -9,6 +9,7 @@ from threading import Thread, Lock
 PORT = 9090
 LEASES_FILE = "/var/lib/kea/kea-leases4.csv"
 SUBNETS = ["10.40.10.0/24", "10.40.30.0/24", "10.40.40.0/24", "10.40.50.0/24"]
+NMAP_BIN = "/run/current-system/sw/bin/nmap"
 SCAN_INTERVAL = 120  # seconds between nmap scans
 
 VLAN_MAP = {
@@ -79,7 +80,7 @@ def run_nmap():
     result = {}
     try:
         out = subprocess.check_output(
-            ["nmap", "-sn", "--send-ip"] + SUBNETS,
+            [NMAP_BIN, "-sn"] + SUBNETS,
             text=True, stderr=subprocess.DEVNULL, timeout=60
         )
         current_ip = None
