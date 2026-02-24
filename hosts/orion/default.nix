@@ -4,6 +4,7 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ./kea-leases-viewer.nix  # DHCP lease dashboard on port 9090
+    ./unbound.nix              # Recursive DNS + local hostnames + ad-blocking
   ];
 
   asthrossystems = {
@@ -106,7 +107,7 @@
           pools = [{ pool = "10.40.10.100 - 10.40.10.200"; }];
           option-data = [
             { name = "routers"; data = "10.40.10.1"; }
-            { name = "domain-name-servers"; data = "1.1.1.1"; }
+            { name = "domain-name-servers"; data = "10.40.10.1"; }
           ];
         }
         {
@@ -127,7 +128,7 @@
           ];
           option-data = [
             { name = "routers"; data = "10.40.30.1"; }
-            { name = "domain-name-servers"; data = "1.1.1.1"; }
+            { name = "domain-name-servers"; data = "10.40.30.1"; }
             { name = "vendor-encapsulated-options"; data = "01:04:0a:28:28:65"; csv-format = false; }
           ];
         }
@@ -142,7 +143,7 @@
           ];
           option-data = [
             { name = "routers"; data = "10.40.40.1"; }
-            { name = "domain-name-servers"; data = "1.1.1.1"; }
+            { name = "domain-name-servers"; data = "10.40.40.1"; }
           ];
         }
         {
@@ -151,7 +152,7 @@
           pools = [{ pool = "10.40.50.100 - 10.40.50.200"; }];
           option-data = [
             { name = "routers"; data = "10.40.50.1"; }
-            { name = "domain-name-servers"; data = "1.1.1.1"; }
+            { name = "domain-name-servers"; data = "10.40.50.1"; }
           ];
         }
       ];
