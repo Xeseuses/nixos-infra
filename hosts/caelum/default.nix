@@ -30,8 +30,8 @@ in
     owner = "solibieb";
     group = "solibieb";
   };
-  secrets."caelum/unifi/mongo-root-password" = {};
-  secrets."caelum/unifi/mongo-unifi-password" = {};
+  secrets."caelum/unifi/mongo-db-env" = {};
+  secrets."caelum/unifi/unifi-env" = {};
 };
   
   networking = {
@@ -90,7 +90,11 @@ in
         MONGO_DBNAME = "unifi";
         MONGO_AUTHSOURCE = "admin";
       };
-      environmentFiles = [ config.sops.secrets."caelum/unifi/mongo-unifi-password".path ];
+
+      environmentFiles = [
+        config.sops.secrets."caelum/unifi/unifi-env".path
+      ];   
+  
       volumes = [ "/var/lib/unifi:/config" ];
       ports = [
         "8443:8443"   # Web UI (HTTPS)
@@ -111,7 +115,9 @@ in
       environment = {
         MONGO_INITDB_ROOT_USERNAME = "root";
       };
-      environmentFiles = [ config.sops.secrets."caelum/unifi/mongo-root-password".path ];
+      environmentFiles = [
+       config.sops.secrets."caelum/unifi/mongo-db-env".path
+      ];
       extraOptions = [ "--network=unifi-net" ];
     };
 
