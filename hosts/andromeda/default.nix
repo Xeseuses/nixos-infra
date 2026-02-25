@@ -50,7 +50,7 @@
   peers = [
     {
       # lyra (VPS)
-      publicKey = "1wUDy/NFm7QSCnSGSHd26YDLcN3SUGIy7PePpG/WyU0=";
+      publicKey = "TPGNC4CP2U75ZMvWW2KP7hba/4RqeDYZZsbmfJPMG1o=";
       allowedIPs = [ "10.200.0.0/24" ];  # Route all traffic through VPS (optional)
       endpoint = "172.245.52.108:51821";
       persistentKeepalive = 25;

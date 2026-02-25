@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 {
   imports = [
-    ./disk-config.nix
-    ./hardware-configuration.nix
+  ./disk-config.nix
+  ./hardware-configuration.nix
   ];
 
   asthrossystems = {
@@ -10,12 +10,11 @@
     isServer = true;
   };
 
-  boot = {
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
-  };
-
-  networking = {
+  boot.loader.grub = {
+  enable = true;
+  efiSupport = false;
+}; 
+    networking = {
     hostName = "lyra";
     firewall = {
       enable = true;
@@ -70,14 +69,6 @@
   # ── SSH Bastion ───────────────────────────────────────────────────────────
   # Allows jumping to internal hosts via: ssh -J xeseuses@lyra xeseuses@10.40.x.x
   # Note: internal hosts only reachable if they're in the WireGuard subnet
-
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };
 
   users.users.xeseuses = {
     isNormalUser = true;
