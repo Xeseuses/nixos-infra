@@ -136,7 +136,7 @@
   # The hint "::/62" asks for the same prefix back on renewal for stability.
   networking.dhcpcd.extraConfig = ''
     interface enp1s0
-    ia_pd 1/::/62 vlan10/0 vlan20/1 vlan30/2 vlan40/3 vlan50/4
+    ia_pd 1/::/62 vlan10/0 vlan30/1 vlan40/2 vlan50/3
   '';
 
   # ── CoreRAD (dynamic Router Advertisements) ───────────────────────────────
