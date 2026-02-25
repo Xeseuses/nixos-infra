@@ -94,10 +94,10 @@
     caelum = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        sops-nix.nixosModules.sops
         ./modules/options.nix
 	./modules/nixos/common
 	./hosts/caelum
+        sops-nix.nixosModules.sops
      ];
     };	
     };
