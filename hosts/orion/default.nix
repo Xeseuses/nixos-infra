@@ -23,14 +23,7 @@
     };
   };
 
-  # ── SOPS ──────────────────────────────────────────────────────────────────
-  sops = {
-    defaultSopsFile = ../../secrets/secrets.yaml;
-    age.keyFile = "/var/lib/sops-nix/key.txt";
-    secrets."orion/users/xeseuses/hashedPassword".neededForUsers = true;
-  };
-
-  # ── Avahi (mDNS repeater for HA device discovery across VLANs) ────────────
+    # ── Avahi (mDNS repeater for HA device discovery across VLANs) ────────────
   services.avahi = {
     enable = true;
     interfaces        = [ "vlan40" "vlan50" ];
@@ -103,13 +96,17 @@
           content = ''
             chain forward {
               type filter hook forward priority 0; policy drop;
-              ct state established,related accept
-              iifname "vlan10" accept
-              iifname "vlan30" accept
-              iifname "vlan40" oifname "enp1s0" accept
-              iifname "vlan40" oifname "vlan50" accept
-              iifname "vlan50" oifname "enp1s0" accept
-              iifname "vlan20" oifname "enp1s0" accept
+	      ct state established,related accept
+      	      iifname "vlan10" accept
+    	      iifname "vlan30" accept
+	      iifname "vlan40" oifname "enp1s0" accept
+     	      iifname "vlan40" oifname "vlan50" accept
+	      iifname "vlan50" oifname "enp1s0" accept
+	      iifname "vlan20" oifname "enp1s0" accept
+	      iifname "enp1s0" oifname "vlan10" accept
+	      iifname "enp1s0" oifname "vlan30" accept
+	      iifname "enp1s0" oifname "vlan40" accept
+	      iifname "enp1s0" oifname "vlan50" accept
             }
           '';
         };
@@ -254,9 +251,8 @@
 
   # ── Users ─────────────────────────────────────────────────────────────────
   users.users.xeseuses = {
-    isNormalUser = true;
+	    isNormalUser = true;
     extraGroups  = [ "wheel" ];
-    hashedPasswordFile = config.sops.secrets."orion/users/xeseuses/hashedPassword".path;
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDiAHl5MuIuTJHR+CciMPIzF1JNNQMwKvi6hzhHfn7tBG+7SmV2+djMh9YosRbaeI6vYoXAq7QPKUUzSbeex4dO2PvCSRHOOrlRMT790Gyg4biG2nMSWDusMkG17zykUTCH29Xi0HD6rk5VzwFJqVyJY/iEIlA02l3BwjHdqemsjwnkSkEjRGLRw1vVVKak9Pii+4GkgCKpI2js4V4C94urbiUqbBABa/lAM0CKWiF2ftLmQbcoSlkEsvF5eRQXKQTbMjcQ7BdSabNveXP+KxqdizRYZEfZSmPI+kUA4nKRFqqLBVg0krKYhOJB2mV+K7ycKEjLxy/gEiS2wRmBq5i9sP5jqjGuk59dRwQr5N9vEvO9hg39Zr0iTvALTUhUqfbViXCJPU4R0PnxSm2yiVhrWfGCrq0fHZ+cBDnu8YKI1vvpFqqUzZaQnSttJ0gyjuJhNKAG8zX4zFfqxYdaN9NmKJCCzfj5NO/FmzSKoOdCMqpTAZlkaYk4zPi6THfewp1rkxOKrOaSS74YCY6VJeN4Cl+/gjFCMpDE3oTujxrQ1sZfjFlkGwbBUb77UZdPEmvWrijPRiTPjpcR7wTzmUNnrKs+oYm5FdbzG7aaI03jEwuefqGOikwiY7WSLTZ1EfDaqp0I5li7I+0CbGNmEU0gNEW5U1G5FItCPnS4fpcrtw=="
     ];
