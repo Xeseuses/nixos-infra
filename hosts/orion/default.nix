@@ -21,6 +21,13 @@
     };
   };
 
+  services.avahi = {
+  enable = true;
+  interfaces = [ "vlan40" "vlan50" ];
+  reflector = true;
+  allowInterfaces = [ "vlan40" "vlan50" ];
+};
+
   networking = {
     hostName = "orion";
     networkmanager.enable = false;
@@ -81,8 +88,8 @@
       interfaces = {
         vlan10 = { allowedTCPPorts = [ 22 53 ]; allowedUDPPorts = [ 53 67 ]; };
         vlan30 = { allowedTCPPorts = [ 22 53 ]; allowedUDPPorts = [ 53 67 ]; };
-        vlan40 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 ]; };
-        vlan50 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 ]; };
+        vlan40 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 5353]; };
+        vlan50 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 5353 ]; };
         vlan20 = { allowedUDPPorts = [ 67 ]; };
       };
     };
