@@ -23,6 +23,15 @@ in
     kernelModules = [ "kvm-intel" ];
   };
 
+  sops = {
+  defaultSopsFile = ../../secrets/secrets.yaml;
+  age.keyFile = "/var/lib/sops-nix/key.txt";
+  secrets."caelum/solibieb/env" = {
+    owner = "solibieb";
+    group = "solibieb";
+  };
+};
+  
   networking = {
     hostName = "caelum";
     networkmanager.enable = true;
@@ -156,7 +165,7 @@ in
       User = "solibieb";
       Group = "solibieb";
       Restart = "on-failure";
-      EnvironmentFile = "/var/lib/solibieb/.env";
+      EnvironmentFile = config.sops.secrets."caelum/solibieb/env".path;
     };
   };
 
