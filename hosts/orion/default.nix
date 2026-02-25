@@ -17,27 +17,27 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
     kernel.sysctl = {
-      "net.ipv4.ip_forward"          = 1;
-      "net.ipv4.conf.all.forwarding" = 1;
-      "net.ipv6.conf.all.forwarding" = 1;
-      "net.ipv6.conf.default.forwarding" = 1;
-      "net.ipv6.conf.enp1s0.use_tempaddr"= lib.mkForce 0;
+      "net.ipv4.ip_forward"               = 1;
+      "net.ipv4.conf.all.forwarding"      = 1;
+      "net.ipv6.conf.all.forwarding"      = 1;
+      "net.ipv6.conf.default.forwarding"  = 1;
+      "net.ipv6.conf.enp1s0.use_tempaddr" = lib.mkForce 0;
     };
   };
 
-    # ── Avahi (mDNS repeater for HA device discovery across VLANs) ────────────
+  # ── Avahi (mDNS repeater for HA device discovery across VLANs) ────────────
   services.avahi = {
-    enable = true;
-    interfaces        = [ "vlan40" "vlan50" ];
-    reflector         = true;
-    allowInterfaces   = [ "vlan40" "vlan50" ];
+    enable          = true;
+    interfaces      = [ "vlan40" "vlan50" ];
+    reflector       = true;
+    allowInterfaces = [ "vlan40" "vlan50" ];
   };
 
   # ── Networking ────────────────────────────────────────────────────────────
   networking = {
-    hostName           = "orion";
+    hostName              = "orion";
     networkmanager.enable = false;
-    useDHCP            = false;
+    useDHCP               = false;
 
     interfaces.enp1s0.useDHCP = true;
     interfaces.ens1.useDHCP   = false;
@@ -58,7 +58,7 @@
       vlan50 = { useDHCP = false; ipv4.addresses = [{ address = "10.40.50.1"; prefixLength = 24; }]; };
     };
 
-    # ── nftables ────────────────────────────────────────────────────────────
+    # ── nftables ──────────────────────────────────────────────────────────
     nftables = {
       enable = true;
       tables = {
@@ -98,17 +98,17 @@
           content = ''
             chain forward {
               type filter hook forward priority 0; policy drop;
-	      ct state established,related accept
-      	      iifname "vlan10" accept
-    	      iifname "vlan30" accept
-	      iifname "vlan40" oifname "enp1s0" accept
-     	      iifname "vlan40" oifname "vlan50" accept
-	      iifname "vlan50" oifname "enp1s0" accept
-	      iifname "vlan20" oifname "enp1s0" accept
-	      iifname "enp1s0" oifname "vlan10" accept
-	      iifname "enp1s0" oifname "vlan30" accept
-	      iifname "enp1s0" oifname "vlan40" accept
-	      iifname "enp1s0" oifname "vlan50" accept
+              ct state established,related accept
+              iifname "vlan10" accept
+              iifname "vlan30" accept
+              iifname "vlan40" oifname "enp1s0" accept
+              iifname "vlan40" oifname "vlan50" accept
+              iifname "vlan50" oifname "enp1s0" accept
+              iifname "vlan20" oifname "enp1s0" accept
+              iifname "enp1s0" oifname "vlan10" accept
+              iifname "enp1s0" oifname "vlan30" accept
+              iifname "enp1s0" oifname "vlan40" accept
+              iifname "enp1s0" oifname "vlan50" accept
             }
           '';
         };
@@ -116,7 +116,7 @@
       };
     };
 
-    # ── Firewall ────────────────────────────────────────────────────────────
+    # ── Firewall ──────────────────────────────────────────────────────────
     firewall = {
       enable = true;
       interfaces = {
@@ -131,54 +131,49 @@
 
   networking.firewall.checkReversePath = false;
 
-  # ── DHCPv6 Prefix Delegation ───────────────────────────────────────────────
-  # Request a /56 from FritzBox and carve out /64s for each VLAN
+  # ── DHCPv6 Prefix Delegation ──────────────────────────────────────────────
+  # Request a prefix from FritzBox and delegate /64s to each VLAN.
+  # The hint "::/62" asks for the same prefix back on renewal for stability.
   networking.dhcpcd.extraConfig = ''
     interface enp1s0
-    ia_pd 1 vlan10/0 vlan20/1 vlan30/2 vlan40/3 vlan50/4
+    ia_pd 1/::/62 vlan10/0 vlan20/1 vlan30/2 vlan40/3 vlan50/4
   '';
 
-  # ── Router Advertisements (SLAAC for IPv6 clients) ────────────────────────
-  services.radvd = {
+  # ── CoreRAD (dynamic Router Advertisements) ───────────────────────────────
+  # CoreRAD reads actual interface addresses at runtime so it automatically
+  # advertises the correct prefix after every dhcpcd renewal — no hardcoded
+  # prefixes, no manual rebuilds needed when the delegated prefix changes.
+  services.corerad = {
     enable = true;
-    config = ''
-      interface vlan10 {
-        AdvSendAdvert on;
-        AdvManagedFlag off;
-        AdvOtherConfigFlag on;
-        prefix 2001:9e0:854f:20f8::/64 {
-          AdvOnLink on;
-          AdvAutonomous on;
-        };
-      };
-      interface vlan30 {
-        AdvSendAdvert on;
-        AdvManagedFlag off;
-        AdvOtherConfigFlag on;
-        prefix 2001:9e0:854f:20f8:2000::/64 {
-          AdvOnLink on;
-          AdvAutonomous on;
-        };
-      };
-      interface vlan40 {
-        AdvSendAdvert on;
-        AdvManagedFlag off;
-        AdvOtherConfigFlag on;
-        prefix 2001:9e0:854f:20f8:3000::/64 {
-          AdvOnLink on;
-          AdvAutonomous on;
-        };
-      };
-      interface vlan50 {
-        AdvSendAdvert on;
-        AdvManagedFlag off;
-        AdvOtherConfigFlag on;
-        prefix 2001:9e0:854f:20f8:4000::/64 {
-          AdvOnLink on;
-          AdvAutonomous on;
-        };
-      };
-    '';
+    settings = {
+      interfaces = [
+        {
+          name      = "vlan10";
+          advertise = true;
+          prefix    = [{ prefix = "::/64"; }];
+          route     = [{ prefix = "::/0"; }];
+        }
+        {
+          name      = "vlan30";
+          advertise = true;
+          prefix    = [{ prefix = "::/64"; }];
+          route     = [{ prefix = "::/0"; }];
+        }
+        {
+          name      = "vlan40";
+          advertise = true;
+          prefix    = [{ prefix = "::/64"; }];
+          route     = [{ prefix = "::/0"; }];
+        }
+        {
+          name      = "vlan50";
+          advertise = true;
+          prefix    = [{ prefix = "::/64"; }];
+          route     = [{ prefix = "::/0"; }];
+        }
+        # vlan20 (guest) intentionally omitted — will get Mullvad IPv6 later
+      ];
+    };
   };
 
   # ── Kea DHCP (IPv4) ───────────────────────────────────────────────────────
@@ -253,8 +248,8 @@
 
   # ── Users ─────────────────────────────────────────────────────────────────
   users.users.xeseuses = {
-	    isNormalUser = true;
-    extraGroups  = [ "wheel" ];
+    isNormalUser       = true;
+    extraGroups        = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDiAHl5MuIuTJHR+CciMPIzF1JNNQMwKvi6hzhHfn7tBG+7SmV2+djMh9YosRbaeI6vYoXAq7QPKUUzSbeex4dO2PvCSRHOOrlRMT790Gyg4biG2nMSWDusMkG17zykUTCH29Xi0HD6rk5VzwFJqVyJY/iEIlA02l3BwjHdqemsjwnkSkEjRGLRw1vVVKak9Pii+4GkgCKpI2js4V4C94urbiUqbBABa/lAM0CKWiF2ftLmQbcoSlkEsvF5eRQXKQTbMjcQ7BdSabNveXP+KxqdizRYZEfZSmPI+kUA4nKRFqqLBVg0krKYhOJB2mV+K7ycKEjLxy/gEiS2wRmBq5i9sP5jqjGuk59dRwQr5N9vEvO9hg39Zr0iTvALTUhUqfbViXCJPU4R0PnxSm2yiVhrWfGCrq0fHZ+cBDnu8YKI1vvpFqqUzZaQnSttJ0gyjuJhNKAG8zX4zFfqxYdaN9NmKJCCzfj5NO/FmzSKoOdCMqpTAZlkaYk4zPi6THfewp1rkxOKrOaSS74YCY6VJeN4Cl+/gjFCMpDE3oTujxrQ1sZfjFlkGwbBUb77UZdPEmvWrijPRiTPjpcR7wTzmUNnrKs+oYm5FdbzG7aaI03jEwuefqGOikwiY7WSLTZ1EfDaqp0I5li7I+0CbGNmEU0gNEW5U1G5FItCPnS4fpcrtw=="
     ];
