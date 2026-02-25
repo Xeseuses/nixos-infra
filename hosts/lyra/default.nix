@@ -19,6 +19,9 @@
   boot.loader.grub = {
   enable = true;
   efiSupport = false;
+  kernel.sysctl = {
+  "net.ipv4.ip_forward" = 1;
+  };
 }; 
     networking = {
     hostName = "lyra";
@@ -42,13 +45,23 @@
       {
         # andromeda
         publicKey = "Su/GnnDxSCnUpH45jTO3dwZVHk7/VskvwkDscpBISEA=";
-        allowedIPs = [ "10.200.0.2/32" "10.40.40.0/24" ];  # includes HA VM subnet
+        allowedIPs = [ "10.200.0.2/32" "10.40.10.0/24" "10.40.30.0/24" "10.40.40.0/24" "10.40.50.0/24" ];  
       }
       {
         # caelum
         publicKey = "XxG5b+JPvLebcaD49ggCjfcqcElkCa5OAdLWCeQTQz8=";
         allowedIPs = [ "10.200.0.3/32" ];
       }
+      {
+      # vela
+      publicKey = "szfiqi0Uea4O8Wfml0LPQ25jiAbVkSy0jMVusDGNWhU=";
+      allowedIPs = [ "10.200.0.4/32" ];
+    }
+    {
+      # phone
+      publicKey = "6fYXePTJ2x0bMwlnKiyfVish/Z/h+r4UJhZor/ZBVnQ=";
+	      allowedIPs = [ "10.200.0.5/32" ];
+	    }
     ];
   };
 
