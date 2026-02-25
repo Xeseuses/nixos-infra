@@ -5,6 +5,7 @@ keys:
   - &vela age13auxyy4qyr2euvytezaa38wpvgeygptu90jq6ky777wkrgyy7sxssh8znp
   - &andromeda age17k4whyzw486kgy30r5awv7n2q0wl6rr4ejgadzt3zmy24n7c2y3s6qncyz
   - &caelum age1wyvwgs0z0t84wl6teje9h6ejf7j8862yv3g3t9k2ulcy6wwpv9wqqnmz60
+  - &orion age1d8gdaek78v67zz0qfmw0a4fcrh25thsytzugcdj3wlsk2a6qpe3ql0s444
 
 creation_rules:
   # Default: encrypt for admin (you)
@@ -16,3 +17,4 @@ creation_rules:
           - *vela
           - *andromeda
           - *caelum
+          - *orion
