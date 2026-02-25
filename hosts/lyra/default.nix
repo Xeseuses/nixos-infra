@@ -19,9 +19,6 @@
   boot.loader.grub = {
   enable = true;
   efiSupport = false;
-  kernel.sysctl = {
-  "net.ipv4.ip_forward" = 1;
-  };
 }; 
     networking = {
     hostName = "lyra";
@@ -32,6 +29,10 @@
       trustedInterfaces = [ "wg0" ];
     };
   };
+
+  boot.kernel.sysctl = {
+  "net.ipv4.ip_forward" = 1;
+};
 
   # ── WireGuard Server ──────────────────────────────────────────────────────
   # Hub for andromeda (10.200.0.2) and caelum (10.200.0.3)
