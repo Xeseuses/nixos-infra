@@ -4,6 +4,7 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
+    ./wireguard-rw.nix
   ];
 
   # === SOPS ===
