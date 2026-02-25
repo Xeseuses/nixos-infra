@@ -101,6 +101,13 @@
     after = [ "network-addresses.target" ];
     wants = [ "network-addresses.target" ];
   };
+  
+  networking.dhcpcd = {
+  extraConfig = ''
+    interface enp1s0
+    ia_pd 1 vlan10/0 vlan20/1 vlan30/2 vlan40/3 vlan50/4
+  '';
+};
 
   services.kea.dhcp4 = {
     enable = true;
