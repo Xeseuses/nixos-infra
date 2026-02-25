@@ -66,6 +66,7 @@
            ./modules/options.nix
 	   ./modules/nixos/common
 	   disko.nixosModules.disko
+           sops-nix.nixosModules.sops
 	   ./hosts/orion
 	 ];
 	};
