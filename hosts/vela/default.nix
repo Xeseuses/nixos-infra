@@ -59,6 +59,10 @@
   systemd.tmpfiles.rules = [
     "L+ /home/xeseuses - - - - /persist/home/xeseuses"
   ];
-
+ 
+  environment.systemPackages = with pkgs; [
+  wireguard-tools
+];
+ 
   system.stateVersion = "24.11";
 }
