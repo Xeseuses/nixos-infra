@@ -10,6 +10,12 @@
     isServer = true;
   };
 
+  sops = {
+  defaultSopsFile = ../../secrets/secrets.yaml;
+  age.keyFile = "/var/lib/sops-nix/key.txt";
+  secrets."lyra/wireguard/private-key" = {};
+};
+
   boot.loader.grub = {
   enable = true;
   efiSupport = false;
@@ -30,8 +36,8 @@
   networking.wireguard.interfaces.wg0 = {
     ips = [ "10.200.0.1/24" ];
     listenPort = 51821;
-    privateKeyFile = "/var/lib/wireguard/private.key";
-
+   # privateKeyFile = "/var/lib/wireguard/private.key";
+    privateKeyFile = config.sops.secrets."lyra/wireguard/private-key".path
     peers = [
       {
         # andromeda
