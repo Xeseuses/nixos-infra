@@ -52,7 +52,7 @@
       # lyra (VPS)
       publicKey = "TPGNC4CP2U75ZMvWW2KP7hba/4RqeDYZZsbmfJPMG1o=";
       allowedIPs = [ "10.200.0.0/24" ];  # Route all traffic through VPS (optional)
-      endpoint = "172.245.52.108:51821";
+      endpoint = "77.42.83.12:51821";
       persistentKeepalive = 25;
     }
   ];
