@@ -4,7 +4,7 @@ keys:
   - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
   - &vela age13auxyy4qyr2euvytezaa38wpvgeygptu90jq6ky777wkrgyy7sxssh8znp
   - &andromeda age17k4whyzw486kgy30r5awv7n2q0wl6rr4ejgadzt3zmy24n7c2y3s6qncyz
-  - &caelum age17ks58vjs2sy94pzpsvemsz4xucxjh59ee064fph99029txx673xq8yucy0
+  - &caelum age1d2h7uefks6zewtgth8rsvqgqlcr202kwudjulpq057tqq7nwfa4q648c65
 
 creation_rules:
   # Default: encrypt for admin (you)
