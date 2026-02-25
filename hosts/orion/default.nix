@@ -86,10 +86,10 @@
     firewall = {
       enable = true;
       interfaces = {
-        vlan10 = { allowedTCPPorts = [ 22 53 ]; allowedUDPPorts = [ 53 67 ]; };
-        vlan30 = { allowedTCPPorts = [ 22 53 ]; allowedUDPPorts = [ 53 67 ]; };
-        vlan40 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 5353]; };
-        vlan50 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 5353 ]; };
+        vlan10 = { allowedTCPPorts = [ 22 53 ]; allowedUDPPorts = [ 53 67 546 547 ]; };
+        vlan30 = { allowedTCPPorts = [ 22 53 ]; allowedUDPPorts = [ 53 67 546 547 ]; };
+        vlan40 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 5353 546 547]; };
+        vlan50 = { allowedTCPPorts = [ 53 ];    allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan20 = { allowedUDPPorts = [ 67 ]; };
       };
     };
@@ -172,6 +172,48 @@
       ];
     };
   };
+
+  services.radvd = {
+  enable = true;
+  config = ''
+    interface vlan10 {
+      AdvSendAdvert on;
+      AdvManagedFlag off;
+      AdvOtherConfigFlag on;
+      prefix 2001:9e0:854f:20f8::/68 {
+        AdvOnLink on;
+        AdvAutonomous on;
+      };
+    };
+    interface vlan30 {
+      AdvSendAdvert on;
+      AdvManagedFlag off;
+      AdvOtherConfigFlag on;
+      prefix 2001:9e0:854f:20f8:2000::/68 {
+        AdvOnLink on;
+        AdvAutonomous on;
+      };
+    };
+    interface vlan40 {
+      AdvSendAdvert on;
+      AdvManagedFlag off;
+      AdvOtherConfigFlag on;
+      prefix 2001:9e0:854f:20f8:3000::/68 {
+        AdvOnLink on;
+        AdvAutonomous on;
+      };
+    };
+    interface vlan50 {
+      AdvSendAdvert on;
+      AdvManagedFlag off;
+      AdvOtherConfigFlag on;
+      prefix 2001:9e0:854f:20f8:4000::/68 {
+        AdvOnLink on;
+        AdvAutonomous on;
+      };
+    };
+  '';
+};
 
   users.users.xeseuses = {
     isNormalUser = true;
