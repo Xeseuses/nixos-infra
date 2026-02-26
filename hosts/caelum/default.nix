@@ -188,6 +188,13 @@ in
     };
   };
 
+  networking.interfaces.enp2s0.ipv4.routes = [{
+  address = "10.200.0.0";
+  prefixLength = 24;
+  via = "10.40.40.104";  # route WireGuard subnet replies via andromeda
+}];
+
+
   # ── Users ─────────────────────────────────────────────────────────────────
   users.users.xeseuses = {
     isNormalUser = true;
