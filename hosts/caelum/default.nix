@@ -264,6 +264,7 @@ networking.interfaces.vlan60 = {
     ncdu
     ffmpeg-full
     python315
+    nftables
   ];
 
   # ── Misc ──────────────────────────────────────────────────────────────────
