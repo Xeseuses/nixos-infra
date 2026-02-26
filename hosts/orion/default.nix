@@ -28,7 +28,6 @@
   # ── Avahi (mDNS repeater for HA device discovery across VLANs) ────────────
   services.avahi = {
     enable          = true;
-    interfaces      = [ "vlan40" "vlan50" ];
     reflector       = true;
     allowInterfaces = [ "vlan40" "vlan50" ];
   };
@@ -81,7 +80,7 @@
               iifname "vlan50" oifname "enp1s0" accept
               iifname "vlan20" oifname "enp1s0" accept
               iifname "vlan60" oifname "vlan40" accept
-
+	      iifname "enp1s0" oifname "vlan40" ip daddr 10.40.40.117 udp dport 29531 accept
             }
           '';
         };
@@ -96,6 +95,16 @@
             }
           '';
         };
+ 
+	orion-i2p-nat = {
+  family = "ip";
+  content = ''
+    chain prerouting {
+      type nat hook prerouting priority dstnat; policy accept;
+      iifname "enp1s0" udp dport 29531 dnat to 10.40.40.117:29531
+    }
+  '';
+};
 
         # IPv6 forwarding
         orion-forward6 = {
@@ -144,7 +153,9 @@
   networking.firewall.extraInputRules = ''
   iifname "vlan40" ip saddr 10.200.0.0/24 tcp dport 9090 accept
 '';
-
+ 
+  networking.firewall.allowedUDPPorts = [ 29531 ]; 
+ 
   # ── DHCPv6 Prefix Delegation ──────────────────────────────────────────────
   # Request a prefix from FritzBox and delegate /64s to each VLAN.
   # The hint "::/62" asks for the same prefix back on renewal for stability.

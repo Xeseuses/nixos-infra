@@ -80,6 +80,7 @@
 
   services.i2pd = {
   enable = true;
+  port = 29531;
   bandwidth = 256;
   share = 100;
   notransit = false;

@@ -62,7 +62,7 @@
           "\"orion.lan.        IN A 10.40.10.1\""
           "\"caelum.lan.       IN A 10.40.40.101\""
           "\"andromeda.lan.    IN A 10.40.40.104\""
-          "\"eridanus.lan.     IN A 10.40.40.105\""
+          "\"eridanus.lan.     IN A 10.40.40.117\""
           "\"ha.lan.           IN A 10.40.40.115\""
           # Management (VLAN 30)
           "\"unifi-ap.lan.     IN A 10.40.30.120\""
@@ -77,7 +77,7 @@
           "\"10.40.10.1      orion.lan\""
           "\"10.40.40.101    caelum.lan\""
           "\"10.40.40.104    andromeda.lan\""
-          "\"10.40.40.105    eridanus.lan\""
+          "\"10.40.40.117    eridanus.lan\""
           "\"10.40.40.115    ha.lan\""
           "\"10.40.30.120    unifi-ap.lan\""
           "\"10.40.50.100    everything-presence.lan\""
