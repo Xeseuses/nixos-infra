@@ -39,8 +39,8 @@ in
     networkmanager.enable = true;
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 2283 13378 2335 8443 8080 ];
-      allowedUDPPorts = [ 3478 10001 ];
+      allowedTCPPorts = [ 22 2283 13378 2335 8443 8080 9040 ];
+      allowedUDPPorts = [ 3478 10001 9053 ];
       trustedInterfaces = [ "wg0" ];
     };
   };
@@ -193,6 +193,17 @@ in
   prefixLength = 24;
   via = "10.40.40.104";  # route WireGuard subnet replies via andromeda
 }];
+  
+  # ── Tor (transparent proxy for VLAN60) ───────────────────────────────────
+services.tor = {
+  enable = true;
+  settings = {
+    TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
+    DNSPort   = [{ addr = "0.0.0.0"; port = 9053; }];
+    VirtualAddrNetworkIPv4 = "10.192.0.0/10";
+    ExitPolicy = "reject *:*";
+  };
+};
 
 
   # ── Users ─────────────────────────────────────────────────────────────────
