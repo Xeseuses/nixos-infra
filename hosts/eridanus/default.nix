@@ -77,33 +77,32 @@
   };
 
   # === I2P Router ===
-services.i2pd = {
-  enable = true;
-  bandwidth = 256;        # KB/s — reasonable for a home node
-  share = 100;            # share 100% of bandwidth with network
-  notransit = false;      # allow transit traffic — helps build integration score
 
-  # Web console — accessible from LAN
+  services.i2pd = {
+  enable = true;
+  bandwidth = 256;
+  share = 100;
+  notransit = false;
+
   proto.http = {
     enable = true;
     address = "0.0.0.0";
     port = 7070;
+    hostname = "10.40.40.117";
   };
 
-  # HTTP proxy for browsing .i2p sites
   proto.httpProxy = {
     enable = true;
     address = "0.0.0.0";
     port = 4444;
   };
 
-  # SOCKS proxy
   proto.socksProxy = {
     enable = true;
     address = "0.0.0.0";
     port = 4447;
   };
-};
+};  
 
 # Allow LAN access to I2P ports
 networking.firewall.allowedTCPPorts = [ 7070 4444 4447 ];
