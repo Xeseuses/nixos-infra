@@ -48,6 +48,7 @@
       vlan30 = { id = 30; interface = "ens1"; };
       vlan40 = { id = 40; interface = "ens1"; };
       vlan50 = { id = 50; interface = "ens1"; };
+      vlan60 = { id = 60; interface = "ens1"; };
     };
 
     interfaces = {
@@ -56,6 +57,7 @@
       vlan30 = { useDHCP = false; ipv4.addresses = [{ address = "10.40.30.1"; prefixLength = 24; }]; };
       vlan40 = { useDHCP = false; ipv4.addresses = [{ address = "10.40.40.1"; prefixLength = 24; }]; };
       vlan50 = { useDHCP = false; ipv4.addresses = [{ address = "10.40.50.1"; prefixLength = 24; }]; };
+      vlan60 = { useDHCP = false; ipv4.addresses = [{ address = "10.40.60.1"; prefixLength = 24; }]; };
     };
 
     
@@ -78,6 +80,8 @@
               iifname "vlan40" oifname "vlan30" ip saddr 10.40.40.115 ip daddr { 10.40.30.111, 10.40.30.115 } accept
               iifname "vlan50" oifname "enp1s0" accept
               iifname "vlan20" oifname "enp1s0" accept
+              iifname "vlan60" oifname "vlan40" ip daddr 10.40.40.101 accept
+
             }
           '';
         };
@@ -88,7 +92,7 @@
           content = ''
             chain postrouting {
               type nat hook postrouting priority srcnat; policy accept;
-              iifname { "vlan10", "vlan20", "vlan30", "vlan40", "vlan50" } oifname "enp1s0" masquerade
+              iifname { "vlan10", "vlan20", "vlan30", "vlan40", "vlan50", "vlan60"} oifname "enp1s0" masquerade
             }
           '';
         };
@@ -126,6 +130,8 @@
         vlan40 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan50 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan20 = { allowedUDPPorts = [ 67 ]; };
+
+        vlan60 = { allowedTCPPorts = [ 53 ]; allowedUDPPorts = [ 53 67 ]; };
 
         wg0 = {allowedTCPPorts = [ 22 53 9090 ]; allowedUDPPorts = [ 53 ]; } ;
       };
@@ -192,7 +198,7 @@
   services.kea.dhcp4 = {
     enable = true;
     settings = {
-      interfaces-config.interfaces = [ "vlan10" "vlan20" "vlan30" "vlan40" "vlan50" ];
+      interfaces-config.interfaces = [ "vlan10" "vlan20" "vlan30" "vlan40" "vlan50" "vlan60" ];
       valid-lifetime = 86400;
       subnet4 = [
         {
@@ -247,6 +253,15 @@
           option-data = [
             { name = "routers";             data = "10.40.50.1"; }
             { name = "domain-name-servers"; data = "10.40.50.1"; }
+          ];
+        }	
+        {
+ 	 id = 60;
+	 subnet = "10.40.60.0/24";
+	 pools = [{ pool = "10.40.60.100 - 10.40.60.200"; }];
+         option-data = [
+   	   { name = "routers"; data = "10.40.60.1"; }
+	   {  name = "domain-name-servers"; data = "10.40.60.1"; }
           ];
         }
       ];
