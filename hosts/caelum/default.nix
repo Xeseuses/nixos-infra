@@ -22,6 +22,10 @@ in
     loader.efi.canTouchEfiVariables = true;
     kernelModules = [ "kvm-intel" ];
   };
+  
+  boot.kernel.sysctl = {
+  "net.ipv4.ip_forward" = 1;
+};
 
   sops = {
   defaultSopsFile = ../../secrets/secrets.yaml;
@@ -222,6 +226,21 @@ in
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDiAHl5MuIuTJHR+CciMPIzF1JNNQMwKvi6hzhHfn7tBG+7SmV2+djMh9YosRbaeI6vYoXAq7QPKUUzSbeex4dO2PvCSRHOOrlRMT790Gyg4biG2nMSWDusMkG17zykUTCH29Xi0HD6rk5VzwFJqVyJY/iEIlA02l3BwjHdqemsjwnkSkEjRGLRw1vVVKak9Pii+4GkgCKpI2js4V4C94urbiUqbBABa/lAM0CKWiF2ftLmQbcoSlkEsvF5eRQXKQTbMjcQ7BdSabNveXP+KxqdizRYZEfZSmPI+kUA4nKRFqqLBVg0krKYhOJB2mV+K7ycKEjLxy/gEiS2wRmBq5i9sP5jqjGuk59dRwQr5N9vEvO9hg39Zr0iTvALTUhUqfbViXCJPU4R0PnxSm2yiVhrWfGCrq0fHZ+cBDnu8YKI1vvpFqqUzZaQnSttJ0gyjuJhNKAG8zX4zFfqxYdaN9NmKJCCzfj5NO/FmzSKoOdCMqpTAZlkaYk4zPi6THfewp1rkxOKrOaSS74YCY6VJeN4Cl+/gjFCMpDE3oTujxrQ1sZfjFlkGwbBUb77UZdPEmvWrijPRiTPjpcR7wTzmUNnrKs+oYm5FdbzG7aaI03jEwuefqGOikwiY7WSLTZ1EfDaqp0I5li7I+0CbGNmEU0gNEW5U1G5FItCPnS4fpcrtw=="
     ];
   };
+
+  networking.nftables.enable = true;
+networking.nftables.tables.caelum-tor-nat = {
+  family = "ip";
+  content = ''
+    chain prerouting {
+      type nat hook prerouting priority dstnat; policy accept;
+      iifname "enp2s0" ip saddr 10.40.60.0/24 ip daddr != { 10.0.0.0/8, 127.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } tcp dport != 9040 dnat to 127.0.0.1:9040
+    }
+    chain postrouting {
+      type nat hook postrouting priority srcnat; policy accept;
+      ip saddr 10.40.60.0/24 oifname != "enp2s0" masquerade
+    }
+  '';
+};
 
   # ── Packages ──────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
