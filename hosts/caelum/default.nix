@@ -200,7 +200,7 @@ services.tor = {
   settings = {
     TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
     DNSPort   = [{ addr = "0.0.0.0"; port = 9053; }];
-    SocksPort = [{ addr = "127.0.0.1"; port = 9050; }];
+    SocksPort = [ "127.0.0.1:9050" ];
     VirtualAddrNetworkIPv4 = "10.192.0.0/10";
     ExitPolicy = [ "reject *:*" ];
   };
