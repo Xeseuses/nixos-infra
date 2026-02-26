@@ -201,7 +201,7 @@ services.tor = {
     TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
     DNSPort   = [{ addr = "0.0.0.0"; port = 9053; }];
     VirtualAddrNetworkIPv4 = "10.192.0.0/10";
-    ExitPolicy = "reject *:*";
+    ExitPolicy = [ "reject *:*" ];
   };
 };
 
