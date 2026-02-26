@@ -50,21 +50,16 @@ in
   };
 
 
-  systemd.network.enable = true;
-systemd.network.netdevs."40-vlan60" = {
-  netdevConfig = { Name = "vlan60"; Kind = "vlan"; };
-  vlanConfig.Id = 60;
+  networking.vlans.vlan60 = {
+  id = 60;
+  interface = "enp2s0";
 };
-systemd.network.networks."40-vlan60" = {
-  matchConfig.Name = "vlan60";
-  networkConfig.ConfigureWithoutCarrier = true;
-  address = [ "10.40.60.254/24" ];
-  linkConfig.RequiredForOnline = "no";
+
+networking.interfaces.vlan60 = {
+  useDHCP = false;
+  ipv4.addresses = [{ address = "10.40.60.254"; prefixLength = 24; }];
 };
-systemd.network.networks."40-enp2s0" = {
-  matchConfig.Name = "enp2s0";
-  networkConfig.VLAN = [ "vlan60" ];
-}; 
+
  
   networking.wireguard.interfaces.wg0 = {
     ips = [ "10.200.0.3/24" ];
