@@ -41,6 +41,7 @@ in
   networking = {
     hostName = "caelum";
     networkmanager.enable = true;
+    nftables.enable = true;
     firewall = {
       enable = true;
       allowedTCPPorts = [ 22 2283 13378 2335 8443 8080 9040 ];
