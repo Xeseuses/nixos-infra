@@ -195,17 +195,23 @@ in
 }];
   
   # ── Tor (transparent proxy for VLAN60) ───────────────────────────────────
-services.tor = {
+  services.tor = {
   enable = true;
+  openFirewall = false;
   settings = {
     TransPort = [{ addr = "0.0.0.0"; port = 9040; }];
     DNSPort   = [{ addr = "0.0.0.0"; port = 9053; }];
-    SocksPort = [ "127.0.0.1:9050" ];
     VirtualAddrNetworkIPv4 = "10.192.0.0/10";
     ExitPolicy = [ "reject *:*" ];
   };
+  client = {
+    enable = true;
+    socksListenAddress = {
+      addr = "127.0.0.1";
+      port = 9050;
+    };
+  };
 };
-
 
   # ── Users ─────────────────────────────────────────────────────────────────
   users.users.xeseuses = {
