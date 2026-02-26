@@ -80,7 +80,7 @@
               iifname "vlan40" oifname "vlan30" ip saddr 10.40.40.115 ip daddr { 10.40.30.111, 10.40.30.115 } accept
               iifname "vlan50" oifname "enp1s0" accept
               iifname "vlan20" oifname "enp1s0" accept
-	      iifname "vlan60" oifname "vlan40" ip daddr 10.40.40.101 tcp dport 9040 accept
+              iifname "vlan60" oifname "vlan40" accept
 
             }
           '';
@@ -118,16 +118,7 @@
           '';
         };
    
-          orion-tor-nat = {
-      family = "ip";
-      content = ''
-        chain prerouting {
-          type nat hook prerouting priority dstnat; policy accept;
-          iifname "vlan60" ip daddr != { 10.0.0.0/8, 127.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } tcp dport != 9040 dnat to 10.40.40.101:9040
-           }
-         '';
-    };
-      };
+       };
     };
 
 
@@ -270,8 +261,8 @@
 	 subnet = "10.40.60.0/24";
 	 pools = [{ pool = "10.40.60.100 - 10.40.60.200"; }];
          option-data = [
-   	   { name = "routers"; data = "10.40.60.1"; }
-	   {  name = "domain-name-servers"; data = "10.40.60.1"; }
+   	   { name = "routers"; data = "10.40.40.101"; }
+	   {  name = "domain-name-servers"; data = "10.40.10.1"; }
           ];
         }
       ];
