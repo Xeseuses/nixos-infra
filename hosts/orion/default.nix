@@ -80,7 +80,8 @@
               iifname "vlan40" oifname "vlan30" ip saddr 10.40.40.115 ip daddr { 10.40.30.111, 10.40.30.115 } accept
               iifname "vlan50" oifname "enp1s0" accept
               iifname "vlan20" oifname "enp1s0" accept
-              iifname "vlan60" oifname "vlan40" ip daddr 10.40.40.101 accept
+	      iifname "vlan60" oifname "vlan40" ip daddr 10.40.40.101 tcp dport 9040 accept
+	      iifname "vlan60" oifname "vlan40" ip daddr 10.40.40.101 udp dport 9053 accept
 
             }
           '';
@@ -117,9 +118,20 @@
             }
           '';
         };
-
+   
+          orion-tor-nat = {
+      family = "ip";
+      content = ''
+        chain prerouting {
+          type nat hook prerouting priority dstnat; policy accept;
+          iifname "vlan60" udp dport 53 dnat to 10.40.40.101:9053
+          iifname "vlan60" ip daddr != { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8 } tcp dport != 9040 dnat to 10.40.40.101:9040
+        }
+      '';
+    };
       };
     };
+
 
     # ── Firewall ──────────────────────────────────────────────────────────
     firewall = {
