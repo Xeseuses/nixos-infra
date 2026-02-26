@@ -58,7 +58,7 @@ in
 networking.interfaces.vlan60 = {
   useDHCP = false;
   ipv4.addresses = [{ address = "10.40.60.254"; prefixLength = 24; }];
-};
+	};
 
  
   networking.wireguard.interfaces.wg0 = {
@@ -239,21 +239,20 @@ networking.interfaces.vlan60 = {
     ];
   };
 
-  networking.nftables.enable = true;
-networking.nftables.tables.caelum-tor-nat = {
+  networking.nftables.tables.caelum-tor-nat = {
   family = "ip";
   content = ''
     chain prerouting {
       type nat hook prerouting priority dstnat; policy accept;
-      iifname "enp2s0" ip saddr 10.40.60.0/24 ip daddr != { 10.0.0.0/8, 127.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } tcp dport != 9040 dnat to 127.0.0.1:9040
+      iifname "vlan60" ip daddr != { 10.0.0.0/8, 127.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } tcp dport != 9040 dnat to 127.0.0.1:9040
     }
     chain postrouting {
       type nat hook postrouting priority srcnat; policy accept;
-      ip saddr 10.40.60.0/24 oifname != "enp2s0" masquerade
+      ip saddr 10.40.60.0/24 oifname != "vlan60" masquerade
     }
   '';
 };
-
+  
   # ── Packages ──────────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     git
