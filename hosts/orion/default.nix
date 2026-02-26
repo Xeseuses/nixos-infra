@@ -261,7 +261,7 @@
 	 subnet = "10.40.60.0/24";
 	 pools = [{ pool = "10.40.60.100 - 10.40.60.200"; }];
          option-data = [
-   	   { name = "routers"; data = "10.40.40.101"; }
+   	   { name = "routers"; data = "10.40.60.254"; }
 	   {  name = "domain-name-servers"; data = "10.40.10.1"; }
           ];
         }
