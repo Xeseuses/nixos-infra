@@ -15,6 +15,7 @@
           "10.40.30.1"   # Management
           "10.40.40.1"   # Servers
           "10.40.50.1"   # IoT
+          "10.40.60.1"   # Tor
           "127.0.0.1"    # localhost
         ];
 
@@ -32,6 +33,7 @@
           "10.40.30.0/24 allow"   # Management
           "10.40.40.0/24 allow"   # Servers
           "10.40.50.0/24 allow"   # IoT
+          "10.40.60.0/24 allow"   # Tor
         ];
 
         # Performance & security
