@@ -49,6 +49,23 @@ in
     };
   };
 
+
+  systemd.network.enable = true;
+systemd.network.netdevs."40-vlan60" = {
+  netdevConfig = { Name = "vlan60"; Kind = "vlan"; };
+  vlanConfig.Id = 60;
+};
+systemd.network.networks."40-vlan60" = {
+  matchConfig.Name = "vlan60";
+  networkConfig.ConfigureWithoutCarrier = true;
+  address = [ "10.40.60.254/24" ];
+  linkConfig.RequiredForOnline = "no";
+};
+systemd.network.networks."40-enp2s0" = {
+  matchConfig.Name = "enp2s0";
+  networkConfig.VLAN = [ "vlan60" ];
+}; 
+ 
   networking.wireguard.interfaces.wg0 = {
     ips = [ "10.200.0.3/24" ];
     privateKeyFile = "/var/lib/wireguard/private.key";
