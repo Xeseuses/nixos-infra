@@ -58,6 +58,11 @@
       vlan50 = { useDHCP = false; ipv4.addresses = [{ address = "10.40.50.1"; prefixLength = 24; }]; };
     };
 
+    networking.firewall.extraInputRules = ''
+  iifname "vlan40" ip saddr 10.200.0.0/24 tcp dport 9090 accept
+'';
+
+
     # ── nftables ──────────────────────────────────────────────────────────
     nftables = {
       enable = true;
