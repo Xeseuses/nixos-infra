@@ -125,6 +125,8 @@
         vlan40 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan50 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan20 = { allowedUDPPorts = [ 67 ]; };
+
+        wg0 = {allowedTCPPorts = [ 22 53 9090 ]; allowedUDPPorts = [ 53 ]; } ;
       };
     };
   };
