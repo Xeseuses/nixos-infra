@@ -64,6 +64,7 @@
           "\"andromeda.lan.    IN A 10.40.40.104\""
           "\"eridanus.lan.     IN A 10.40.40.117\""
           "\"ha.lan.           IN A 10.40.40.115\""
+          "\"horologium.lan.   IN A 10.40.40.106\""
           # Management (VLAN 30)
           "\"unifi-ap.lan.     IN A 10.40.30.120\""
           # IoT (VLAN 50)
@@ -83,6 +84,7 @@
           "\"10.40.50.100    everything-presence.lan\""
           "\"10.40.50.101    bed-presence.lan\""
           "\"10.40.50.103    aqara-hub.lan\""
+          "\"10.40.40.106    horologium.lan\""
         ];
       };
 
