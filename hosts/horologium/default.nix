@@ -76,6 +76,8 @@
     ];
   };
 
+  networking.firewall.checkReversePath = false;
+
   # === Users ===
   users.users.xeseuses = {
     isNormalUser       = true;
