@@ -7,6 +7,7 @@ keys:
   - &caelum age1wyvwgs0z0t84wl6teje9h6ejf7j8862yv3g3t9k2ulcy6wwpv9wqqnmz60
   - &orion age1d8gdaek78v67zz0qfmw0a4fcrh25thsytzugcdj3wlsk2a6qpe3ql0s444
   - &lyra age1xsxufzc7sj8zpatk7xqaung63p3lwj00nn364l47fmfd0fnpv5sqcmyvmj
+  - &horologium age1zf4645x6mjuv0v7rcm33t8tspjv4gtpa9nwzdxf6czsjrwpy7c6s9q095g
 
 creation_rules:
   # Default: encrypt for admin (you)
@@ -20,3 +21,4 @@ creation_rules:
           - *caelum
           - *orion
           - *lyra
+          - *horologium
