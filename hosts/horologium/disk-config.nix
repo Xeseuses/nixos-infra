@@ -10,11 +10,11 @@
         type = "gpt";
         partitions = {
           ESP = {
-            size     = "1G";
-            type     = "EF00";
-            content  = {
-              type   = "filesystem";
-              format = "vfat";
+            size    = "1G";
+            type    = "EF00";
+            content = {
+              type       = "filesystem";
+              format     = "vfat";
               mountpoint = "/boot";
               mountOptions = [ "umask=0077" ];
             };
@@ -31,69 +31,48 @@
       };
     };
 
-    # ── ZFS media pool (2x mirror: sda+sdb, sdc+sdd) ───────────────────────
+    # ── ZFS mirror disks ────────────────────────────────────────────────────
+    disk.sda = { type = "disk"; device = "/dev/sda"; content = { type = "gpt"; partitions.zfs = { size = "100%"; content = { type = "zfs"; pool = "media"; }; }; }; };
+    disk.sdb = { type = "disk"; device = "/dev/sdb"; content = { type = "gpt"; partitions.zfs = { size = "100%"; content = { type = "zfs"; pool = "media"; }; }; }; };
+    disk.sdc = { type = "disk"; device = "/dev/sdc"; content = { type = "gpt"; partitions.zfs = { size = "100%"; content = { type = "zfs"; pool = "media"; }; }; }; };
+    disk.sdd = { type = "disk"; device = "/dev/sdd"; content = { type = "gpt"; partitions.zfs = { size = "100%"; content = { type = "zfs"; pool = "media"; }; }; }; };
+
+    # ── ZFS pool ─────────────────────────────────────────────────────────────
     zpool.media = {
       type = "zpool";
-      mode = {
-        topology = {
-          type   = "topology";
-          vdevs  = [
-            { mode    = "mirror"; members = [ "sda" "sdb" ]; }
-            { mode    = "mirror"; members = [ "sdc" "sdd" ]; }
-          ];
-        };
-      };
+      mode = "mirror";  # disko will mirror sda+sdb+sdc+sdd as one big mirror
 
       options = {
-        ashift          = "12";   # 4K sectors
-        autotrim        = "on";   # SSDs benefit from trim
+        ashift   = "12";
+        autotrim = "on";
       };
 
       rootFsOptions = {
-        compression     = "zstd";
-        atime           = "off";
-        xattr           = "sa";
-        acltype         = "posixacl";
-        "com.sun:auto-snapshot" = "false";
+        compression                = "zstd";
+        atime                      = "off";
+        xattr                      = "sa";
+        acltype                    = "posixacl";
+        "com.sun:auto-snapshot"    = "false";
       };
 
       datasets = {
-        "media" = {
-          type    = "zfs_fs";
-          mountpoint = "/media";
-          options.mountpoint = "legacy";
-        };
-        "media/movies" = {
-          type    = "zfs_fs";
+        "movies" = {
+          type       = "zfs_fs";
           mountpoint = "/media/movies";
-          options.mountpoint = "legacy";
         };
-        "media/tv" = {
-          type    = "zfs_fs";
+        "tv" = {
+          type       = "zfs_fs";
           mountpoint = "/media/tv";
-          options.mountpoint = "legacy";
         };
-        "media/downloads" = {
-          type    = "zfs_fs";
+        "downloads" = {
+          type       = "zfs_fs";
           mountpoint = "/media/downloads";
-          options.mountpoint = "legacy";
         };
-        "media/music" = {
-          type    = "zfs_fs";
+        "music" = {
+          type       = "zfs_fs";
           mountpoint = "/media/music";
-          options.mountpoint = "legacy";
         };
       };
     };
   };
-
-  # Mount ZFS datasets
-  fileSystems = {
-    "/media"           = { device = "media/media";     fsType = "zfs"; };
-    "/media/movies"    = { device = "media/media/movies";    fsType = "zfs"; };
-    "/media/tv"        = { device = "media/media/tv";        fsType = "zfs"; };
-    "/media/downloads" = { device = "media/media/downloads"; fsType = "zfs"; };
-    "/media/music"     = { device = "media/media/music";     fsType = "zfs"; };
-  };
 }
-

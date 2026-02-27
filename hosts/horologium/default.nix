@@ -1,4 +1,3 @@
-
 { config, pkgs, lib, ... }:
 {
   imports = [
@@ -84,7 +83,7 @@
     extraPackages = with pkgs; [
       intel-media-driver    # VAAPI for 11th+ gen
       intel-vaapi-driver    # VAAPI for older gen (fallback)
-      vaapiVdpau
+      libva-vdpau-driver
       libvdpau-va-gl
     ];
   };
@@ -211,4 +210,3 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion = "25.05";
 }
-
