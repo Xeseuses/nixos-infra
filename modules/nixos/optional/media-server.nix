@@ -6,10 +6,8 @@
     enableOnBoot     = true;
     autoPrune.enable = true;
   };
-
   virtualisation.oci-containers.backend = "docker";
   virtualisation.oci-containers.containers = {
-
     # ── Jellyfin ──────────────────────────────────────────────────────────────
     jellyfin = {
       image   = "jellyfin/jellyfin:latest";
@@ -29,20 +27,18 @@
       ];
       autoStart = true;
     };
-
     # ── Prowlarr (indexer manager) ─────────────────────────────────────────────
     prowlarr = {
       image   = "lscr.io/linuxserver/prowlarr:latest";
       volumes = [ "/var/lib/prowlarr:/config" ];
-      ports   = [ "9696:9696" ];
       environment = {
         PUID = "1000";
         PGID = "1000";
         TZ   = "Europe/Amsterdam";
       };
+      extraOptions = [ "--network=host" ];
       autoStart = true;
     };
-
     # ── Sonarr (TV shows) ──────────────────────────────────────────────────────
     sonarr = {
       image   = "lscr.io/linuxserver/sonarr:latest";
@@ -50,15 +46,14 @@
         "/var/lib/sonarr:/config"
         "/media:/media"
       ];
-      ports   = [ "8989:8989" ];
       environment = {
         PUID = "1000";
         PGID = "1000";
         TZ   = "Europe/Amsterdam";
       };
+      extraOptions = [ "--network=host" ];
       autoStart = true;
     };
-
     # ── Radarr (movies) ────────────────────────────────────────────────────────
     radarr = {
       image   = "lscr.io/linuxserver/radarr:latest";
@@ -66,15 +61,14 @@
         "/var/lib/radarr:/config"
         "/media:/media"
       ];
-      ports   = [ "7878:7878" ];
       environment = {
         PUID = "1000";
         PGID = "1000";
         TZ   = "Europe/Amsterdam";
       };
+      extraOptions = [ "--network=host" ];
       autoStart = true;
     };
-
     # ── Bazarr (subtitles) ─────────────────────────────────────────────────────
     bazarr = {
       image   = "lscr.io/linuxserver/bazarr:latest";
@@ -82,15 +76,14 @@
         "/var/lib/bazarr:/config"
         "/media:/media"
       ];
-      ports   = [ "6767:6767" ];
       environment = {
         PUID = "1000";
         PGID = "1000";
         TZ   = "Europe/Amsterdam";
       };
+      extraOptions = [ "--network=host" ];
       autoStart = true;
     };
-
     # ── SABnzbd (usenet download client) ──────────────────────────────────────
     sabnzbd = {
       image   = "lscr.io/linuxserver/sabnzbd:latest";
@@ -98,18 +91,15 @@
         "/var/lib/sabnzbd:/config"
         "/media/downloads:/media/downloads"
       ];
-      ports   = [ "8080:8080" ];
       environment = {
         PUID = "1000";
         PGID = "1000";
         TZ   = "Europe/Amsterdam";
-        HOST_WHITELIST_ENTRIES = "horologium.lan,10.40.40.106";
       };
+      extraOptions = [ "--network=host" ];
       autoStart = true;
     };
-
   };
-
   # Persistent data directories
   systemd.tmpfiles.rules = [
     "d /var/lib/jellyfin/config 0755 root root -"
@@ -121,4 +111,3 @@
     "d /var/lib/sabnzbd          0755 root root -"
   ];
 }
-
