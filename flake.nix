@@ -1,35 +1,27 @@
-# flake.nix
 {
   description = "NixOS Infrastructure";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    
     nixos-hardware.url = "github:NixOS/nixos-hardware";
-    
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
-     sops-nix = {
+    sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  
-    # Impermanence
     impermanence.url = "github:nix-community/impermanence";
-    
     microvm = {
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
-    }; 
-    
+    };
   };
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, ... }: {
     nixosConfigurations = {
-      
+
       eridanus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
@@ -44,7 +36,7 @@
           nixos-hardware.nixosModules.common-pc-ssd
         ];
       };
-      
+
       vela = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
@@ -53,64 +45,71 @@
           ./modules/nixos/optional/backup.nix
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
- 	  impermanence.nixosModules.impermanence    
-          ./modules/nixos/optional/impermanence.nix 
-          ./modules/nixos/optional/desktop-niri.nix  
-          ./modules/nixos/optional/laptop.nix   
+          impermanence.nixosModules.impermanence
+          ./modules/nixos/optional/impermanence.nix
+          ./modules/nixos/optional/desktop-niri.nix
+          ./modules/nixos/optional/laptop.nix
           ./hosts/vela
         ];
       };
+
       orion = nixpkgs.lib.nixosSystem {
-	system = "x86_64-linux";
-	modules = [
-           ./modules/options.nix
-	   ./modules/nixos/common
-	   disko.nixosModules.disko
-           sops-nix.nixosModules.sops
-	   ./hosts/orion
-	 ];
-	};
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/orion
+        ];
+      };
+
       andromeda = nixpkgs.lib.nixosSystem {
-      	system = "x86_64-linux";
-      	modules = [
-           ./modules/options.nix
-           ./modules/nixos/common
-           disko.nixosModules.disko
-	   sops-nix.nixosModules.sops
-	   microvm.nixosModules.host
-           ./hosts/andromeda
-           nixos-hardware.nixosModules.common-cpu-intel
-           nixos-hardware.nixosModules.common-pc-ssd
-           ];
-         };
-     lyra = nixpkgs.lib.nixosSystem {
-  system = "x86_64-linux";
-  modules = [
-    ./modules/options.nix
-    ./modules/nixos/common
-    disko.nixosModules.disko
-    sops-nix.nixosModules.sops
-    ./hosts/lyra
-  ];
-};     
-    caelum = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ./modules/options.nix
-	./modules/nixos/common
-	./hosts/caelum
-        sops-nix.nixosModules.sops
-     ];
-    };	
-    horologium = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ./modules/options.nix
-        ./modules/nixos/common
-        ./hosts/horologium
-        disko.nixosModules.disko
-        sops-nix.nixosModules.sops
-     ];
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          microvm.nixosModules.host
+          ./hosts/andromeda
+          nixos-hardware.nixosModules.common-cpu-intel
+          nixos-hardware.nixosModules.common-pc-ssd
+        ];
+      };
+
+      lyra = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/lyra
+        ];
+      };
+
+      caelum = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          ./hosts/caelum
+          sops-nix.nixosModules.sops
+        ];
+      };
+
+      horologium = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/options.nix
+          ./modules/nixos/common
+          ./hosts/horologium
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+        ];
+      };
+
     };
   };
 }
