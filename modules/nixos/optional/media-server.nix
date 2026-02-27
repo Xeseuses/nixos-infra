@@ -103,6 +103,7 @@
         PUID = "1000";
         PGID = "1000";
         TZ   = "Europe/Amsterdam";
+        HOST_WHITELIST_ENTRIES = "horologium.lan,10.40.40.106";
       };
       autoStart = true;
     };
