@@ -164,6 +164,8 @@
     ia_pd 1/::/62 vlan10/0 vlan30/1 vlan40/2 vlan50/3
   '';
 
+  networking.dhcpcd.denyInterfaces = [ "ens1" "vlan20" "vlan60" "peth*" "vif*" "tap*" "tun*" "virbr*" "vnet*" "vboxnet*" "sit*" ];
+
   # ── CoreRAD (dynamic Router Advertisements) ───────────────────────────────
   # CoreRAD reads actual interface addresses at runtime so it automatically
   # advertises the correct prefix after every dhcpcd renewal — no hardcoded
