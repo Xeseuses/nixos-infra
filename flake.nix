@@ -102,6 +102,14 @@
         sops-nix.nixosModules.sops
      ];
     };	
+    horologium = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./modules/options.nix
+        ./modules/nixos/common
+        ./hosts/horologium
+        disko.nixosModules.sops
+        sops-nix.nixosModules.sops
     };
   };
 }
