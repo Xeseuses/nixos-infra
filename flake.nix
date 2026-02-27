@@ -108,8 +108,9 @@
         ./modules/options.nix
         ./modules/nixos/common
         ./hosts/horologium
-        disko.nixosModules.sops
+        disko.nixosModules.disko
         sops-nix.nixosModules.sops
+     ];
     };
   };
 }
