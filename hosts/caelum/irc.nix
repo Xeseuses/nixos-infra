@@ -12,11 +12,11 @@
       [Limits]
         MaxConnections = 10
         MaxNickLen = 20
-        PingTimeout = 30
-        PongTimeout = 20
 
       [Options]
         PAM = no
+        SyslogFacility = local1
+        LogLevel = 5
 
       [Operator]
         Name = xeseuses
@@ -25,7 +25,6 @@
       [Channel]
         Name = #home
         Topic = OpenClaw home channel
-        Modes = p 
     '';
   };
 
