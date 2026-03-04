@@ -1,0 +1,24 @@
+keys:
+  # Your personal key (for encrypting/decrypting locally)
+  - &admin age126y7n5guy5ezvegpu6luttnu6qp0utu4acmzcuruzxww4ku0e54srul0xa
+  - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
+  - &vela age15zxlzqt5tjs3vnujkwytmdz7z7hynrt95paj8fe9myzq0fnh7udqcy2dmz
+  - &andromeda age17k4whyzw486kgy30r5awv7n2q0wl6rr4ejgadzt3zmy24n7c2y3s6qncyz
+  - &caelum age1wyvwgs0z0t84wl6teje9h6ejf7j8862yv3g3t9k2ulcy6wwpv9wqqnmz60
+  - &orion age1d8gdaek78v67zz0qfmw0a4fcrh25thsytzugcdj3wlsk2a6qpe3ql0s444
+  - &lyra age1xsxufzc7sj8zpatk7xqaung63p3lwj00nn364l47fmfd0fnpv5sqcmyvmj
+  - &horologium age1zf4645x6mjuv0v7rcm33t8tspjv4gtpa9nwzdxf6czsjrwpy7c6s9q095g
+
+creation_rules:
+  # Default: encrypt for admin (you)
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *eridanus
+          - *vela
+          - *andromeda
+          - *caelum
+          - *orion
+          - *lyra
+          - *horologium
