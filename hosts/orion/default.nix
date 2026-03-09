@@ -30,6 +30,10 @@
     enable          = true;
     reflector       = true;
     allowInterfaces = [ "vlan40" "vlan50" ];
+    extraConfig = ''
+    [server]
+    cache-entries-max=4096
+  '';
   };
 
   # ── Networking ────────────────────────────────────────────────────────────
@@ -78,6 +82,7 @@
               iifname "vlan40" oifname "vlan50" accept
               iifname "vlan40" oifname "vlan30" ip saddr 10.40.40.115 ip daddr { 10.40.30.111, 10.40.30.115 } accept
               iifname "vlan50" oifname "enp1s0" accept
+              iifname "vlan50" oifname "vlan40" ip daddr 10.40.40.115 accept
               iifname "vlan20" oifname "enp1s0" accept
               iifname "vlan60" oifname "vlan40" accept
 	      iifname "enp1s0" oifname "vlan40" ip daddr 10.40.40.117 udp dport 29531 accept
