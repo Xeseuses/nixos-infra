@@ -71,6 +71,7 @@
           "\"everything-presence.lan. IN A 10.40.50.100\""
           "\"bed-presence.lan.        IN A 10.40.50.101\""
           "\"aqara-hub.lan.           IN A 10.40.50.103\""
+          "\"cache.lan.               IN A 10.40.40.117\""
         ];
 
         # Reverse DNS for .lan hosts
@@ -85,6 +86,7 @@
           "\"10.40.50.101    bed-presence.lan\""
           "\"10.40.50.103    aqara-hub.lan\""
           "\"10.40.40.106    horologium.lan\""
+          "\"10.40.40.117    cache.lan\""
         ];
       };
 

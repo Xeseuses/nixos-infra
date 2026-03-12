@@ -4,6 +4,7 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ../../modules/nixos/optional/media-server.nix
+    ../../modules/nixos/optional/nix-builder.nix
   ];
 
   # === SOPS Configuration ===
