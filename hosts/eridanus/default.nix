@@ -29,7 +29,7 @@
       # Binary cache server
       binaryCache = {
         enable = true;
-        server = "cache.home.arpa";
+        server = "cache.lan";
       };
 
       # Backups
