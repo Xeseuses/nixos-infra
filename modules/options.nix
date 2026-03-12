@@ -42,7 +42,7 @@
         enable = lib.mkEnableOption "binary cache server";
         server = lib.mkOption {
           type = lib.types.str;
-          default = "cache.home.arpa";
+          default = "cache.lan";
           description = "Cache server hostname";
         };
       };
