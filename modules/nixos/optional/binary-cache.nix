@@ -6,6 +6,10 @@ lib.mkIf config.asthrossystems.features.binaryCache.enable {
     signKeyPaths = [ "/var/lib/nix-serve/cache-private-key.pem" ];
     settings = {
       bind = "0.0.0.0:5000";
+      # Trust horologium's upload key
+      allowed_signing_keys = [
+        "horologium-builder:bhRwmJU+S+RrRc1XJdrghLNozzZnWl/38iOB+hexA1E="
+      ];
     };
   };
 
