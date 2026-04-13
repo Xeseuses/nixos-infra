@@ -1,19 +1,22 @@
 { config, lib, pkgs, ... }:
 lib.mkIf config.asthrossystems.features.binaryCache.enable {
-  # Nix binary cache server (harmonia — replaces nix-serve)
+  # Nix binary cache server (harmonia)
   services.harmonia = {
     enable = true;
     signKeyPaths = [ "/var/lib/nix-serve/cache-private-key.pem" ];
     settings = {
       bind = "0.0.0.0:5000";
-      # Trust horologium's upload key
-      allowed_signing_keys = [
-        "horologium-builder:bhRwmJU+S+RrRc1XJdrghLNozzZnWl/38iOB+hexA1E="
-      ];
     };
   };
 
-  # Open firewall (same port as before — no client changes needed)
+  # Trust horologium's upload signing key so nix-daemon accepts pushed paths
+  nix.settings.trusted-public-keys = [
+    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    "cache.lan:nV+mP0rba5Q3gf/LSxe2AzJgybUYBvFFByWzmcwmG1k="
+    "horologium-builder:bhRwmJU+S+RrRc1XJdrghLNozzZnWl/38iOB+hexA1E="
+  ];
+
+  # Open firewall
   networking.firewall.allowedTCPPorts = [ 5000 ];
 
   # Generate cache signing keys on first boot (kept for new deployments)
