@@ -3,6 +3,7 @@ let
   repoPath = "/home/xeseuses/nixos-infra";
   cacheUrl = "http://cache.lan:5000";
   cachePublicKey = "cache.lan:nV+mP0rba5Q3gf/LSxe2AzJgybUYBvFFByWzmcwmG1k=";
+  uploadKeyPath = "/var/lib/nix-serve/upload-private-key.pem";
 
   git = "${pkgs.git}/bin/git";
   nix = "${pkgs.nix}/bin/nix";
@@ -34,7 +35,7 @@ let
     echo "[nix-builder] Pushing store paths to ${cacheUrl}"
     for host in $SYSTEMS; do
       ${nix} copy \
-        --to "${cacheUrl}" \
+        --to "${cacheUrl}?secret-key=${uploadKeyPath}" \
         ".#nixosConfigurations.$host.config.system.build.toplevel" \
         || echo "[nix-builder] WARNING: nix copy failed for $host, continuing..."
     done
@@ -48,6 +49,8 @@ in
     substituters = [ cacheUrl "https://cache.nixos.org" ];
     trusted-public-keys = [ cachePublicKey "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
     trusted-users = [ "xeseuses" "root" ];
+    # Allow horologium to sign uploads
+    secret-key-files = [ uploadKeyPath ];
   };
 
   # Nightly build + push timer
