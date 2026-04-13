@@ -22,23 +22,30 @@ let
     SYSTEMS=$(${nix} flake show --json 2>/dev/null \
       | ${jq} -r '.nixosConfigurations | keys[]')
 
+    BUILT_PATHS=""
     for host in $SYSTEMS; do
       echo "[nix-builder] Building nixosConfigurations.$host"
-      ${nix} build \
+      OUT=$(${nix} build \
         ".#nixosConfigurations.$host.config.system.build.toplevel" \
         --no-link \
-        --print-build-logs \
+        --print-out-paths \
+        2>/dev/null) \
+        && BUILT_PATHS="$BUILT_PATHS $OUT" \
         || echo "[nix-builder] WARNING: build failed for $host, continuing..."
     done
 
-    # Push all built paths to the binary cache on eridanus
-    echo "[nix-builder] Pushing store paths to ${cacheUrl}"
-    for host in $SYSTEMS; do
-      ${nix} copy \
-        --to "${cacheUrl}?secret-key=${uploadKeyPath}" \
-        ".#nixosConfigurations.$host.config.system.build.toplevel" \
-        || echo "[nix-builder] WARNING: nix copy failed for $host, continuing..."
-    done
+    if [ -z "$BUILT_PATHS" ]; then
+      echo "[nix-builder] ERROR: no paths were built, skipping push"
+      exit 1
+    fi
+
+    # Push all built toplevel paths in one shot — avoids duplicate upload races
+    echo "[nix-builder] Pushing all store paths to ${cacheUrl}"
+    ${nix} copy \
+      --to "${cacheUrl}?secret-key=${uploadKeyPath}" \
+      $BUILT_PATHS \
+      && echo "[nix-builder] Push complete" \
+      || echo "[nix-builder] WARNING: some paths failed to push"
 
     echo "[nix-builder] Done — $(date)"
   '';
@@ -49,7 +56,6 @@ in
     substituters = [ cacheUrl "https://cache.nixos.org" ];
     trusted-public-keys = [ cachePublicKey "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
     trusted-users = [ "xeseuses" "root" ];
-    # Allow horologium to sign uploads
     secret-key-files = [ uploadKeyPath ];
   };
 
