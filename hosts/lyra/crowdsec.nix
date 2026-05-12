@@ -84,6 +84,7 @@ systemd.services.crowdsec-install-collections = {
       CONFIG=$(ls /nix/store/*-crowdsec.yaml 2>/dev/null | head -1)
       ${pkgs.crowdsec}/bin/cscli -c "$CONFIG" collections install crowdsecurity/linux 2>/dev/null || true
       ${pkgs.crowdsec}/bin/cscli -c "$CONFIG" collections install crowdsecurity/sshd 2>/dev/null || true
+      ${pkgs.crowdsec}/bin/cscli -c "$CONFIG" collections install crowdsecurity/caddy 2>/dev/null || true
     '';
   };
 };
