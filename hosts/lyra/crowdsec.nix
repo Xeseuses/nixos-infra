@@ -7,8 +7,6 @@
     "d /var/log/caddy 0750 caddy caddy -"
   ];
 
-  sops.secrets."lyra/crowdsec/bouncer-api-key" = {};
-
   services.crowdsec = {
     enable = true;
     settings = {
@@ -31,7 +29,7 @@
     };
   };
 
- services.crowdsec-firewall-bouncer = {
+  services.crowdsec-firewall-bouncer = {
     enable = true;
     registerBouncer.enable = true;
     settings = {
@@ -51,5 +49,5 @@
         };
       };
     };
-  }; 
+  };
 }
