@@ -1,18 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   services.crowdsec = {
     enable = true;
-    acquisitions = [
-      {
-        filenames = [ "/var/log/auth.log" ];
-        labels.type = "syslog";
-      }
-      {
-        filenames = [ "/var/log/caddy/access.log" ];
-        labels.type = "caddy";
-      }
-    ];
     settings = {
       api.server = {
         listen_uri = "127.0.0.1:8080";
@@ -20,7 +10,20 @@
     };
   };
 
-  # Firewall bouncer — translates CrowdSec decisions to nftables blocks
+  # Acquisitions config as a file
+  environment.etc."crowdsec/acquis.yaml".text = ''
+    ---
+    filenames:
+      - /var/log/auth.log
+    labels:
+      type: syslog
+    ---
+    filenames:
+      - /var/log/caddy/access.log
+    labels:
+      type: caddy
+  '';
+
   services.crowdsec-firewall-bouncer = {
     enable = true;
     settings = {
@@ -41,4 +44,8 @@
       };
     };
   };
+
+  systemd.tmpfiles.rules = [
+    "d /var/log/caddy 0750 caddy caddy -"
+  ];
 }
