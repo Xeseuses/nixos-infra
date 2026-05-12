@@ -7,12 +7,26 @@
     "d /var/log/caddy 0750 caddy caddy -"
   ];
 
-  services.crowdsec = {
+  sops.secrets."lyra/crowdsec/enroll-key" = {
+    owner = "crowdsec";
+  };
+
+   services.crowdsec = {
     enable = true;
     settings = {
       general.api.server.enable = true;
       lapi.credentialsFile = "/var/lib/crowdsec/local_api_credentials.yaml";
       capi.credentialsFile = "/var/lib/crowdsec/online_api_credentials.yaml";
+      console = {
+        tokenFile = config.sops.secrets."lyra/crowdsec/enroll-key".path;
+        configuration = {
+          share_manual_decisions = true;
+          share_tainted = true;
+          share_custom = true;
+          console_management = false;
+          share_context = true;
+        };
+      };
     };
     localConfig = {
       acquisitions = [
@@ -29,7 +43,7 @@
     };
   };
 
-  services.crowdsec-firewall-bouncer = {
+   services.crowdsec-firewall-bouncer = {
     enable = true;
     registerBouncer.enable = true;
     settings = {
