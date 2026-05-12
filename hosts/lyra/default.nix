@@ -3,6 +3,7 @@
   imports = [
   ./disk-config.nix
   ./hardware-configuration.nix
+  ./crowdsec.nix
   ];
 
   asthrossystems = {
@@ -94,6 +95,17 @@
       '';
     };
   };
+
+  globalConfig = ''
+    log {
+      output file /var/log/caddy/access.log
+    }
+  '';
+ 
+ systemd.tmpfiles.rules = [
+  "d /var/log/caddy 0750 caddy caddy -"
+];
+
 };
 
   # ── SSH Bastion ───────────────────────────────────────────────────────────
