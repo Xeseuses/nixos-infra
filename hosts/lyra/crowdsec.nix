@@ -7,6 +7,8 @@
     "d /var/log/caddy 0750 caddy caddy -"
   ];
 
+  sops.secrets."lyra/crowdsec/bouncer-api-key" = {};
+
   services.crowdsec = {
     enable = true;
     settings = {
@@ -33,6 +35,8 @@
     enable = true;
     settings = {
       mode = "nftables";
+      api_key = "file:${config.sops.secrets."lyra/crowdsec/bouncer-api-key".path}";
+      api_url = "http://127.0.0.1:8080";
       nftables = {
         ipv4 = {
           enabled = true;
