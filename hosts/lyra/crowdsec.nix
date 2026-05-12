@@ -71,4 +71,21 @@
       };
     };
   };
+
+systemd.services.crowdsec-install-collections = {
+  description = "Install CrowdSec collections";
+  after = [ "crowdsec.service" ];
+  wants = [ "crowdsec.service" ];
+  wantedBy = [ "multi-user.target" ];
+  serviceConfig = {
+    Type = "oneshot";
+    RemainAfterExit = true;
+    ExecStart = pkgs.writeShellScript "crowdsec-install-collections" ''
+      CONFIG=$(ls /nix/store/*-crowdsec.yaml 2>/dev/null | head -1)
+      ${pkgs.crowdsec}/bin/cscli -c "$CONFIG" collections install crowdsecurity/linux 2>/dev/null || true
+      ${pkgs.crowdsec}/bin/cscli -c "$CONFIG" collections install crowdsecurity/sshd 2>/dev/null || true
+    '';
+  };
+};
+
 }
