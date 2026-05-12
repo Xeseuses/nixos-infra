@@ -107,6 +107,17 @@ systemd.tmpfiles.rules = [
     "d /var/log/caddy 0750 caddy caddy -"
   ];
 
+system.activationScripts.crowdsec-collections = {
+  deps = [ "users" ];
+  text = ''
+    if ${pkgs.crowdsec}/bin/cscli -c /etc/crowdsec/config.yaml collections list 2>/dev/null | grep -q "crowdsecurity/linux"; then
+      echo "CrowdSec linux collection already installed"
+    else
+      ${pkgs.crowdsec}/bin/cscli -c /etc/crowdsec/config.yaml collections install crowdsecurity/linux || true
+    fi
+  '';
+};
+
   # ── SSH Bastion ───────────────────────────────────────────────────────────
   # Allows jumping to internal hosts via: ssh -J xeseuses@lyra xeseuses@10.40.x.x
   # Note: internal hosts only reachable if they're in the WireGuard subnet
