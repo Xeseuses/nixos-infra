@@ -28,14 +28,17 @@
         };
       };
     };
-    localConfig = {
+ 
+   localConfig = {
   acquisitions = [
     {
       source = "journalctl";
-      journalctl_filter = [
-        "_SYSTEMD_UNIT=sshd.service"
-        "_SYSTEMD_UNIT=sshd-session.service"
-      ];
+      journalctl_filter = [ "SYSLOG_IDENTIFIER=sshd" ];
+      labels.type = "syslog";
+    }
+    {
+      source = "journalctl";
+      journalctl_filter = [ "SYSLOG_IDENTIFIER=sshd-session" ];
       labels.type = "syslog";
     }
     {
@@ -44,6 +47,7 @@
     }
   ];
 };
+
   };
 
    services.crowdsec-firewall-bouncer = {
