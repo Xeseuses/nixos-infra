@@ -1,9 +1,9 @@
 { config, pkgs, ... }:
 {
   imports = [
-    ./disk-config.nix
-    ./hardware-configuration.nix
-    ./crowdsec.nix
+  ./disk-config.nix
+  ./hardware-configuration.nix
+  ./crowdsec.nix
   ];
 
   asthrossystems = {
@@ -12,17 +12,16 @@
   };
 
   sops = {
-    defaultSopsFile = ../../secrets/secrets.yaml;
-    age.keyFile = "/var/lib/sops-nix/key.txt";
-    secrets."lyra/wireguard/private-key" = {};
-  };
+  defaultSopsFile = ../../secrets/secrets.yaml;
+  age.keyFile = "/var/lib/sops-nix/key.txt";
+  secrets."lyra/wireguard/private-key" = {};
+};
 
   boot.loader.grub = {
-    enable = true;
-    efiSupport = false;
-  };
-
-  networking = {
+  enable = true;
+  efiSupport = false;
+}; 
+    networking = {
     hostName = "lyra";
     firewall = {
       enable = true;
@@ -33,17 +32,8 @@
   };
 
   boot.kernel.sysctl = {
-    "net.ipv4.ip_forward" = 1;
-  };
-
-  # ── SSH Hardening ─────────────────────────────────────────────────────────
-  services.openssh = {
-    settings = {
-      PasswordAuthentication = false;
-      PermitRootLogin = "no";
-      MaxAuthTries = 3;
-    };
-  };
+  "net.ipv4.ip_forward" = 1;
+};
 
   # ── WireGuard Server ──────────────────────────────────────────────────────
   # Hub for andromeda (10.200.0.2) and caelum (10.200.0.3)
@@ -51,12 +41,13 @@
   networking.wireguard.interfaces.wg0 = {
     ips = [ "10.200.0.1/24" ];
     listenPort = 51821;
+   # privateKeyFile = "/var/lib/wireguard/private.key";
     privateKeyFile = config.sops.secrets."lyra/wireguard/private-key".path;
     peers = [
       {
         # andromeda
         publicKey = "Su/GnnDxSCnUpH45jTO3dwZVHk7/VskvwkDscpBISEA=";
-        allowedIPs = [ "10.200.0.2/32" "10.40.10.0/24" "10.40.30.0/24" "10.40.40.0/24" "10.40.50.0/24" ];
+        allowedIPs = [ "10.200.0.2/32" "10.40.10.0/24" "10.40.30.0/24" "10.40.40.0/24" "10.40.50.0/24" ];  
       }
       {
         # caelum
@@ -64,59 +55,61 @@
         allowedIPs = [ "10.200.0.3/32" ];
       }
       {
-        # vela
-        publicKey = "szfiqi0Uea4O8Wfml0LPQ25jiAbVkSy0jMVusDGNWhU=";
-        allowedIPs = [ "10.200.0.4/32" ];
-      }
-      {
-        # phone
-        publicKey = "6fYXePTJ2x0bMwlnKiyfVish/Z/h+r4UJhZor/ZBVnQ=";
-        allowedIPs = [ "10.200.0.5/32" ];
-      }
+      # vela
+      publicKey = "szfiqi0Uea4O8Wfml0LPQ25jiAbVkSy0jMVusDGNWhU=";
+      allowedIPs = [ "10.200.0.4/32" ];
+    }
+    {
+      # phone
+      publicKey = "6fYXePTJ2x0bMwlnKiyfVish/Z/h+r4UJhZor/ZBVnQ=";
+	      allowedIPs = [ "10.200.0.5/32" ];
+	    }
     ];
   };
 
   # ── Caddy Reverse Proxy ───────────────────────────────────────────────────
-
+  
   services.caddy = {
-    enable = true;
-    globalConfig = ''
-      log {
-        output file /var/log/caddy/access.log
-      }
-    '';
-    virtualHosts = {
-      "ha.xesh.cc" = {
-        extraConfig = "reverse_proxy 10.200.0.2:8123";
-      };
-      "immich.xesh.cc" = {
-        extraConfig = "reverse_proxy 10.200.0.3:2283";
-      };
-      "audiobooks.xesh.cc" = {
-        extraConfig = "reverse_proxy 10.200.0.3:13378";
-      };
-      "solibieb.nl" = {
-        extraConfig = "reverse_proxy 10.200.0.3:8081";
-      };
-      "matrix.xesh.cc" = {
-        extraConfig = "reverse_proxy 10.200.0.3:6167";
-      };
-      "xesh.cc" = {
-        extraConfig = ''
-          respond /.well-known/matrix/server `{"m.server":"matrix.xesh.cc:443"}` 200
-          respond /.well-known/matrix/client `{"m.homeserver":{"base_url":"https://matrix.xesh.cc"}}` 200
-          respond 404
-        '';
-      };
+  enable = true;
+  virtualHosts = {
+    "ha.xesh.cc" = {
+      extraConfig = "reverse_proxy 10.200.0.2:8123";
+    };
+    "immich.xesh.cc" = {
+      extraConfig = "reverse_proxy 10.200.0.3:2283";
+    };
+    "audiobooks.xesh.cc" = {
+      extraConfig = "reverse_proxy 10.200.0.3:13378";
+    };
+    "solibieb.nl" = {
+      extraConfig = "reverse_proxy 10.200.0.3:8081";
+    };
+    "matrix.xesh.cc" = {
+      extraConfig = "reverse_proxy 10.200.0.3:6167";
+    };
+    "xesh.cc" = {
+      extraConfig = ''
+        respond /.well-known/matrix/server `{"m.server":"matrix.xesh.cc:443"}` 200
+        respond /.well-known/matrix/client `{"m.homeserver":{"base_url":"https://matrix.xesh.cc"}}` 200
+        respond 404
+      '';
     };
   };
 
-  systemd.tmpfiles.rules = [
+  globalConfig = ''
+    log {
+      output file /var/log/caddy/access.log
+    }
+  '';
+ };
+
+systemd.tmpfiles.rules = [
     "d /var/log/caddy 0750 caddy caddy -"
   ];
 
   # ── SSH Bastion ───────────────────────────────────────────────────────────
   # Allows jumping to internal hosts via: ssh -J xeseuses@lyra xeseuses@10.40.x.x
+  # Note: internal hosts only reachable if they're in the WireGuard subnet
 
   users.users.xeseuses = {
     isNormalUser = true;
@@ -130,3 +123,4 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion = "25.05";
 }
+
