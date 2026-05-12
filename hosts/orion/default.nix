@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./kea-leases-viewer.nix  # DHCP lease dashboard on port 9090
     ./unbound.nix            # Recursive DNS + local hostnames + ad-blocking
+    ./cake.nix
   ];
 
   asthrossystems = {
