@@ -101,12 +101,11 @@
       output file /var/log/caddy/access.log
     }
   '';
- 
- systemd.tmpfiles.rules = [
-  "d /var/log/caddy 0750 caddy caddy -"
-];
+ };
 
-};
+systemd.tmpfiles.rules = [
+    "d /var/log/caddy 0750 caddy caddy -"
+  ];
 
   # ── SSH Bastion ───────────────────────────────────────────────────────────
   # Allows jumping to internal hosts via: ssh -J xeseuses@lyra xeseuses@10.40.x.x
