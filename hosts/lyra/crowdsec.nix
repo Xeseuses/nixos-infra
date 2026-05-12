@@ -29,18 +29,21 @@
       };
     };
     localConfig = {
-      acquisitions = [
-        {
-          source = "journalctl";
-          journalctl_filter = [ "_SYSTEMD_UNIT=sshd.service" ];
-          labels.type = "syslog";
-        }
-        {
-          filenames = [ "/var/log/caddy/access.log" ];
-          labels.type = "caddy";
-        }
+  acquisitions = [
+    {
+      source = "journalctl";
+      journalctl_filter = [
+        "_SYSTEMD_UNIT=sshd.service"
+        "_SYSTEMD_UNIT=sshd-session.service"
       ];
-    };
+      labels.type = "syslog";
+    }
+    {
+      filenames = [ "/var/log/caddy/access.log" ];
+      labels.type = "caddy";
+    }
+  ];
+};
   };
 
    services.crowdsec-firewall-bouncer = {
