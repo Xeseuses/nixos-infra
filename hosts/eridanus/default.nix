@@ -81,8 +81,8 @@
   services.i2pd = {
   enable = true;
   port = 29531;
-  bandwidth = 256;
-  share = 100;
+  bandwidth = 128;
+  share = 30;
   notransit = false;
 
   proto.http = {
