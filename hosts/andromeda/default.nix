@@ -19,11 +19,13 @@
   
 
   sops = {
-   defaultSopsFile = ../../secrets/secrets.yaml;
-   age.keyFile = "/var/lib/sops-nix/key.txt";
-   secrets."andromeda/wireguard/private-key" = {};
+  defaultSopsFile = ../../secrets/secrets.yaml;
+  age.keyFile = "/var/lib/sops-nix/key.txt";
+  secrets."users/xeseuses/hashedPassword" = {
+    neededForUsers = true;
   };
-
+};
+  
   networking = {
     hostName = "andromeda";
     networkmanager.enable = true;
