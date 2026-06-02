@@ -24,8 +24,9 @@
   secrets."users/xeseuses/hashedPassword" = {
     neededForUsers = true;
   };
+  secrets."andromeda/wireguard/private-key" = {};
 };
-  
+    
   networking = {
     hostName = "andromeda";
     networkmanager.enable = true;
