@@ -6,8 +6,8 @@
 
   networking.wireguard.interfaces.mullvad0 = {
     ips = [ "10.75.35.38/32" ];
-    privateKeyFile = "/var/lib/wireguard/mullvad.key";
-
+    privateKeyFile = config.sops.secrets."orion/wireguard/private-key".path;
+  
     peers = [{
       publicKey = "PJvsgLogdAgZiVSxwTDyk9ri02mLZGuElklHShIjDGM=";
       endpoint = "154.47.29.2:51820";

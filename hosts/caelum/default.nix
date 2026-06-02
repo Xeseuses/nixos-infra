@@ -39,6 +39,7 @@ in
   };
   secrets."caelum/unifi/mongo-db-env" = {};
   secrets."caelum/unifi/unifi-env" = {};
+  secrets."caelum/wireguard/private-key" = {};
 };
   
   networking = {
@@ -69,7 +70,7 @@ networking.interfaces.vlan60 = {
  
   networking.wireguard.interfaces.wg0 = {
   ips = [ "10.200.0.3/24" ];
-  privateKeyFile = "/var/lib/wireguard/private.key";
+  privateKeyFile = config.sops.secrets."caelum/wireguard/private-key".path;
   peers = [{
     publicKey = "TPGNC4CP2U75ZMvWW2KP7hba/4RqeDYZZsbmfJPMG1o=";
     allowedIPs = [ "10.200.0.0/24" ];

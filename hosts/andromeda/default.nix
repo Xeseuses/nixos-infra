@@ -16,6 +16,14 @@
     loader.efi.canTouchEfiVariables = true;
   };
 
+  
+
+  sops = {
+   defaultSopsFile = ../../secrets/secrets.yaml;
+   age.keyFile = "/var/lib/sops-nix/key.txt";
+   secrets."andromeda/wireguard/private-key" = {};
+  };
+
   networking = {
     hostName = "andromeda";
     networkmanager.enable = true;
@@ -45,7 +53,7 @@
   networking.wireguard.interfaces.wg0 = {
   ips = [ "10.200.0.2/24" ];  # andromeda side of tunnel
 
-  privateKeyFile = "/var/lib/wireguard/private.key";
+  privateKeyFile = config.sops.secrets."andromeda/wireguard/private-key".path;  
 
   peers = [
     {
@@ -100,7 +108,7 @@ services.nginx = {
   users.users.xeseuses = {
     isNormalUser = true;
     extraGroups = [ "wheel" "libvirtd" "kvm" ];
-    initialPassword = "nixos";
+    hashedPasswordFile = config.sops.secrets."users/xeseuses/hashedPassword".path;
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDiAHl5MuIuTJHR+CciMPIzF1JNNQMwKvi6hzhHfn7tBG+7SmV2+djMh9YosRbaeI6vYoXAq7QPKUUzSbeex4dO2PvCSRHOOrlRMT790Gyg4biG2nMSWDusMkG17zykUTCH29Xi0HD6rk5VzwFJqVyJY/iEIlA02l3BwjHdqemsjwnkSkEjRGLRw1vVVKak9Pii+4GkgCKpI2js4V4C94urbiUqbBABa/lAM0CKWiF2ftLmQbcoSlkEsvF5eRQXKQTbMjcQ7BdSabNveXP+KxqdizRYZEfZSmPI+kUA4nKRFqqLBVg0krKYhOJB2mV+K7ycKEjLxy/gEiS2wRmBq5i9sP5jqjGuk59dRwQr5N9vEvO9hg39Zr0iTvALTUhUqfbViXCJPU4R0PnxSm2yiVhrWfGCrq0fHZ+cBDnu8YKI1vvpFqqUzZaQnSttJ0gyjuJhNKAG8zX4zFfqxYdaN9NmKJCCzfj5NO/FmzSKoOdCMqpTAZlkaYk4zPi6THfewp1rkxOKrOaSS74YCY6VJeN4Cl+/gjFCMpDE3oTujxrQ1sZfjFlkGwbBUb77UZdPEmvWrijPRiTPjpcR7wTzmUNnrKs+oYm5FdbzG7aaI03jEwuefqGOikwiY7WSLTZ1EfDaqp0I5li7I+0CbGNmEU0gNEW5U1G5FItCPnS4fpcrtw=="
     ];

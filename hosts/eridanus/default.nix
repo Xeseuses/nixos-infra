@@ -76,38 +76,6 @@
     loader.efi.canTouchEfiVariables = true;
   };
 
-  # === I2P Router ===
-
-  services.i2pd = {
-  enable = true;
-  port = 29531;
-  bandwidth = 128;
-  share = 30;
-  notransit = false;
-
-  proto.http = {
-    enable = true;
-    address = "0.0.0.0";
-    port = 7070;
-    hostname = "10.40.40.117";
-  };
-
-  proto.httpProxy = {
-    enable = true;
-    address = "0.0.0.0";
-    port = 4444;
-  };
-
-  proto.socksProxy = {
-    enable = true;
-    address = "0.0.0.0";
-    port = 4447;
-  };
-};  
-
-# Allow LAN access to I2P ports
-networking.firewall.allowedTCPPorts = [ 7070 4444 4447 ];
-
   # === Networking ===
    
   networking.hostName = "eridanus";

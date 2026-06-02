@@ -13,6 +13,12 @@
     isRouter = true;
   };
 
+  sops = {
+  defaultSopsFile = ../../secrets/secrets.yaml;
+  age.keyFile = "/var/lib/sops-nix/key.txt";
+  secrets."andromeda/wireguard/private-key" = {};  # or orion/mullvad/private-key
+  }; 
+
   # ── Boot ──────────────────────────────────────────────────────────────────
   boot = {
     loader.systemd-boot.enable = true;

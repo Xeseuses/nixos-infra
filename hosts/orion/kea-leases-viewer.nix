@@ -13,6 +13,9 @@
       ExecStart = "${pkgs.python3}/bin/python3 ${./kea-leases-viewer.py}";
       Restart = "on-failure";
       RestartSec = "5s";
+      User = "nobody";
+      AmbientCapabilities = [ "CAP_NET_RAW" ];
+      NoNewPrivileges = true;
     };
   };
 }
