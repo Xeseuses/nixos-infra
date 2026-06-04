@@ -10,14 +10,12 @@ in
 {
   imports = [
     ./hardware-configuration.nix
-    ./openclaw.nix
-    ./conduit.nix
-    ./irc.nix
   ];
 
   asthrossystems = {
     hostInfo = "Beelink EQ12 - Services Host";
     isServer = true;
+    imper,amemce = true;
   };
 
   boot = {

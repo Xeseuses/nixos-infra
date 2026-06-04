@@ -20,6 +20,13 @@
     
     features = {
       impermanence = lib.mkEnableOption "impermanence (ephemeral root)";
+      impermanenceServer = lib.mkEnableOption "impermanence for servers (ephemeral root)";
+      impermanenceDevice = lib.mkOption {
+        type = lib.types.str;
+        default = "/dev/mapper/cryptroot";
+        description = "Block device containing the btrfs root for impermanence wipe";
+      };
+
       secureBoot = lib.mkEnableOption "secure boot with lanzaboote";
       encryption = lib.mkEnableOption "full disk encryption";
       microVMs = lib.mkEnableOption "microVM support";

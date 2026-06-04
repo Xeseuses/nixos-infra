@@ -11,6 +11,8 @@
   asthrossystems = {
     hostInfo = "Protectli VP2420 - NixOS Router";
     isRouter = true;
+    impermanenceServer = true;
+    impermanenceDevice = "/dev/sda2";
   };
 
   sops = {
@@ -312,3 +314,8 @@
   system.stateVersion                 = "24.11";
 }
 
+environment.persistence."/persist".directories = [
+  "/var/lib/kea"
+  "/var/lib/unbound"
+  "/var/lib/wireguard"
+];
