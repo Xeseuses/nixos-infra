@@ -148,7 +148,7 @@
     firewall = {
       enable = true;
       interfaces = {
-        vlan10 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; allowedIPProtocols = [ "icmp" ]; };
+        vlan10 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
         vlan30 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
         vlan40 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan50 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
