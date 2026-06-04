@@ -11,8 +11,6 @@
   asthrossystems = {
     hostInfo = "Protectli VP2420 - NixOS Router";
     isRouter = true;
-    impermanenceServer = true;
-    impermanenceDevice = "/dev/sda2";
   };
 
   sops = {
@@ -95,6 +93,7 @@
               iifname "vlan20" oifname "enp1s0" accept
               iifname "vlan60" oifname "vlan40" accept
 	      iifname "enp1s0" oifname "vlan40" ip daddr 10.40.40.117 udp dport 29531 accept
+              iifname "vlan40" oifname "vlan10" ip saddr 10.40.40.115 ip daddr 10.40.10.134 accept
             }
           '';
         };
@@ -149,7 +148,7 @@
     firewall = {
       enable = true;
       interfaces = {
-        vlan10 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
+        vlan10 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; allowedIPProtocols = [ "icmp" ]; };
         vlan30 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
         vlan40 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan50 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
@@ -314,8 +313,3 @@
   system.stateVersion                 = "24.11";
 }
 
-environment.persistence."/persist".directories = [
-  "/var/lib/kea"
-  "/var/lib/unbound"
-  "/var/lib/wireguard"
-];

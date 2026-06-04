@@ -6,7 +6,6 @@
      ./users.nix
      ./locale.nix
      ./networking.nix
-    ../optional/impermanence-server.nix
   ];
 
   environment.systemPackages = with pkgs; [
