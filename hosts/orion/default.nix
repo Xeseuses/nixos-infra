@@ -11,8 +11,8 @@
   asthrossystems = {
     hostInfo = "Protectli VP2420 - NixOS Router";
     isRouter = true;
-    impermanenceServer = true;
-    impermanenceDevice = "/dev/sda2";
+    features.impermanenceServer = true;
+    features.impermanenceDevice = "/dev/sda2";
   };
 
   sops = {

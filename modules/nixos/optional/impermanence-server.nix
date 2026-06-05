@@ -19,7 +19,7 @@ lib.mkIf config.asthrossystems.features.impermanenceServer {
 
   boot.initrd.postDeviceCommands = lib.mkAfter ''
     mkdir /btrfs_tmp
-    mount ${config.asthrossystems.impermanenceDevice} /btrfs_tmp -o subvol=/
+    mount ${config.asthrossystems.features.impermanenceDevice} /btrfs_tmp -o subvol=/
     if [[ -e /btrfs_tmp/@-blank ]]; then
         mkdir -p /btrfs_tmp/old
         timestamp=$(date --date="@$(stat -c %Y /btrfs_tmp/@)" "+%Y%m%d%H%M%S")

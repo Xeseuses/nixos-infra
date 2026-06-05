@@ -26,7 +26,7 @@
 
     features = {
       desktop = "niri";
-      impermanence = true;      # ← Enable!
+      impermanence = true;      
       encryption = true;         # ← Enable!
     };
     

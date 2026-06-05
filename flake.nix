@@ -60,6 +60,8 @@
           ./modules/nixos/common
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          impermanence.nixosModules.impermanence
+          ./modules/nixos/optional/impermanence-server.nix
           ./hosts/orion
         ];
       };
