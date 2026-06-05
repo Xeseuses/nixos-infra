@@ -34,6 +34,8 @@
           ./hosts/eridanus
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
+          impermanence.nixosModules.impermanence
+          ./modules/nixos/optional/impermanence-server.nix
         ];
       };
 
