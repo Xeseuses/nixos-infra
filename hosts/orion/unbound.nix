@@ -49,18 +49,22 @@
         {
           name      = "lan.";
           stub-addr = "127.0.0.1@5354";
+          stub-first = true;
         }
         {
           name      = "xesh.cc.";
           stub-addr = "127.0.0.1@5354";
+          stub-first = true;
         }
         {
           name      = "40.40.10.in-addr.arpa.";
           stub-addr = "127.0.0.1@5354";
+          stub-first = true;
         }
         {
           name      = "10.40.10.in-addr.arpa.";
           stub-addr = "127.0.0.1@5354";
+          stub-first = true;
         }
       ];
 
