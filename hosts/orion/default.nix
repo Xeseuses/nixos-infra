@@ -4,8 +4,10 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ./kea-leases-viewer.nix  # DHCP lease dashboard on port 9090
-    ./unbound.nix            # Recursive DNS + local hostnames + ad-blocking
     ./cake.nix
+    ./unbound.nix            # Recursive DNS — localhost:5335, forwards to NSD + Quad9
+    ./nsd.nix                # Authoritative DNS — localhost:5353, serves .lan + xesh.cc
+    ./adguardhome.nix        # DNS frontend — port 53, blocklists, web UI port 3000
   ];
 
   asthrossystems = {
@@ -150,13 +152,13 @@
     firewall = {
       enable = true;
       interfaces = {
-        vlan10 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
-        vlan30 = { allowedTCPPorts = [ 22 53 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
-        vlan40 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
+        vlan10 = { allowedTCPPorts = [ 22 53 3000 9090 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
+        vlan30 = { allowedTCPPorts = [ 22 53 3000 9090 ];  allowedUDPPorts = [ 53 67 546 547 ]; };
+        vlan40 = { allowedTCPPorts = [ 53 3000 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
         vlan50 = { allowedTCPPorts = [ 53 ];     allowedUDPPorts = [ 53 67 5353 546 547 ]; };
-        vlan20 = { allowedUDPPorts = [ 67 ]; };
+        vlan20 = { allowedUDPPorts = [ 53 ]; };
 
-        vlan60 = { allowedTCPPorts = [ 53 ]; allowedUDPPorts = [ 53 67 ]; };
+        vlan60 = { allowedTCPPorts = [ 67 ]; allowedUDPPorts = [ 53 67 ]; };
 
         wg0 = {allowedTCPPorts = [ 22 53 9090 ]; allowedUDPPorts = [ 53 ]; } ;
       };
@@ -245,7 +247,7 @@
           pools = [{ pool = "10.40.20.100 - 10.40.20.200"; }];
           option-data = [
             { name = "routers";             data = "10.40.20.1"; }
-            { name = "domain-name-servers"; data = "1.1.1.1"; }
+            { name = "domain-name-servers"; data = "10.40.20.1"; }
           ];
         }
         {
