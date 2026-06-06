@@ -48,19 +48,19 @@
       stub-zone = [
         {
           name      = "lan.";
-          stub-addr = "127.0.0.1@5353";
+          stub-addr = "127.0.0.1@5354";
         }
         {
           name      = "xesh.cc.";
-          stub-addr = "127.0.0.1@5353";
+          stub-addr = "127.0.0.1@5354";
         }
         {
           name      = "40.40.10.in-addr.arpa.";
-          stub-addr = "127.0.0.1@5353";
+          stub-addr = "127.0.0.1@5354";
         }
         {
           name      = "10.40.10.in-addr.arpa.";
-          stub-addr = "127.0.0.1@5353";
+          stub-addr = "127.0.0.1@5354";
         }
       ];
 

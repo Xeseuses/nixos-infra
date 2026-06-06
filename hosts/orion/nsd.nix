@@ -12,7 +12,7 @@
   services.nsd = {
     enable     = true;
     interfaces = [ "127.0.0.1" ];
-    port       = 5353;
+    port       = 5354;
 
     zones = {
 
