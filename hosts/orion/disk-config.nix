@@ -1,14 +1,11 @@
-# Btrfs layout with impermanence subvolumes
-# @ (root)     — ephemeral, wiped on boot
-# @persist     — survives reboots (/persist)
-# @nix         — survives reboots (/nix)
+# hosts/orion/disk-config.nix
 { ... }:
 {
   disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/sda";
+        device = "/dev/sda";  # Adjust if needed!
         content = {
           type = "gpt";
           partitions = {
@@ -25,23 +22,9 @@
             root = {
               size = "100%";
               content = {
-                type = "btrfs";
-                extraArgs = [ "-f" ];
-                subvolumes = {
-                  "@" = {
-                    mountpoint = "/";
-                    mountOptions = [ "compress=zstd" "noatime" ];
-                  };
-                  "@persist" = {
-                    mountpoint = "/persist";
-                    mountOptions = [ "compress=zstd" "noatime" ];
-                  };
-                  "@nix" = {
-                    mountpoint = "/nix";
-                    mountOptions = [ "compress=zstd" "noatime" ];
-                  };
-                  "@-blank" = {};
-                };
+                type = "filesystem";
+                format = "ext4";
+                mountpoint = "/";
               };
             };
           };
@@ -50,4 +33,3 @@
     };
   };
 }
-

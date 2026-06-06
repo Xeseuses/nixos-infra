@@ -1,3 +1,5 @@
+# hosts/orion/adguardhome.nix
+#
 # Adguardhome sits on port 53 on all trusted VLAN IPs.
 # It forwards clean queries upstream to Unbound on 127.0.0.1:5335.
 # Unbound handles DoT to Quad9 + DNSSEC + NSD stub zones.
@@ -112,7 +114,7 @@
       users = [
         {
           name           = "admin";
-          password       = "$2b$10$jkXzE5CPnxezbH1jgroYZOOfsy1RnxLpddaokiBsWkAYHnWbF40tK";
+          password       = "$2y$10$PLACEHOLDER_REPLACE_WITH_REAL_BCRYPT_HASH";
         }
       ];
 

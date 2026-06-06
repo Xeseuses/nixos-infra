@@ -1,3 +1,5 @@
+# hosts/orion/nsd.nix
+#
 # NSD: authoritative DNS server for two zones:
 #   1. lan.      — all internal hostnames (migrated from Unbound local-data)
 #   2. xesh.cc.  — split-horizon: internal clients get direct LAN IPs,
