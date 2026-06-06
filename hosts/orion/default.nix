@@ -6,7 +6,7 @@
     ./kea-leases-viewer.nix  # DHCP lease dashboard on port 9090
     ./cake.nix
     ./unbound.nix            # Recursive DNS — localhost:5335, forwards to NSD + Quad9
-    ./nsd.nix                # Authoritative DNS — localhost:5353, serves .lan + xesh.cc
+ #   ./nsd.nix                # Authoritative DNS — localhost:5353, serves .lan + xesh.cc
   #  ./adguardhome.nix        # DNS frontend — port 53, blocklists, web UI port 3000
   ];
 
