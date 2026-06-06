@@ -1,22 +1,22 @@
-{ pkgs, modulesPath, ... }:
+{ pkgs, modulesPath, lib, ... }:
 {
   imports = [
     "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
   ];
 
-  # ── Identity ──────────────────────────────────────────────────────────────
-  networking.hostName = "vanallenbelt";
 
   # ── Build size ────────────────────────────────────────────────────────────
   # zstd is much faster to build than the default xz, and still small enough
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
-  isoImage.isoName = "vanallenbelt-installer.iso";
+  image.fileName = "vanallenbelt-installer.iso";
 
   # ── Network ───────────────────────────────────────────────────────────────
-  # DHCP is fine — new machines always land on VLAN40 (10.40.40.0/24) first
-  # or whatever network the hardware is on. Don't fight it.
-  networking.useDHCP = true;
-  networking.wireless.enable = false;
+  networking = {
+  hostName = "vanallenbelt";
+  useDHCP = lib.mkForce true;
+  wireless.enable = lib.mkForce false;
+  networkmanager.enable = lib.mkForce false;  # pre-empt any further NM conflicts
+  };
 
   # ── SSH ───────────────────────────────────────────────────────────────────
   # The whole point of Drugstore: SSH in immediately after boot, no password.
@@ -40,7 +40,7 @@
   ];
 
   # Auto-login root on tty1 for physical access (useful if SSH fails)
-  services.getty.autologinUser = "root";
+  services.getty.autologinUser = lib.mkForce "root";
 
   # ── Tools ─────────────────────────────────────────────────────────────────
   # Everything nixos-anywhere and manual debugging will ever need
@@ -57,7 +57,6 @@
     # Disk inspection
     gptfdisk               # gdisk / sgdisk
     parted                 # parted
-    lsblk                  # (in util-linux, already present)
     smartmontools          # smartctl — check disk health before installing
 
     # Network debugging

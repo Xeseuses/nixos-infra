@@ -4,25 +4,29 @@
     "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
   ];
 
-  # ── Identity ──────────────────────────────────────────────────────────────
-  networking.hostName = "kepler";
 
   # ── Build size ────────────────────────────────────────────────────────────
+  image.fileName = "kepler-keygen.iso";
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
-  isoImage.isoName = "kepler-keygen.iso";
+
 
   # ── INTENTIONALLY OFFLINE ─────────────────────────────────────────────────
   # Policestation exists solely to generate age keys in a clean environment.
   # No network means nothing can exfiltrate keys during generation.
-  networking.useDHCP = false;
-  networking.interfaces = lib.mkForce {};   # no interfaces at all
-  networking.wireless.enable = false;
+   
+  networking = {
+    hostName = "kepler";
+    useDHCP = lib.mkForce false;
+    interfaces = lib.mkForce {};
+    wireless.enable = lib.mkForce false;
+    networkmanager.enable = lib.mkForce false;
+  };
 
   # No SSH — local access only. You generate keys, write them down / USB, power off.
   services.openssh.enable = false;
 
   # Auto-login root — you're air-gapped, convenience is fine
-  services.getty.autologinUser = "root";
+  services.getty.autologinUser = lib.mkForce "root";  
 
   # ── Yubikey readiness (no Yubikey needed yet — services start harmlessly) ──
   # When you get a YubiKey 5 NFC, `age-plugin-yubikey` will let you store the
