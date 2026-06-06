@@ -322,6 +322,8 @@
     ];
   };
 
+ fileSystems."/persist".neededForBoot = true;
+
   # ── System ────────────────────────────────────────────────────────────────
   security.sudo.wheelNeedsPassword    = false;
   services.openssh.enable             = true;
