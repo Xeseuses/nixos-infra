@@ -1,11 +1,11 @@
-# hosts/twoson/disk-config.nix
+# hosts/eridanus/disk-config.nix
 { ... }:
 {
   disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/nvme0n1";  # ← Adjust to your disk
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions = {
@@ -22,9 +22,27 @@
             root = {
               size = "100%";
               content = {
-                type = "filesystem";
-                format = "ext4";
-                mountpoint = "/";
+                type = "btrfs";
+                extraArgs = [ "-f" ];
+                subvolumes = {
+                  "@" = {
+                    mountpoint = "/";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "@-blank" = {};
+                  "@nix" = {
+                    mountpoint = "/nix";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "@persist" = {
+                    mountpoint = "/persist";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "@swap" = {
+                    mountpoint = "/.swapvol";
+                    swap.swapfile.size = "4G";
+                  };
+                };
               };
             };
           };
