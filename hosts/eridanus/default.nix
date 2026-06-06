@@ -3,6 +3,8 @@
   imports = [
     ./disk-config.nix
   ];
+ 
+  fileSystems."/persist".neededForBoot = true;
 
   # === SOPS Configuration ===
   sops = {
