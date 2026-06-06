@@ -1,7 +1,7 @@
 keys:
   # Your personal key (for encrypting/decrypting locally)
   - &admin age126y7n5guy5ezvegpu6luttnu6qp0utu4acmzcuruzxww4ku0e54srul0xa
-  - &eridanus age17hnyyv94cugq20j7ml5ha3cj7pf4jyzn2mr2hgvc6pklz28vdehqjyg6c7
+  - &eridanus age16u7ml3ne6rd4a3uvq2wh7a7q542vnx7zemy200eus8sl0w4nt95qrf2g5t
   - &vela age15zxlzqt5tjs3vnujkwytmdz7z7hynrt95paj8fe9myzq0fnh7udqcy2dmz
   - &andromeda age1l2dwsyhapv4la4wx0f7j5pctsq54wsdlmfep534mqvnl84wqfpyqd7fw2p
   - &caelum age1wyvwgs0z0t84wl6teje9h6ejf7j8862yv3g3t9k2ulcy6wwpv9wqqnmz60
