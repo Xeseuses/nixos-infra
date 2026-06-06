@@ -35,11 +35,13 @@
                   "@persist" = {
                     mountpoint = "/persist";
                     mountOptions = [ "compress=zstd" "noatime" ];
+                    neededForBoot= true;
                   };
                   "@nix" = {
                     mountpoint = "/nix";
                     mountOptions = [ "compress=zstd" "noatime" ];
                   };
+                  "@-blank" = {};
                 };
               };
             };

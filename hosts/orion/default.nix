@@ -1,4 +1,3 @@
-# hosts/orion/default.nix
 { config, pkgs, lib, ... }:
 {
   imports = [
@@ -318,8 +317,6 @@
     hideMounts = true;
     directories = [
       "/var/lib/kea"             # DHCP leases — survive reboots
-      "/var/lib/sops-nix"        # age key — CRITICAL, without this sops breaks
-      "/etc/ssh"                 # SSH host keys — without this host key rotates every boot
       # /var/lib/unbound, /var/lib/adguardhome, /var/lib/nsd
       # are declared in their respective .nix files
     ];
@@ -331,4 +328,3 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion                 = "24.11";
 }
-
