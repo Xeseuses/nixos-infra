@@ -17,9 +17,18 @@
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-anywhere.url = "github:nix-community/nixos-anywhere";
+    nixos-anywhere.inputs.nixpkgs.follows = "nixpkgs";
+
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, ... }: {
+  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, nixos-anywhere, ... }@inputs:
+  let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
+
+    # ── NixOS configurations (hosts) ────────────────────────────────────────
     nixosConfigurations = {
 
       eridanus = nixpkgs.lib.nixosSystem {
@@ -113,7 +122,46 @@
           sops-nix.nixosModules.sops
         ];
       };
+    
+      vanallenbelt = nixpkgs.lib.nixosSystem {
+       system = "x86_64-linux";
+       modules = [ ./hosts/vanallenbelt/default.nix ];
+      };
 
+      kepler = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [ ./hosts/kepler/default.nix ];
+      };
     };
+      
+      # ── Packages ────────────────────────────────────────────────────────────
+      packages.${system} = {
+       
+       xesh-bootstrap = import ./pkgs/xesh-bootstrap/default.nix {
+         inherit pkgs;
+         inherit (nixos-anywhere.packages.${system}) nixos-anywhere;
+       };
+
+       xesh-postinstall = import ./pkgs/xesh-postinstall/default.nix {
+         inherit pkgs;
+       };
+     };
+     
+      # ── Apps (nix run .#<name>) ──────────────────────────────────────────────
+      apps.${system} = {
+
+       xesh-bootstrap = {
+         type = "app";
+         program = "${self.packages.${system}.xesh-bootstrap}/bin/xesh-bootstrap";
+       };
+
+       xesh-postinstall = {
+         type = "app";
+         program = "${self.packages.${system}.xesh-postinstall}/bin/xesh-postinstall";
+       };
+
+     };
+
   };
 }
+
