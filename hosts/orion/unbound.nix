@@ -42,13 +42,15 @@
         # DNSSEC validation
         auto-trust-anchor-file = "/var/lib/unbound/root.key";
    
-        domain-insecure = [
-    	  "lan."
-	  "xesh.cc."
-	  "40.40.40.in-addr.arpa."
-  	  "10.40.10.in-addr.arpa."
-	 ];
+        domain-insecure = "lan.";
       };
+     
+      extraConfig = ''
+	 domain-insecure: "lan."
+	 domain-insecure: "xesh.cc."
+	 domain-insecure: "40.40.40.in-addr.arpa."
+	 domain-insecure: "10.40.10.in-addr.arpa."
+	'';
 
       # ── Stub zones → NSD ────────────────────────────────────────────────
       # For .lan and xesh.cc, Unbound delegates to NSD instead of recursing.
