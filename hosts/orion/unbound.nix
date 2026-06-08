@@ -41,6 +41,13 @@
 
         # DNSSEC validation
         auto-trust-anchor-file = "/var/lib/unbound/root.key";
+   
+        domain-insecure = [
+    	  "lan."
+	  "xesh.cc."
+	  "40.40.40.in-addr.arpa."
+  	  "10.40.10.in-addr.arpa."
+	 ];
       };
 
       # ── Stub zones → NSD ────────────────────────────────────────────────
