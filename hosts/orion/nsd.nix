@@ -40,7 +40,6 @@
           eridanus    IN A    10.40.40.117
           cache       IN A    10.40.40.117
           horologium  IN A    10.40.40.106
-          ha          IN A    10.40.40.115
 
           ; ── Management (VLAN30) ───────────────────────────────────────
           unifi-ap    IN A    10.40.30.120
@@ -100,10 +99,8 @@
           orion       IN A    10.40.10.1
 
           ; ── Services on caelum (10.40.40.101) ──────────────────────────
-          immich       IN A   10.40.40.101
           audiobooks   IN A   10.40.40.101
           solibieb     IN A   10.40.40.101
-          ha           IN A   10.40.40.115
 
           ; ── Future services (uncomment as you deploy) ───────────────────
           ; search     IN A   10.40.40.101   ; phase 6  - searx
