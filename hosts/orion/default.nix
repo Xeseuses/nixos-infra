@@ -6,8 +6,8 @@
     ./kea-leases-viewer.nix  # DHCP lease dashboard on port 9090
     ./cake.nix
     ./unbound.nix            # Recursive DNS — localhost:5335, forwards to NSD + Quad9
- #   ./nsd.nix                # Authoritative DNS — localhost:5353, serves .lan + xesh.cc
-  #  ./adguardhome.nix        # DNS frontend — port 53, blocklists, web UI port 3000
+    ./nsd.nix                # Authoritative DNS — localhost:5353, serves .lan + xesh.cc
+    ./adguardhome.nix        # DNS frontend — port 53, blocklists, web UI port 3000
   ];
 
   asthrossystems = {
@@ -225,6 +225,23 @@
     after = [ "network-addresses.target" ];
     wants = [ "network-addresses.target" ];
   };
+  
+  systemd.services.nsd = {
+  after = [ "network-addresses.target" ];
+  wants = [ "network-addresses.target" ];
+ };
+ 
+ systemd.services.adguardhome = {
+  after = [ "network-addresses.target" "unbound.service" ];
+  wants = [ "network-addresses.target" ];
+  requires = [ "unbound.service" ];
+ };
+ 
+ systemd.services.unbound = {
+  after = [ "network-addresses.target" "nsd.service" ];
+  wants = [ "network-addresses.target" ];
+  requires = [ "nsd.service" ];
+ };
 
   services.kea.dhcp4 = {
     enable = true;

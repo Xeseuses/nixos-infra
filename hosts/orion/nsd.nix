@@ -4,7 +4,7 @@
 #   1. lan.      — all internal hostnames
 #   2. xesh.cc.  — split-horizon: internal clients get LAN IPs directly
 #
-# NSD listens only on 127.0.0.1:5353
+# NSD listens only on 127.0.0.1:5354
 # Unbound has stub-zones pointing to it
 # Clients never talk to NSD directly
 { ... }:
@@ -53,9 +53,9 @@
       };
 
       # ── Reverse zone for VLAN40 (servers) ─────────────────────────────────
-      "40.40.10.in-addr.arpa." = {
+      "40.40.40.in-addr.arpa." = {
         data = ''
-          $ORIGIN 40.40.10.in-addr.arpa.
+          $ORIGIN 40.40.40.in-addr.arpa.
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.lan. (
@@ -99,7 +99,7 @@
                       604800      ; expire
                       300 )       ; minimum
 
-          @           IN NS   orion.xesh.cc.
+          @           IN NS   orion.lan.
           orion       IN A    10.40.10.1
 
           ; ── Services on caelum (10.40.40.101) ──────────────────────────
