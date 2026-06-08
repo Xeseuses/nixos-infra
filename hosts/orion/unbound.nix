@@ -10,16 +10,6 @@
   services.unbound = {
     enable = true;
 
-    # domain-insecure must be set via extraConfig because the option
-    # needs to appear multiple times — the Nix attrset in settings
-    # cannot express duplicate keys.
-    extraConfig = ''
-      domain-insecure: "lan."
-      domain-insecure: "xesh.cc."
-      domain-insecure: "40.40.40.in-addr.arpa."
-      domain-insecure: "10.40.10.in-addr.arpa."
-    '';
-
     settings = {
       server = {
         # Localhost only — AGH is the only thing that talks to Unbound
@@ -51,6 +41,15 @@
 
         # DNSSEC validation
         auto-trust-anchor-file = "/var/lib/unbound/root.key";
+
+        # Mark internal zones as insecure — they are unsigned and not
+        # part of the public DNSSEC chain of trust.
+        domain-insecure = [
+          "lan."
+          "xesh.cc."
+          "40.40.40.in-addr.arpa."
+          "10.40.10.in-addr.arpa."
+        ];
       };
 
       # ── Stub zones → NSD ──────────────────────────────────────────────
