@@ -70,13 +70,8 @@
         cache_ttl_max    = 0;
         cache_optimistic = true;
 
-        ratelimit = 20;
+        ratelimit = 0;
         ratelimit_whitelist = [
-          "10.40.10.0/24"
-          "10.40.20.0/24"
-          "10.40.30.0/24"
-          "10.40.40.0/24"
-          "10.40.50.0/24"
         ];
       };
 
@@ -105,7 +100,7 @@
         }
       ];
 
-      schema_version = 28;
+      schema_version = 32;
     };
   };
 
