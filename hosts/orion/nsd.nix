@@ -23,7 +23,7 @@
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.lan. (
-                      2026060601  ; serial — increment when you change records
+                      2026060603  ; serial
                       3600        ; refresh
                       900         ; retry
                       604800      ; expire
@@ -40,6 +40,7 @@
           eridanus    IN A    10.40.40.117
           cache       IN A    10.40.40.117
           horologium  IN A    10.40.40.106
+          ha          IN A    10.40.40.115
 
           ; ── Management (VLAN30) ───────────────────────────────────────
           unifi-ap    IN A    10.40.30.120
@@ -53,19 +54,22 @@
 
       # ── Reverse zone for VLAN40 (servers) ─────────────────────────────────
       "40.40.10.in-addr.arpa." = {
- data = ''
-    $ORIGIN 40.40.10.in-addr.arpa.
-    $TTL 300
-    @   IN SOA  orion.lan. hostmaster.lan. (
-                2026060602 3600 900 604800 300 )
-    @   IN NS   orion.lan.
-    101 IN PTR  caelum.lan.
-    104 IN PTR  andromeda.lan.
-    106 IN PTR  horologium.lan.
-    115 IN PTR  ha.lan.
-    117 IN PTR  eridanus.lan.
-  '';
-};
+        data = ''
+          $ORIGIN 40.40.10.in-addr.arpa.
+          $TTL 300
+
+          @   IN SOA  orion.lan. hostmaster.lan. (
+                      2026060603 3600 900 604800 300 )
+          @   IN NS   orion.lan.
+
+          101 IN PTR  caelum.lan.
+          104 IN PTR  andromeda.lan.
+          106 IN PTR  horologium.lan.
+          115 IN PTR  ha.lan.
+          117 IN PTR  eridanus.lan.
+        '';
+      };
+
       # ── Reverse zone for VLAN10 (LAN) ─────────────────────────────────────
       "10.40.10.in-addr.arpa." = {
         data = ''
@@ -73,7 +77,7 @@
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.lan. (
-                      2026060601 3600 900 604800 300 )
+                      2026060603 3600 900 604800 300 )
           @   IN NS   orion.lan.
 
           1   IN PTR  orion.lan.
@@ -81,36 +85,34 @@
       };
 
       # ── xesh.cc split-horizon zone ─────────────────────────────────────────
-      # Internal clients resolve xesh.cc subdomains to LAN IPs directly.
-      # External clients still get lyra's public IP from Porkbun.
+      # Internal clients resolve xesh.cc subdomains to LAN IPs directly
+      # where possible. Services without a local reverse proxy go via VPS.
+      # External clients get the public IP from Porkbun as normal.
       "xesh.cc." = {
         data = ''
           $ORIGIN xesh.cc.
           $TTL 300
 
-          @   IN SOA  orion.xesh.cc. hostmaster.xesh.cc. (
-                      2026060601  ; serial
+          @   IN SOA  orion.lan. hostmaster.xesh.cc. (
+                      2026060603  ; serial
                       3600        ; refresh
                       900         ; retry
                       604800      ; expire
                       300 )       ; minimum
 
           @           IN NS   orion.lan.
-          orion       IN A    10.40.10.1
 
-          ; ── Services on caelum (10.40.40.101) ──────────────────────────
-          audiobooks   IN A   10.40.40.101
-          solibieb     IN A   10.40.40.101
+          orion        IN A    10.40.10.1
 
-          ; ── Future services (uncomment as you deploy) ───────────────────
-          ; search     IN A   10.40.40.101   ; phase 6  - searx
-          ; cal        IN A   10.40.40.101   ; phase 7  - radicale
-          ; cloud      IN A   10.40.40.101   ; phase 9  - nextcloud
-          ; docs       IN A   10.40.40.101   ; phase 10 - paperless
-          ; yt         IN A   10.40.40.101   ; phase 11 - invidious
+          ; ── Via VPS proxy (TLS termination on VPS) ──────────────────────
+          ha           IN A    77.42.83.12
+          immich        IN A    77.42.83.12
+
+          ; ── Direct LAN access ───────────────────────────────────────────
+          audiobooks   IN A    10.40.40.101
+          solibieb     IN A    10.40.40.101
         '';
       };
     };
   };
 }
-
