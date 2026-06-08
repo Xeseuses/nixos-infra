@@ -38,6 +38,7 @@
         upstream_mode = "load_balance";
         fallback_dns = [ "127.0.0.1:5335" ];
   
+	local_ptr_upstreams = [ "127.0.0.1:5335" ];
         use_private_ptr_resolvers = true;
 	private_networks = [
 	  "10.40.40.0/24"
