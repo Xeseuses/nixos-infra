@@ -38,6 +38,8 @@
         use-caps-for-id        = false;
         prefetch               = true;
         prefetch-key           = true;
+    
+        do-not-query-localhost = false;
 
         # DNSSEC validation
         auto-trust-anchor-file = "/var/lib/unbound/root.key";
