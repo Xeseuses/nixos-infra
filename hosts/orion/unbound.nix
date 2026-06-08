@@ -44,6 +44,11 @@
         # DNSSEC validation
         auto-trust-anchor-file = "/var/lib/unbound/root.key";
 
+  	private-address = [];
+	local-zone = [
+	  "10.in-addr.arpa. nodefault"
+	];      
+  
         # Mark internal zones as insecure — they are unsigned and not
         # part of the public DNSSEC chain of trust.
         domain-insecure = [
