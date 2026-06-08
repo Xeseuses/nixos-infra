@@ -1,16 +1,26 @@
 # hosts/orion/unbound.nix
 #
-# Unbound is now the middle layer: port 5335, localhost only.
+# Unbound is the middle layer: port 5335, localhost only.
 # AGH → Unbound :5335 → NSD :5354 (for .lan and xesh.cc)
 #                      → Quad9 DoT (for everything else)
 #
 # StevenBlack systemd timer removed — AGH handles blocklists now.
-{ pkgs, ... }:
+{ ... }:
 {
   services.unbound = {
     enable = true;
-    settings = {
 
+    # domain-insecure must be set via extraConfig because the option
+    # needs to appear multiple times — the Nix attrset in settings
+    # cannot express duplicate keys.
+    extraConfig = ''
+      domain-insecure: "lan."
+      domain-insecure: "xesh.cc."
+      domain-insecure: "40.40.40.in-addr.arpa."
+      domain-insecure: "10.40.10.in-addr.arpa."
+    '';
+
+    settings = {
       server = {
         # Localhost only — AGH is the only thing that talks to Unbound
         interface = [ "127.0.0.1" ];
@@ -41,39 +51,18 @@
 
         # DNSSEC validation
         auto-trust-anchor-file = "/var/lib/unbound/root.key";
-   
-        domain-insecure = "lan.";
       };
-     
-      extraConfig = ''
-	 domain-insecure: "lan."
-	 domain-insecure: "xesh.cc."
-	 domain-insecure: "40.40.40.in-addr.arpa."
-	 domain-insecure: "10.40.10.in-addr.arpa."
-	'';
 
-      # ── Stub zones → NSD ────────────────────────────────────────────────
+      # ── Stub zones → NSD ──────────────────────────────────────────────
       # For .lan and xesh.cc, Unbound delegates to NSD instead of recursing.
       stub-zone = [
-        {
-          name      = "lan.";
-          stub-addr = "127.0.0.1@5354";
-        }
-        {
-          name      = "xesh.cc.";
-          stub-addr = "127.0.0.1@5354";
-        }
-        {
-          name      = "40.40.40.in-addr.arpa.";
-          stub-addr = "127.0.0.1@5354";
-        }
-        {
-          name      = "10.40.10.in-addr.arpa.";
-          stub-addr = "127.0.0.1@5354";
-        }
+        { name = "lan.";                    stub-addr = "127.0.0.1@5354"; }
+        { name = "xesh.cc.";               stub-addr = "127.0.0.1@5354"; }
+        { name = "40.40.40.in-addr.arpa."; stub-addr = "127.0.0.1@5354"; }
+        { name = "10.40.10.in-addr.arpa."; stub-addr = "127.0.0.1@5354"; }
       ];
 
-      # ── Upstream: Quad9 over DoT ─────────────────────────────────────────
+      # ── Upstream: Quad9 over DoT ───────────────────────────────────────
       forward-zone = [
         {
           name                 = ".";
@@ -90,4 +79,3 @@
   # Unbound is localhost-only — no per-interface firewall rules needed.
   # Port 53 on VLAN interfaces is handled by AGH.
 }
-
