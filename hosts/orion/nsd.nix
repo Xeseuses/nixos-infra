@@ -53,23 +53,20 @@
       };
 
       # ── Reverse zone for VLAN40 (servers) ─────────────────────────────────
-      "40.40.40.in-addr.arpa." = {
-        data = ''
-          $ORIGIN 40.40.40.in-addr.arpa.
-          $TTL 300
-
-          @   IN SOA  orion.lan. hostmaster.lan. (
-                      2026060601 3600 900 604800 300 )
-          @   IN NS   orion.lan.
-
-          101 IN PTR  caelum.lan.
-          104 IN PTR  andromeda.lan.
-          106 IN PTR  horologium.lan.
-          115 IN PTR  ha.lan.
-          117 IN PTR  eridanus.lan.
-        '';
-      };
-
+      "40.40.10.in-addr.arpa." = {
+ data = ''
+    $ORIGIN 40.40.10.in-addr.arpa.
+    $TTL 300
+    @   IN SOA  orion.lan. hostmaster.lan. (
+                2026060602 3600 900 604800 300 )
+    @   IN NS   orion.lan.
+    101 IN PTR  caelum.lan.
+    104 IN PTR  andromeda.lan.
+    106 IN PTR  horologium.lan.
+    115 IN PTR  ha.lan.
+    117 IN PTR  eridanus.lan.
+  '';
+};
       # ── Reverse zone for VLAN10 (LAN) ─────────────────────────────────────
       "10.40.10.in-addr.arpa." = {
         data = ''

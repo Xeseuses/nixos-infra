@@ -49,7 +49,7 @@
         domain-insecure = [
           "lan."
           "xesh.cc."
-          "40.40.40.in-addr.arpa."
+          "40.40.10.in-addr.arpa."
           "10.40.10.in-addr.arpa."
         ];
       };
@@ -59,7 +59,7 @@
       stub-zone = [
         { name = "lan.";                    stub-addr = "127.0.0.1@5354"; }
         { name = "xesh.cc.";               stub-addr = "127.0.0.1@5354"; }
-        { name = "40.40.40.in-addr.arpa."; stub-addr = "127.0.0.1@5354"; }
+        { name = "40.40.10.in-addr.arpa."; stub-addr = "127.0.0.1@5354"; }
         { name = "10.40.10.in-addr.arpa."; stub-addr = "127.0.0.1@5354"; }
       ];
 
