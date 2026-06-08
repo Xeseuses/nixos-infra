@@ -37,6 +37,12 @@
         bootstrap_dns = [ "9.9.9.9" "149.112.112.112" ];
         upstream_mode = "load_balance";
         fallback_dns = [ "127.0.0.1:5335" ];
+  
+        use_private_ptr_resolvers = true;
+	private_networks = [
+	  "10.40.40.0/24"
+	  "10.40.10.0/24"
+	];
 
         # ── Blocklists ────────────────────────────────────────────────────
         filters = [
