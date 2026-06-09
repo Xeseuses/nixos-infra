@@ -160,7 +160,7 @@
 
         vlan60 = { allowedTCPPorts = [ 67 ]; allowedUDPPorts = [ 53 67 ]; };
 
-        wg0 = {allowedTCPPorts = [ 22 53 3000 9090 ]; allowedUDPPorts = [ 53 ]; } ;
+        wg0 = {allowedTCPPorts = [ 22 53 9090 ]; allowedUDPPorts = [ 53 ]; } ;
       };
     };
   };
@@ -173,6 +173,9 @@
  
   networking.firewall.allowedUDPPorts = [ 29531 ]; 
  
+
+  networking.firewall.trustedInterfaces = [ "wg0" ];
+
   # ── DHCPv6 Prefix Delegation ──────────────────────────────────────────────
   # Request a prefix from FritzBox and delegate /64s to each VLAN.
   # The hint "::/62" asks for the same prefix back on renewal for stability.
