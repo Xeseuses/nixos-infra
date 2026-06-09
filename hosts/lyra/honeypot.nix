@@ -55,7 +55,7 @@ in
     ports    = [ 22022 ];
     settings = {
       PasswordAuthentication = false;
-      PermitRootLogin        = "no";
+      PermitRootLogin        = lib.mkForce "no";
     };
   };
 
