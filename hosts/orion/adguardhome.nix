@@ -29,6 +29,7 @@
           "10.40.30.1"   # Management
           "10.40.40.1"   # Servers
           "10.40.50.1"   # IoT
+	  "10.200.0.1"   # Wireguard - for phone and vela road warriors
           # 10.40.60.1 intentionally excluded — Tor VLAN
         ];
         port = 53;

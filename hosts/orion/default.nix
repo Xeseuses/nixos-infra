@@ -160,7 +160,7 @@
 
         vlan60 = { allowedTCPPorts = [ 67 ]; allowedUDPPorts = [ 53 67 ]; };
 
-        wg0 = {allowedTCPPorts = [ 22 53 9090 ]; allowedUDPPorts = [ 53 ]; } ;
+        wg0 = {allowedTCPPorts = [ 22 53 3000 9090 ]; allowedUDPPorts = [ 53 ]; } ;
       };
     };
   };
