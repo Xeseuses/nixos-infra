@@ -6,6 +6,7 @@
     ./hardware-configuration.nix
     ./crowdsec.nix
     ./honeypot.nix
+    ./dashboard.nix
   ];
 
   asthrossystems = {

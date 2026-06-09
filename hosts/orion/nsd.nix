@@ -94,7 +94,7 @@
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.xesh.cc. (
-                      2026060603  ; serial
+                      2026060604  ; serial
                       3600        ; refresh
                       900         ; retry
                       604800      ; expire
@@ -111,6 +111,9 @@
           ; ── Direct LAN access ───────────────────────────────────────────
           audiobooks   IN A    10.40.40.101
           solibieb     IN A    10.40.40.101
+         
+          threats      IN A    10.200.0.1
+
         '';
       };
     };
