@@ -173,8 +173,12 @@
  
   networking.firewall.allowedUDPPorts = [ 29531 ]; 
  
+  networking.interfaces.vlan40.ipv4.routes = [{
+  address    = "10.200.0.0";
+  prefixLength = 24;
+  via        = "10.40.40.104";
+}];
 
-  networking.firewall.trustedInterfaces = [ "wg0" ];
 
   # ── DHCPv6 Prefix Delegation ──────────────────────────────────────────────
   # Request a prefix from FritzBox and delegate /64s to each VLAN.
