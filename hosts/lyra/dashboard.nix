@@ -36,7 +36,7 @@ in
   # ── Caddy vhost — WireGuard only ──────────────────────────────────────────
   # threats.xesh.cc only resolves to 10.200.0.1 internally (via NSD on orion)
   # Add to NSD xesh.cc zone: threats IN A 10.200.0.1
-  services.caddy.virtualHosts."threats.xesh.cc" = {
+  services.caddy.virtualHosts."http://threats.xesh.cc" = {
     extraConfig = ''
       root * /var/lib/honeypot-dashboard
       file_server
