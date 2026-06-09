@@ -1,33 +1,27 @@
-# NixOS Infrastructure
+# nixos-infra
 
-My fully declarative NixOS homelab — constellation-themed hosts, managed entirely as code.
+Fully declarative NixOS homelab. Constellation-themed hostnames, everything in Nix, no manual configuration.
 
-## 🏗️ Design Principles
-
-- **Declarative** — Everything in Nix. No manual configuration, no snowflakes
-- **Reproducible** — Same config = same system, every time
-- **Version controlled** — All changes tracked in git, secrets encrypted
-- **Modular** — Reusable modules across machines via `asthrossystems.*` options
-- **Self-hosted** — DNS, DHCP, VPN, reverse proxy, monitoring all in-house
+Custom options exposed under `asthrossystems.*` for reuse across machines.
 
 ---
 
-## 🖥️ Fleet
+## Fleet
 
 | Hostname | Hardware | Role | Status |
 |----------|----------|------|--------|
-| **orion** | Protectli VP2420 | Router — VLANs, nftables, Kea DHCP, AdGuard, NSD | ✅ Live |
-| **eridanus** | Beelink EQ12 (N100, 16GB) | Binary cache (harmonia), backups | ✅ Live |
-| **caelum** | Beelink EQ12 | Immich, Audiobookshelf, Solibieb | ✅ Live |
-| **andromeda** | Beelink EQ12 | Home Assistant VM host (libvirt) | ✅ Live |
-| **horologium** | Custom (i5-13500, 16GB, ZFS) | Media server — Jellyfin, Arr stack | ✅ Live |
-| **lyra** | Hetzner CX23 VPS | Caddy reverse proxy, WireGuard hub, honeypot | ✅ Live |
-| **vela** | ASUS ROG Flow Z13 | Encrypted laptop — Niri desktop | ✅ Live |
-| **vega** | Minisforum SER8 | Desktop (dual-boot, planned) | 📅 Planned |
+| **orion** | Protectli VP2420 | Router — VLANs, nftables, Kea DHCP, AdGuard, NSD | live |
+| **eridanus** | Beelink EQ12 (N100, 16GB) | Binary cache (harmonia), backups | live |
+| **caelum** | Beelink EQ12 | Immich, Audiobookshelf, Solibieb | live |
+| **andromeda** | Beelink EQ12 | Home Assistant VM host (libvirt) | live |
+| **horologium** | Custom (i5-13500, 16GB, ZFS) | Media server — Jellyfin, Arr stack | live |
+| **lyra** | Hetzner CX23 VPS | Caddy reverse proxy, WireGuard hub, honeypot | live |
+| **vela** | ASUS ROG Flow Z13 | Encrypted laptop — Niri desktop | live |
+| **vega** | Minisforum SER8 | Desktop (dual-boot) | planned |
 
 ---
 
-## 🌐 Network
+## Network
 
 ```
 Internet
@@ -47,7 +41,8 @@ Mikrotik Switch
    └── VLAN60  10.40.60.0/24   Tor
 ```
 
-**WireGuard topology** (hub: lyra `10.200.0.1`):
+**WireGuard** — hub on lyra (`10.200.0.1`):
+
 ```
 lyra (hub)
 ├── orion      10.200.0.6  — gateway to all home VLANs
@@ -57,7 +52,8 @@ lyra (hub)
 └── phone      10.200.0.5  — GrapheneOS road warrior
 ```
 
-**DNS stack** (all on orion):
+**DNS stack** (orion):
+
 ```
 clients → AdGuardHome :53 (blocklists, per-client rules, query log)
                ↓
@@ -66,25 +62,26 @@ clients → AdGuardHome :53 (blocklists, per-client rules, query log)
            NSD :5354 (authoritative: lan. + xesh.cc split-horizon)
 ```
 
-**Public services** via lyra + WireGuard:
+**Public services** — exposed via lyra over WireGuard, no ports open at home:
 
 | Domain | Service | Host |
 |--------|---------|------|
 | `ha.xesh.cc` | Home Assistant | andromeda |
-| `immich.xesh.cc` | Immich photo library | caelum |
+| `immich.xesh.cc` | Immich | caelum |
 | `audiobooks.xesh.cc` | Audiobookshelf | caelum |
 | `solibieb.nl` | Django web app | caelum |
 | `threats.xesh.cc` | Honeypot dashboard (WireGuard only) | lyra |
 
 **Honeypot** (lyra):
+
 - Port 22 → endlessh-go SSH tarpit
 - Port 22022 → real SSH
-- Ports 21, 23, 3306 → fake FTP/telnet/MySQL honeypots
+- Ports 21, 23, 3306 → fake FTP / telnet / MySQL
 - CrowdSec with nftables bouncer
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 nixos-infra/
@@ -103,25 +100,25 @@ nixos-infra/
 │       │   ├── locale.nix
 │       │   └── networking.nix
 │       └── optional/             # Feature modules
-│           ├── backup.nix        # Restic backups
-│           ├── binary-cache.nix  # nix-serve / harmonia
-│           ├── impermanence.nix  # Ephemeral root (desktop)
-│           └── impermanence-server.nix  # Ephemeral root (server)
+│           ├── backup.nix
+│           ├── binary-cache.nix
+│           ├── impermanence.nix
+│           └── impermanence-server.nix
 ├── hosts/
-│   ├── orion/                    # Router config
+│   ├── orion/
 │   │   ├── adguardhome.nix
 │   │   ├── nsd.nix
 │   │   ├── unbound.nix
 │   │   └── wireguard.nix
-│   ├── lyra/                     # VPS
+│   ├── lyra/
 │   │   ├── honeypot.nix
 │   │   ├── crowdsec.nix
 │   │   └── dashboard.nix
-│   ├── eridanus/                 # Binary cache
-│   ├── caelum/                   # Services
-│   ├── andromeda/                # HA host
-│   ├── horologium/               # Media server
-│   └── vela/                     # Laptop
+│   ├── eridanus/
+│   ├── caelum/
+│   ├── andromeda/
+│   ├── horologium/
+│   └── vela/
 └── pkgs/
     ├── xesh-bootstrap/           # nixos-anywhere wrapper
     └── xesh-postinstall/         # First-boot helper
@@ -129,40 +126,44 @@ nixos-infra/
 
 ---
 
-## 🚀 Usage
+## Usage
 
-### Deploy to a host
+**Deploy:**
+
 ```bash
-# Locally (on the machine)
+# Locally
 sudo nixos-rebuild switch --flake .#hostname
 
-# Remotely from WSL/another machine
+# Remotely
 nixos-rebuild switch --flake .#hostname \
   --target-host xeseuses@<ip> --use-remote-sudo
 ```
 
-### Provision a new machine
+**Provision a new machine:**
+
 ```bash
-# 1. Boot target from vanallenbelt USB (installer ISO)
+# 1. Boot target from vanallenbelt USB
 # 2. From WSL:
 nix run .#xesh-bootstrap -- \
   --hostname <newhost> \
   --target <ip> \
   --age-key /path/to/age-key.txt
 
-# 3. After first boot on new machine:
+# 3. After first boot:
 nix run /home/xeseuses/nixos-infra#xesh-postinstall
 ```
 
-### Manage secrets
+**Secrets:**
+
 ```bash
-sops secrets/secrets.yaml              # Edit secrets (auto-decrypts)
-sops updatekeys secrets/secrets.yaml   # Re-encrypt after adding a new host key
+sops secrets/secrets.yaml             # Edit (auto-decrypts)
+sops updatekeys secrets/secrets.yaml  # Re-encrypt after adding a host key
 ```
 
-### Build installer ISOs
+**Build installer ISOs:**
+
 ```bash
-# Installer ISO (boot on target hardware)
+# Installer ISO
 nix build .#nixosConfigurations.vanallenbelt.config.system.build.isoImage --print-out-paths
 
 # Keygen ISO (air-gapped age key generation)
@@ -171,20 +172,20 @@ nix build .#nixosConfigurations.kepler.config.system.build.isoImage --print-out-
 
 ---
 
-## 🔐 Security
+## Security
 
-- Secrets encrypted with SOPS + age keys (never plaintext in git)
-- SSH key-only authentication, password auth disabled
+- Secrets encrypted with SOPS + age, never plaintext in git
+- SSH key-only auth, password login disabled everywhere
 - Full disk encryption on mobile hosts (vela)
-- nftables default-drop firewall on router
-- WireGuard for all external service exposure — no ports open at home
+- nftables default-drop on the router
+- All external services tunneled over WireGuard — zero open ports at home
 - endlessh SSH tarpit + honeypots on lyra
 - CrowdSec collaborative IPS with nftables bouncer
-- AdGuardHome DNS-level ad/tracker blocking on all VLANs
+- AdGuardHome DNS blocking on all VLANs
 
 ---
 
-## 📚 References
+## References
 
 - [NixOS Manual](https://nixos.org/manual/nixos/stable/)
 - [Disko](https://github.com/nix-community/disko)
