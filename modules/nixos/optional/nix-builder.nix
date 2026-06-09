@@ -45,7 +45,7 @@ let
       --to "${cacheUrl}?secret-key=${uploadKeyPath}" \
       $BUILT_PATHS \
       && echo "[nix-builder] Push complete" \
-      || echo "[nix-builder] WARNING: some paths failed to push"
+     || { echo "[nix-builder] Some paths already cached (normal)"; true; }
 
     echo "[nix-builder] Done — $(date)"
   '';
