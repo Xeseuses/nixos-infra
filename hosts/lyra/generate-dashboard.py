@@ -6,15 +6,18 @@
 #   - /var/log/honeypot/*.log (fake service hits)
 #   - cscli decisions (CrowdSec bans)
 #
+# Also auto-bans repeat honeypot offenders:
+#   - Any IP hitting fake services 3+ times in 24h → 7 day ban
+#   - endlessh hits excluded (too noisy)
+#
 # Run by a systemd timer every 5 minutes.
 # Output: /var/lib/honeypot-dashboard/index.html
-# Served by Caddy on threats.xesh.cc (WireGuard-only)
 
 import subprocess
 import json
 import re
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from collections import Counter
 from pathlib import Path
 
@@ -22,10 +25,15 @@ OUTPUT_DIR = Path("/var/lib/honeypot-dashboard")
 OUTPUT_FILE = OUTPUT_DIR / "index.html"
 HONEYPOT_LOG_DIR = Path("/var/log/honeypot")
 
+# ── Auto-ban config ──────────────────────────────────────────────────────────
+BAN_THRESHOLD = 3        # hits within window to trigger ban
+BAN_WINDOW_HOURS = 24    # look-back window in hours
+BAN_DURATION = "168h"    # 7 days
+BAN_REASON = "honeypot-repeat-offender"
+
 # ── Data collection ──────────────────────────────────────────────────────────
 
 def get_endlessh_hits():
-    """Parse endlessh-go from journald."""
     hits = []
     try:
         result = subprocess.run(
@@ -35,12 +43,10 @@ def get_endlessh_hits():
         for line in result.stdout.splitlines():
             m = re.search(r'ACCEPT host=(\S+) port=(\d+)', line)
             if m:
-                # Extract timestamp from journald line
                 ts_m = re.match(r'(\S+)', line)
                 hits.append({
                     "time": ts_m.group(1) if ts_m else "unknown",
                     "ip": m.group(1),
-                    "port": m.group(2),
                     "service": "SSH tarpit"
                 })
     except Exception:
@@ -48,10 +54,9 @@ def get_endlessh_hits():
     return hits
 
 def get_honeypot_hits():
-    """Parse fake service log files."""
     hits = []
     services = {"ftp": 21, "telnet": 23, "mysql": 3306}
-    for svc, port in services.items():
+    for svc in services:
         log = HONEYPOT_LOG_DIR / f"{svc}.log"
         if not log.exists():
             continue
@@ -62,7 +67,6 @@ def get_honeypot_hits():
                     hits.append({
                         "time": m.group(1),
                         "ip": m.group(2),
-                        "port": port,
                         "service": f"Fake {svc.upper()}"
                     })
         except Exception:
@@ -70,7 +74,6 @@ def get_honeypot_hits():
     return hits
 
 def get_crowdsec_decisions():
-    """Get active CrowdSec bans."""
     decisions = []
     try:
         result = subprocess.run(
@@ -87,65 +90,92 @@ def get_crowdsec_decisions():
                         "country": d.get("country", ""),
                         "as":      d.get("as", ""),
                         "expires": d.get("expiration", ""),
+                        "origin":  d.get("origin", ""),
                     })
     except Exception:
         pass
     return decisions
 
-def get_crowdsec_metrics():
-    """Get CrowdSec alert counts."""
-    try:
-        result = subprocess.run(
-            ["cscli", "alerts", "list", "-o", "json", "--limit", "1000"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            data = json.loads(result.stdout)
-            return len(data) if data else 0
-    except Exception:
-        pass
-    return 0
+def get_already_banned_ips(decisions):
+    return {d["ip"] for d in decisions}
 
-# ── HTML generation ──────────────────────────────────────────────────────────
+# ── Auto-ban logic ────────────────────────────────────────────────────────────
 
-def render_html(endlessh, honeypot, decisions):
+def auto_ban_repeat_offenders(honeypot_hits, already_banned):
+    """Ban IPs that hit fake services BAN_THRESHOLD+ times in BAN_WINDOW_HOURS."""
+    now = datetime.now()
+    window_start = now - timedelta(hours=BAN_WINDOW_HOURS)
+    recent_hits = []
+
+    for hit in honeypot_hits:
+        try:
+            # Parse ISO timestamp
+            ts_str = hit["time"][:19].replace("T", " ")
+            ts = datetime.fromisoformat(ts_str)
+            if ts > window_start:
+                recent_hits.append(hit["ip"])
+        except Exception:
+            pass
+
+    ip_counts = Counter(recent_hits)
+    new_bans = []
+
+    for ip, count in ip_counts.items():
+        if count >= BAN_THRESHOLD and ip not in already_banned:
+            try:
+                result = subprocess.run(
+                    ["cscli", "decisions", "add",
+                     "--ip", ip,
+                     "--duration", BAN_DURATION,
+                     "--reason", BAN_REASON],
+                    capture_output=True, text=True, timeout=10
+                )
+                if result.returncode == 0:
+                    new_bans.append((ip, count))
+                    print(f"Auto-banned {ip} ({count} honeypot hits in {BAN_WINDOW_HOURS}h)")
+            except Exception as e:
+                print(f"Failed to ban {ip}: {e}")
+
+    return new_bans
+
+# ── HTML generation ───────────────────────────────────────────────────────────
+
+def render_html(endlessh, honeypot, decisions, new_bans):
     all_hits = endlessh + honeypot
     all_hits.sort(key=lambda x: x["time"], reverse=True)
 
-    # Stats
-    total_tarpit    = len(endlessh)
-    total_honeypot  = len(honeypot)
-    total_banned    = len(decisions)
-
-    # Top attackers across all sources
-    all_ips = [h["ip"] for h in all_hits]
-    top_ips = Counter(all_ips).most_common(10)
-
-    # Service breakdown
-    service_counts = Counter(h["service"] for h in all_hits)
-
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    total_tarpit   = len(endlessh)
+    total_honeypot = len(honeypot)
+    total_banned   = len(decisions)
+    all_ips        = [h["ip"] for h in all_hits]
+    top_ips        = Counter(all_ips).most_common(10)
+    now            = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def rows(items, limit=50):
         html = ""
         for item in items[:limit]:
+            svc = item.get("service", "")
+            color = "var(--red)" if "tarpit" in svc.lower() else "var(--yellow)"
             html += f"""
             <tr>
               <td>{item.get('time','')[:19]}</td>
               <td><code>{item.get('ip','')}</code></td>
-              <td>{item.get('service','')}</td>
+              <td style="color:{color}">{svc}</td>
             </tr>"""
         return html
 
     def decision_rows(items):
         html = ""
         for d in items:
+            origin_color = "var(--red)" if d.get("origin") == "cscli" else "var(--yellow)"
+            origin_label = "manual" if d.get("origin") == "cscli" else "crowdsec"
             html += f"""
             <tr>
               <td><code>{d.get('ip','')}</code></td>
               <td>{d.get('country','')}</td>
-              <td>{d.get('as','')[:40]}</td>
+              <td>{d.get('as','')[:35]}</td>
               <td>{d.get('reason','')}</td>
+              <td style="color:{origin_color}">{origin_label}</td>
               <td>{d.get('expires','')}</td>
             </tr>"""
         return html
@@ -153,8 +183,25 @@ def render_html(endlessh, honeypot, decisions):
     def top_ip_rows(items):
         html = ""
         for ip, count in items:
-            html += f"<tr><td><code>{ip}</code></td><td>{count}</td></tr>"
+            bar_width = min(100, int(count / max(c for _, c in items) * 100))
+            html += f"""<tr>
+              <td><code>{ip}</code></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="background:var(--red);height:8px;width:{bar_width}%;border-radius:4px;min-width:4px"></div>
+                  <span>{count}</span>
+                </div>
+              </td>
+            </tr>"""
         return html
+
+    new_ban_notice = ""
+    if new_bans:
+        ban_list = ", ".join(f"<code>{ip}</code> ({c} hits)" for ip, c in new_bans)
+        new_ban_notice = f"""
+        <div style="background:var(--bg2);border:1px solid var(--red);border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+          <span style="color:var(--red);font-weight:700">⚡ Auto-banned this run:</span> {ban_list}
+        </div>"""
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -193,34 +240,23 @@ def render_html(endlessh, honeypot, decisions):
 </style>
 </head>
 <body>
-
 <h1>🛡 lyra — threat dashboard</h1>
-<p class="subtitle">Updated: {now} · Auto-refreshes every 5 minutes</p>
+<p class="subtitle">Updated: {now} · Auto-refreshes every 5 minutes · Auto-bans at {BAN_THRESHOLD}+ honeypot hits/{BAN_WINDOW_HOURS}h</p>
+
+{new_ban_notice}
 
 <div class="grid">
-  <div class="card red">
-    <div class="label">SSH tarpit catches</div>
-    <div class="value">{total_tarpit}</div>
-  </div>
-  <div class="card yellow">
-    <div class="label">Honeypot hits</div>
-    <div class="value">{total_honeypot}</div>
-  </div>
-  <div class="card green">
-    <div class="label">Active bans</div>
-    <div class="value">{total_banned}</div>
-  </div>
-  <div class="card blue">
-    <div class="label">Unique attackers</div>
-    <div class="value">{len(set(all_ips))}</div>
-  </div>
+  <div class="card red"><div class="label">SSH tarpit catches</div><div class="value">{total_tarpit}</div></div>
+  <div class="card yellow"><div class="label">Honeypot hits</div><div class="value">{total_honeypot}</div></div>
+  <div class="card green"><div class="label">Active bans</div><div class="value">{total_banned}</div></div>
+  <div class="card blue"><div class="label">Unique attackers</div><div class="value">{len(set(all_ips))}</div></div>
 </div>
 
 <section>
   <h2>Active CrowdSec bans</h2>
   <table>
-    <tr><th>IP</th><th>Country</th><th>AS</th><th>Reason</th><th>Expires</th></tr>
-    {decision_rows(decisions) or '<tr><td colspan="5" style="color:var(--muted);text-align:center">No active bans</td></tr>'}
+    <tr><th>IP</th><th>Country</th><th>AS</th><th>Reason</th><th>Origin</th><th>Expires</th></tr>
+    {decision_rows(decisions) or '<tr><td colspan="6" style="color:var(--muted);text-align:center">No active bans</td></tr>'}
   </table>
 </section>
 
@@ -240,11 +276,11 @@ def render_html(endlessh, honeypot, decisions):
   </table>
 </section>
 
-<p class="footer">lyra · {now} · endlessh-go + honeypot + crowdsec</p>
+<p class="footer">lyra · {now} · endlessh-go + honeypot + crowdsec · auto-ban threshold: {BAN_THRESHOLD} hits/{BAN_WINDOW_HOURS}h → {BAN_DURATION} ban</p>
 </body>
 </html>"""
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -253,7 +289,15 @@ if __name__ == "__main__":
     honeypot  = get_honeypot_hits()
     decisions = get_crowdsec_decisions()
 
-    html = render_html(endlessh, honeypot, decisions)
+    # Auto-ban repeat offenders from fake services only
+    already_banned = get_already_banned_ips(decisions)
+    new_bans = auto_ban_repeat_offenders(honeypot, already_banned)
+
+    # Refresh decisions after banning
+    if new_bans:
+        decisions = get_crowdsec_decisions()
+
+    html = render_html(endlessh, honeypot, decisions, new_bans)
     OUTPUT_FILE.write_text(html)
-    print(f"Dashboard written to {OUTPUT_FILE} — {len(endlessh)} tarpit, {len(honeypot)} honeypot, {len(decisions)} bans")
+    print(f"Dashboard written — {len(endlessh)} tarpit, {len(honeypot)} honeypot, {len(decisions)} bans, {len(new_bans)} new auto-bans")
 
