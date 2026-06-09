@@ -98,6 +98,7 @@
           ./modules/nixos/common
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          impermanence.nixosModules.impermanence
           ./hosts/lyra
         ];
       };
