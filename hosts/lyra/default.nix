@@ -5,6 +5,7 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ./crowdsec.nix
+    ./honeypot.nix
   ];
 
   asthrossystems = {
@@ -27,7 +28,7 @@
     hostName = "lyra";
     firewall = {
       enable            = true;
-      allowedTCPPorts   = [ 22 80 443 ];
+      allowedTCPPorts   = [ 22022 80 443 ];
       allowedUDPPorts   = [ 51821 ];     # WireGuard
       trustedInterfaces = [ "wg0" ];
     };
