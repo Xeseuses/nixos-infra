@@ -63,10 +63,7 @@
         # andromeda — HA VM host
         # Only needs its WireGuard IP — no VLAN routes on lyra
         publicKey  = "Su/GnnDxSCnUpH45jTO3dwZVHk7/VskvwkDscpBISEA=";
-        allowedIPs = [ 
-          "10.200.0.2/32" 
-          "10.40.0.0/16"        
-        ];
+        allowedIPs = [ "10.200.0.2/32" ];
       }
       {
         # caelum — services host
@@ -80,10 +77,17 @@
       }
       {
         # phone — Android/GrapheneOS road warrior
-        # New keypair — old key replaced
         publicKey  = "CD6mrCEvQs8c2mCc1Dyfqq6C16rvRTpyqeHwECK7dHI=";
         allowedIPs = [ "10.200.0.5/32" ];
       }
+      {
+   	# orion — home router, gateway to all home VLANs
+	publicKey  = "/Gmm2S5ZFD6J2UQeLo26LUs45GZhD4j87f0V3+TpLAM=";
+	allowedIPs = [
+	  "10.200.0.6/32"
+          "10.40.0.0/16"
+         ];
+     }
     ];
   };
 

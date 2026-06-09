@@ -8,6 +8,7 @@
     ./unbound.nix            # Recursive DNS — localhost:5335, forwards to NSD + Quad9
     ./nsd.nix                # Authoritative DNS — localhost:5353, serves .lan + xesh.cc
     ./adguardhome.nix        # DNS frontend — port 53, blocklists, web UI port 3000
+    ./wireguard.nix
   ];
 
   asthrossystems = {
@@ -173,13 +174,6 @@
  
   networking.firewall.allowedUDPPorts = [ 29531 ]; 
  
-  networking.interfaces.vlan40.ipv4.routes = [{
-  address    = "10.200.0.0";
-  prefixLength = 24;
-  via        = "10.40.40.104";
-}];
-
-
   # ── DHCPv6 Prefix Delegation ──────────────────────────────────────────────
   # Request a prefix from FritzBox and delegate /64s to each VLAN.
   # The hint "::/62" asks for the same prefix back on renewal for stability.
