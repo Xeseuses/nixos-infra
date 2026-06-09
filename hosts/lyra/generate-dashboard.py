@@ -147,6 +147,7 @@ def render_html(endlessh, honeypot, decisions, new_bans):
     total_tarpit   = len(endlessh)
     total_honeypot = len(honeypot)
     total_banned   = len(decisions)
+    total_auto_banned = len([d for d in decisions if d.get("reason") == "honeypot-repeat-offender"])
     all_ips        = [h["ip"] for h in all_hits]
     top_ips        = Counter(all_ips).most_common(10)
     now            = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -167,15 +168,18 @@ def render_html(endlessh, honeypot, decisions, new_bans):
     def decision_rows(items):
         html = ""
         for d in items:
-            origin_color = "var(--red)" if d.get("origin") == "cscli" else "var(--yellow)"
-            origin_label = "manual" if d.get("origin") == "cscli" else "crowdsec"
+            is_autoban = d.get("reason") == "honeypot-repeat-offender"
+            is_manual  = d.get("origin") == "cscli" and not is_autoban
+            origin_color = "var(--red)" if is_autoban else ("var(--purple)" if is_manual else "var(--yellow)")
+            origin_label = "⚡ auto-ban" if is_autoban else ("manual" if is_manual else "crowdsec")
+            row_style = ' style="background:rgba(248,81,73,0.06)"' if is_autoban else ""
             html += f"""
-            <tr>
+            <tr{row_style}>
               <td><code>{d.get('ip','')}</code></td>
               <td>{d.get('country','')}</td>
               <td>{d.get('as','')[:35]}</td>
               <td>{d.get('reason','')}</td>
-              <td style="color:{origin_color}">{origin_label}</td>
+              <td style="color:{origin_color};font-weight:{'700' if is_autoban else '400'}">{origin_label}</td>
               <td>{d.get('expires','')}</td>
             </tr>"""
         return html
@@ -197,10 +201,14 @@ def render_html(endlessh, honeypot, decisions, new_bans):
 
     new_ban_notice = ""
     if new_bans:
-        ban_list = ", ".join(f"<code>{ip}</code> ({c} hits)" for ip, c in new_bans)
+        ban_list = " &nbsp;·&nbsp; ".join(f"<code>{ip}</code> <span style=\'color:var(--muted)\'>{c} hits</span>" for ip, c in new_bans)
         new_ban_notice = f"""
-        <div style="background:var(--bg2);border:1px solid var(--red);border-radius:8px;padding:1rem;margin-bottom:1.5rem">
-          <span style="color:var(--red);font-weight:700">⚡ Auto-banned this run:</span> {ban_list}
+        <div style="background:rgba(248,81,73,0.12);border:2px solid var(--red);border-radius:8px;padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
+          <span style="font-size:1.5rem">⚡</span>
+          <div>
+            <div style="color:var(--red);font-weight:700;font-size:0.9rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem">Auto-banned this run</div>
+            <div style="font-size:0.875rem">{ban_list}</div>
+          </div>
         </div>"""
 
     return f"""<!DOCTYPE html>
@@ -250,6 +258,7 @@ def render_html(endlessh, honeypot, decisions, new_bans):
   <div class="card yellow"><div class="label">Honeypot hits</div><div class="value">{total_honeypot}</div></div>
   <div class="card green"><div class="label">Active bans</div><div class="value">{total_banned}</div></div>
   <div class="card blue"><div class="label">Unique attackers</div><div class="value">{len(set(all_ips))}</div></div>
+  <div class="card" style="border-color:var(--red);background:rgba(248,81,73,0.08)"><div class="label" style="color:var(--red)">⚡ Auto-banned today</div><div class="value" style="color:var(--red)">{total_auto_banned}</div></div>
 </div>
 
 <section>
