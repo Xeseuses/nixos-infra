@@ -41,7 +41,7 @@ in
       root * /var/lib/honeypot-dashboard
       file_server
       # Only allow WireGuard clients
-      @blocked not remote_ip 10.200.0.0/24
+      @blocked not remote_ip 10.200.0.0/24 10.40.0.0/16
       abort @blocked
     '';
   };
