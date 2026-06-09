@@ -61,7 +61,10 @@
         # andromeda — HA VM host
         # Only needs its WireGuard IP — no VLAN routes on lyra
         publicKey  = "Su/GnnDxSCnUpH45jTO3dwZVHk7/VskvwkDscpBISEA=";
-        allowedIPs = [ "10.200.0.2/32" ];
+        allowedIPs = [ 
+          "10.200.0.2/32" 
+          "10.40.0.0/16"        
+        ];
       }
       {
         # caelum — services host
