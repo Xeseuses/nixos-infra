@@ -105,17 +105,9 @@
       # xesh.cc matrix well-known removed — no longer needed
     };
 
-    globalConfig = ''
-      log {
-        output file /var/log/caddy/access.log
-      }
-    '';
-  };
+   };
 
-  systemd.tmpfiles.rules = [
-    "d /var/log/caddy 0750 caddy caddy -"
-  ];
-
+  
   # ── Users ──────────────────────────────────────────────────────────────────
   users.users.xeseuses = {
     isNormalUser  = true;
