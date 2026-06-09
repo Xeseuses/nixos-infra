@@ -70,7 +70,7 @@ in
   systemd.services.honeypot-ftp    = fakeService { name = "ftp";    port = 21;   banner = "220 FTP server ready."; };
   systemd.services.honeypot-telnet = fakeService { name = "telnet"; port = 23;   banner = "Ubuntu 22.04 LTS login:"; };
   systemd.services.honeypot-mysql  = fakeService { name = "mysql";  port = 3306; banner = "Host is not allowed to connect"; };
-  systemd.services.honeypot-http   = fakeService { name = "http";   port = 8080; banner = "HTTP/1.1 200 OK\r\nContent-Length: 0"; };
+  systemd.services.honeypot-http = fakeService { name = "http"; port = 8080; banner = "HTTP/1.1 200 OK"; };
 
   # ── Log rotation ───────────────────────────────────────────────────────
   services.logrotate.settings."/var/log/honeypot/*.log" = {
