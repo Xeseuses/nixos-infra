@@ -71,6 +71,11 @@
         allowedIPs = [ "10.200.0.3/32" ];
       }
       {
+	# eridanus — Nextcloud + binary cache
+	publicKey  = "pCTHkfjduvIz40MQMSS+mfKNZwQnDnBRSJ1hytTPtxc=";
+	allowedIPs = [ "10.200.0.7/32" ];
+      }
+      {
         # vela — laptop
         publicKey  = "szfiqi0Uea4O8Wfml0LPQ25jiAbVkSy0jMVusDGNWhU=";
         allowedIPs = [ "10.200.0.4/32" ];
@@ -110,8 +115,9 @@
       "solibieb.nl" = {
         extraConfig = "reverse_proxy 10.200.0.3:8081";
       };
-      # matrix.xesh.cc removed — service no longer in use
-      # xesh.cc matrix well-known removed — no longer needed
+      "cloud.xesh.cc" = {
+        extraConfig = "reverse_proxy 10.200.0.7:80";
+      };
     };
 
    };

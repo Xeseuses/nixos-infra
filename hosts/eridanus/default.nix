@@ -2,6 +2,8 @@
 {
   imports = [
     ./disk-config.nix
+    ./wireguard.nix
+    ./nextcloud.nix
   ];
  
   fileSystems."/persist".neededForBoot = true;
