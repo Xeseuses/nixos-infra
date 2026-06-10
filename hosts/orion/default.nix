@@ -254,6 +254,11 @@
           id = 10;
           subnet = "10.40.10.0/24";
           pools = [{ pool = "10.40.10.100 - 10.40.10.200"; }];
+           reservations = [
+    	     { hw-address = "f0:57:a6:66:3e:b0"; ip-address = "10.40.10.106"; hostname = "vela"; }
+             { hw-address = "dc:45:46:95:a2:c2"; ip-address = "10.40.10.109"; hostname = "vega"; }
+             { hw-address = "e2:89:b2:85:c7:10"; ip-address = "10.40.10.110"; hostname = "phone"; }
+             ];
           option-data = [
             { name = "routers";             data = "10.40.10.1"; }
             { name = "domain-name-servers"; data = "10.40.10.1"; }
