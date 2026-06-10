@@ -61,13 +61,7 @@
 
       # Performance
       "memcache.local"      = "\\OC\\Memcache\\APCu";
-      "memcache.distributed" = "\\OC\\Memcache\\Redis";
-      "memcache.locking"     = "\\OC\\Memcache\\Redis";
-      redis = {
-        host = "127.0.0.1";
-        port = 6379;
-      };
-    };
+          };
 
     # PHP settings
     phpOptions = {
@@ -94,11 +88,7 @@
   };
 
   # ── Redis (for Nextcloud caching + locking) ───────────────────────────────
-  services.redis.servers.nextcloud = {
-    enable  = true;
-    port    = 6379;
-    bind    = "127.0.0.1";
-  };
+  services.nextcloud.configureRedis = true;
 
   # ── nginx (Nextcloud NixOS module requires nginx) ─────────────────────────
   # The Nextcloud module manages its own nginx vhost.
