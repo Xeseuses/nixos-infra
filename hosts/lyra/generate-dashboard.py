@@ -8,20 +8,40 @@
 import subprocess
 import json
 import re
+import glob
 from datetime import datetime, timedelta
 from collections import Counter
 from pathlib import Path
 
 OUTPUT_DIR     = Path("/var/lib/honeypot-dashboard")
 OUTPUT_FILE    = OUTPUT_DIR / "index.html"
-STATE_FILE     = OUTPUT_DIR / "state.json"   # persists last-ban time etc.
+STATE_FILE     = OUTPUT_DIR / "state.json"
 HONEYPOT_LOGS  = Path("/var/log/honeypot")
 
 # ── Tunable config ────────────────────────────────────────────────────────────
-BAN_THRESHOLD    = 3        # honeypot hits in window to trigger ban
-BAN_WINDOW_HOURS = 24       # look-back window in hours
-BAN_DURATION     = "168h"   # 7 days
+BAN_THRESHOLD    = 3
+BAN_WINDOW_HOURS = 24
+BAN_DURATION     = "168h"
 BAN_REASON       = "honeypot-repeat-offender"
+
+# ── CrowdSec helpers ──────────────────────────────────────────────────────────
+
+def get_cscli_config():
+    """Find CrowdSec config in Nix store — path changes on every rebuild."""
+    matches = glob.glob("/nix/store/*-crowdsec.yaml")
+    if matches:
+        return matches[0]
+    return None
+
+def run_cscli(*args):
+    """Run cscli with the correct NixOS config path."""
+    config = get_cscli_config()
+    if not config:
+        raise FileNotFoundError("Could not find crowdsec.yaml in /nix/store")
+    return subprocess.run(
+        ["cscli", "-c", config] + list(args),
+        capture_output=True, text=True, timeout=15
+    )
 
 # ── State persistence ─────────────────────────────────────────────────────────
 
@@ -84,10 +104,7 @@ def get_honeypot_hits():
 def get_crowdsec_decisions():
     """Fetch active CrowdSec decisions via cscli."""
     try:
-        result = subprocess.run(
-            ["cscli", "decisions", "list", "-o", "json"],
-            capture_output=True, text=True, timeout=15
-        )
+        result = run_cscli("decisions", "list", "-o", "json")
         if result.returncode != 0:
             print(f"Warning: cscli decisions list failed: {result.stderr.strip()}")
             return []
@@ -129,12 +146,11 @@ def auto_ban_repeat_offenders(honeypot_hits, already_banned):
         if count < BAN_THRESHOLD or ip in already_banned:
             continue
         try:
-            result = subprocess.run(
-                ["cscli", "decisions", "add",
-                 "--ip", ip,
-                 "--duration", BAN_DURATION,
-                 "--reason", BAN_REASON],
-                capture_output=True, text=True, timeout=15
+            result = run_cscli(
+                "decisions", "add",
+                "--ip", ip,
+                "--duration", BAN_DURATION,
+                "--reason", BAN_REASON
             )
             if result.returncode == 0:
                 new_bans.append((ip, count))
@@ -161,8 +177,6 @@ def render_html(endlessh, honeypot, decisions, new_bans, state):
     last_ban_time     = state.get("last_ban_time") or "never"
     now_str           = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # ── Sub-renderers ─────────────────────────────────────────────────────────
-
     def hit_rows(items, limit=100):
         html = ""
         for item in items[:limit]:
@@ -180,12 +194,12 @@ def render_html(endlessh, honeypot, decisions, new_bans, state):
     def decision_rows(items):
         html = ""
         for d in items:
-            autoban  = d.get("reason") == BAN_REASON
-            manual   = d.get("origin") == "cscli" and not autoban
-            clr      = "var(--red)" if autoban else ("var(--purple)" if manual else "var(--yellow)")
-            lbl      = "⚡ auto-ban" if autoban else ("manual" if manual else "crowdsec")
-            fw       = "700" if autoban else "400"
-            row_bg   = ' style="background:rgba(248,81,73,0.07)"' if autoban else ""
+            autoban = d.get("reason") == BAN_REASON
+            manual  = d.get("origin") == "cscli" and not autoban
+            clr     = "var(--red)" if autoban else ("var(--purple)" if manual else "var(--yellow)")
+            lbl     = "⚡ auto-ban" if autoban else ("manual" if manual else "crowdsec")
+            fw      = "700" if autoban else "400"
+            row_bg  = ' style="background:rgba(248,81,73,0.07)"' if autoban else ""
             html += (
                 f'<tr{row_bg}>'
                 f'<td><code>{d.get("ip","")}</code></td>'
@@ -219,7 +233,6 @@ def render_html(endlessh, honeypot, decisions, new_bans, state):
             )
         return html
 
-    # ── Auto-ban notice ───────────────────────────────────────────────────────
     ban_notice = ""
     if new_bans:
         items = " &nbsp;·&nbsp; ".join(
@@ -239,9 +252,9 @@ def render_html(endlessh, honeypot, decisions, new_bans, state):
           </div>
         </div>'''
 
-    no_bans   = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1.5rem">No active bans</td></tr>'
-    no_hits   = '<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:1.5rem">No hits yet</td></tr>'
-    no_top    = '<tr><td colspan="2" style="color:var(--muted);text-align:center;padding:1.5rem">No data</td></tr>'
+    no_bans = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1.5rem">No active bans</td></tr>'
+    no_hits = '<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:1.5rem">No hits yet</td></tr>'
+    no_top  = '<tr><td colspan="2" style="color:var(--muted);text-align:center;padding:1.5rem">No data</td></tr>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -367,7 +380,7 @@ if __name__ == "__main__":
         state["last_ban_time"]     = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         state["total_ever_banned"] = state.get("total_ever_banned", 0) + len(new_bans)
         save_state(state)
-        decisions = get_crowdsec_decisions()   # refresh after banning
+        decisions = get_crowdsec_decisions()
 
     html = render_html(endlessh, honeypot, decisions, new_bans, state)
     OUTPUT_FILE.write_text(html)
