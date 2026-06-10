@@ -102,7 +102,6 @@ def get_honeypot_hits():
     return hits
 
 def get_crowdsec_decisions():
-    """Fetch active CrowdSec decisions via cscli."""
     try:
         result = run_cscli("decisions", "list", "-o", "json")
         if result.returncode != 0:
@@ -111,20 +110,22 @@ def get_crowdsec_decisions():
         if not result.stdout.strip() or result.stdout.strip() == "null":
             return []
         data = json.loads(result.stdout)
-        return [
-            {
-                "ip":      d.get("value", ""),
-                "reason":  d.get("reason", ""),
-                "country": d.get("country", ""),
-                "as":      d.get("as", ""),
-                "expires": d.get("expiration", ""),
-                "origin":  d.get("origin", ""),
-            }
-            for d in (data or [])
-        ]
+        decisions = []
+        for alert in (data or []):
+            for d in alert.get("decisions", []):
+                decisions.append({
+                    "ip":      d.get("value", ""),
+                    "reason":  d.get("scenario", ""),
+                    "country": alert.get("source", {}).get("cn", ""),
+                    "as":      alert.get("source", {}).get("as_name", ""),
+                    "expires": d.get("duration", ""),
+                    "origin":  d.get("origin", ""),
+                })
+        return decisions
     except Exception as e:
         print(f"Warning: could not get CrowdSec decisions: {e}")
         return []
+
 
 # ── Auto-ban logic ────────────────────────────────────────────────────────────
 
