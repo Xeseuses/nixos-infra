@@ -279,6 +279,7 @@ networking.interfaces.vlan60 = {
   security.sudo.wheelNeedsPassword = false;
   services.openssh.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  systemd.services.conduit.enable = false;
   system.stateVersion = "23.11";
 }
 
