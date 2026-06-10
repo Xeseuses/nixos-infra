@@ -132,6 +132,8 @@
 
   # ── nftables bouncer ──────────────────────────────────────────────────────
   services.crowdsec-firewall-bouncer = {
+    after = [ "crowdsec.service" ];
+    wants = [ "crowdsec.service" ];
     enable = true;
     registerBouncer.enable = true;
     settings = {

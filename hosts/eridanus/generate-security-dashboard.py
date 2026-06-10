@@ -27,7 +27,7 @@ HOSTS = [
     {"name": "caelum",     "ip": "10.40.40.101", "port": 22,    "local": False },
     {"name": "andromeda",  "ip": "10.40.40.104", "port": 22,    "local": False },
     {"name": "horologium", "ip": "10.40.40.106", "port": 22,    "local": False },
-    {"name": "lyra",       "ip": "77.42.83.12",  "port": 22022, "local": False },
+
 ]
 
 SSH_KEY  = "/persist/etc/ssh/monitor_key"
