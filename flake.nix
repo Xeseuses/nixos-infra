@@ -88,6 +88,7 @@
           ./hosts/andromeda
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
+          impermanence.nixosModules.impermanence
         ];
       };
 
@@ -122,6 +123,7 @@
           ./hosts/horologium
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          impermanence.nixosModules.impermanence
         ];
       };
     
