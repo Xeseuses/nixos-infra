@@ -108,6 +108,13 @@
   # Also allow from local VLAN40 for direct internal access
   networking.firewall.interfaces.enp1s0.allowedTCPPorts = [ 80 ];
 
+  systemd.tmpfiles.rules = [
+  "d /var/lib/nextcloud/config     0750 nextcloud nextcloud -"
+  "d /var/lib/nextcloud/data       0750 nextcloud nextcloud -"
+  "d /var/lib/nextcloud/store-apps 0750 nextcloud nextcloud -"
+  "d /var/lib/nextcloud/apps       0750 nextcloud nextcloud -"
+];
+
   # ── Impermanence ──────────────────────────────────────────────────────────
   environment.persistence."/persist".directories = [
     "/var/lib/nextcloud"       # all Nextcloud data + config
