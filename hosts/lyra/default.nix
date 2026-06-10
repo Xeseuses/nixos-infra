@@ -7,7 +7,6 @@
     ./crowdsec.nix
     ./honeypot.nix
     ./dashboard.nix
-    ../../modules/nixos/optional/hardening.nix
   ];
 
   asthrossystems = {
