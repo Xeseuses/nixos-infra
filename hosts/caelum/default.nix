@@ -15,7 +15,6 @@ in
   asthrossystems = {
     hostInfo = "Beelink EQ12 - Services Host";
     isServer = true;
-    imper,amemce = true;
   };
 
   boot = {
