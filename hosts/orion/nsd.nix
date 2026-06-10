@@ -23,7 +23,7 @@
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.lan. (
-                      2026060604  ; serial
+                      2026060605  ; serial
                       3600        ; refresh
                       900         ; retry
                       604800      ; expire
@@ -45,7 +45,10 @@
           cache       IN A    10.40.40.117
           horologium  IN A    10.40.40.106
           ha          IN A    10.40.40.115
-
+          
+          ;-- Services --
+          security    IN A    10.40.40.117
+   
           ; ── Management (VLAN30) ───────────────────────────────────────
           unifi-ap    IN A    10.40.30.120
 
