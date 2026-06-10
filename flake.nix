@@ -110,6 +110,7 @@
           ./modules/nixos/common
           ./hosts/caelum
           sops-nix.nixosModules.sops
+          impermanence.nixosModules.impermanence 
         ];
       };
 
