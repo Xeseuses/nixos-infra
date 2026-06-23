@@ -1,27 +1,34 @@
-# nixos-infra
+# NixOS Infrastructure
 
-Fully declarative NixOS homelab. Constellation-themed hostnames, everything in Nix, no manual configuration.
+My fully declarative NixOS homelab — constellation-themed hosts, managed entirely as code.
 
-Custom options exposed under `asthrossystems.*` for reuse across machines.
+## 🏗️ Design Principles
+
+- **Declarative** — Everything in Nix. No manual configuration, no snowflakes
+- **Reproducible** — Same config = same system, every time
+- **Version controlled** — All changes tracked in git, secrets encrypted
+- **Modular** — Reusable modules across machines via `asthrossystems.*` options
+- **Self-hosted** — DNS, DHCP, VPN, reverse proxy, file sync, monitoring all in-house
+- **Defended** — Active honeypots, auto-banning, file integrity monitoring, audit logging
 
 ---
 
-## Fleet
+## 🖥️ Fleet
 
 | Hostname | Hardware | Role | Status |
 |----------|----------|------|--------|
-| **orion** | Protectli VP2420 | Router — VLANs, nftables, Kea DHCP, AdGuard, NSD | live |
-| **eridanus** | Beelink EQ12 (N100, 16GB) | Binary cache (harmonia), backups | live |
-| **caelum** | Beelink EQ12 | Immich, Audiobookshelf, Solibieb | live |
-| **andromeda** | Beelink EQ12 | Home Assistant VM host (libvirt) | live |
-| **horologium** | Custom (i5-13500, 16GB, ZFS) | Media server — Jellyfin, Arr stack | live |
-| **lyra** | Hetzner CX23 VPS | Caddy reverse proxy, WireGuard hub, honeypot | live |
-| **vela** | ASUS ROG Flow Z13 | Encrypted laptop — Niri desktop | live |
-| **vega** | Minisforum SER8 | Desktop (dual-boot) | planned |
+| **orion** | Protectli VP2420 | Router — VLANs, nftables, Kea DHCP, AdGuard, NSD | ✅ Live |
+| **eridanus** | Beelink EQ12 (N100, 16GB) | Nextcloud, binary cache, security dashboard | ✅ Live |
+| **caelum** | Beelink EQ12 | Immich, Audiobookshelf, Solibieb, UniFi | ✅ Live |
+| **andromeda** | Beelink EQ12 | Home Assistant VM host (libvirt) | ✅ Live |
+| **horologium** | Custom (i5-13500, 16GB, ZFS) | Media server — Jellyfin, Arr stack | ✅ Live |
+| **lyra** | Hetzner CX23 VPS | Caddy reverse proxy, WireGuard hub, honeypot | ✅ Live |
+| **vela** | ASUS ROG Flow Z13 | Encrypted laptop — Niri desktop | ✅ Live |
+| **vega** | Minisforum SER8 | Desktop (dual-boot, planned) | 📅 Planned |
 
 ---
 
-## Network
+## 🌐 Network
 
 ```
 Internet
@@ -41,47 +48,90 @@ Mikrotik Switch
    └── VLAN60  10.40.60.0/24   Tor
 ```
 
-**WireGuard** — hub on lyra (`10.200.0.1`):
-
+**WireGuard topology** (hub: lyra `10.200.0.1`):
 ```
 lyra (hub)
-├── orion      10.200.0.6  — gateway to all home VLANs
-├── andromeda  10.200.0.2  — HA proxy
+├── orion      10.200.0.6  — gateway to all home VLANs (resilient — always on)
+├── andromeda  10.200.0.2  — HA proxy only
 ├── caelum     10.200.0.3  — services
-├── vela       10.200.0.4  — laptop road warrior
-└── phone      10.200.0.5  — GrapheneOS road warrior
+├── eridanus   10.200.0.7  — Nextcloud proxy
+├── vela       10.200.0.4  — laptop road warrior (full home access)
+└── phone      10.200.0.5  — GrapheneOS road warrior (full home access)
 ```
+> Security note: lyra only knows WireGuard IPs directly. Home VLAN routing
+> is handled by orion (always-on router), not by any single service host —
+> eliminates single point of failure for road warrior connectivity.
 
-**DNS stack** (orion):
-
+**DNS stack** (all on orion):
 ```
-clients → AdGuardHome :53 (blocklists, per-client rules, query log)
+clients → AdGuardHome :53 (4 blocklists, named clients, per-group filtering)
                ↓
-          Unbound :5335 (DNSSEC, DoT to Quad9)
+          Unbound :5335 (DNSSEC validation, DoT to Quad9)
                ↓
            NSD :5354 (authoritative: lan. + xesh.cc split-horizon)
 ```
+- 32MB cache, 30-day query log & stats retention
+- Named clients for all 14+ known devices (servers get relaxed filtering, IoT gets strict)
+- Blocklists: AdGuard DNS filter, Steven Black, OISD full, HaGeZi Pro++
 
-**Public services** — exposed via lyra over WireGuard, no ports open at home:
+**Public services** via lyra + WireGuard (TLS via Caddy/Let's Encrypt):
 
 | Domain | Service | Host |
 |--------|---------|------|
 | `ha.xesh.cc` | Home Assistant | andromeda |
-| `immich.xesh.cc` | Immich | caelum |
+| `immich.xesh.cc` | Immich photo library | caelum |
 | `audiobooks.xesh.cc` | Audiobookshelf | caelum |
 | `solibieb.nl` | Django web app | caelum |
-| `threats.xesh.cc` | Honeypot dashboard (WireGuard only) | lyra |
+| `cloud.xesh.cc` | Nextcloud (files, calendar, contacts) | eridanus |
+| `threats.xesh.cc` | Honeypot dashboard (internal access only) | lyra |
 
-**Honeypot** (lyra):
+**Internal-only services** (WireGuard / home network):
 
-- Port 22 → endlessh-go SSH tarpit
-- Port 22022 → real SSH
-- Ports 21, 23, 3306 → fake FTP / telnet / MySQL
-- CrowdSec with nftables bouncer
+| Domain | Service | Host |
+|--------|---------|------|
+| `security.lan:8090` | Security monitoring dashboard | eridanus |
+| `orion.lan:3000` | AdGuardHome web UI | orion |
+| `orion.lan:9090` | Kea DHCP lease viewer | orion |
 
 ---
 
-## Repository Structure
+## 🛡️ Security
+
+### Perimeter defense (lyra)
+- **endlessh-go** SSH tarpit on port 22 — infinite banner loop traps bots indefinitely
+- **Real SSH** moved to port 22022
+- **Honeypot services** — fake FTP (21), telnet (23), MySQL (3306); logs + immediately identifies scanners
+- **CrowdSec** — collaborative IPS with nftables bouncer
+- **Auto-ban** — any IP hitting honeypot services 3+ times in 24h gets banned for 7 days automatically
+- **Threat dashboard** (`threats.xesh.cc`) — live stats, auto-ban activity, top attackers, all auto-refreshing every 5 min
+
+### Host-level monitoring (orion, eridanus, caelum, andromeda, horologium)
+- **auditd** — kernel-level audit: identity/sudoers changes, SSH config, privilege escalation, Nix store writes, kernel module loading, time changes
+- **AIDE** — daily file integrity check (02:30) on `/etc`, `/boot`, SOPS secrets, SSH host keys
+- **Security dashboard** (`security.lan:8090`) — aggregates auditd + AIDE from all 5 monitored hosts via SSH, refreshes every 15 min
+- *(lyra intentionally excluded — VPS threat model differs; perimeter defense via CrowdSec is the right layer there, not host auditing)*
+
+### Network
+- nftables default-drop firewall on router
+- WireGuard for all external service exposure — no inbound ports open at home
+- Full disk encryption on mobile hosts (vela)
+- SSH key-only authentication, password auth disabled
+- Secrets encrypted with SOPS + age keys (never plaintext in git)
+
+---
+
+## ☁️ Self-hosted services
+
+- **Nextcloud** (eridanus) — file sync, calendar (CalDAV), contacts (CardDAV), notes, tasks. PostgreSQL + Redis backend.
+- **Immich** (caelum, Docker) — photo/video library with ML search
+- **Home Assistant** (andromeda, VM) — home automation
+- **Audiobookshelf** (caelum) — audiobook server
+- **Jellyfin + Arr stack** (horologium) — media server, ZFS-backed
+- **UniFi Network Application** (caelum, Docker) — AP/network management
+
+---
+
+## 📁 Repository Structure
 
 ```
 nixos-infra/
@@ -93,77 +143,93 @@ nixos-infra/
 ├── modules/
 │   ├── options.nix               # asthrossystems.* custom options
 │   └── nixos/
-│       ├── common/               # Loaded on every host
-│       │   ├── nix.nix           # Binary cache, GC, flakes
+│       ├── common/                # Loaded on every host
+│       │   ├── nix.nix            # Binary cache, GC, flakes
 │       │   ├── ssh.nix
 │       │   ├── users.nix
 │       │   ├── locale.nix
 │       │   └── networking.nix
-│       └── optional/             # Feature modules
-│           ├── backup.nix
-│           ├── binary-cache.nix
-│           ├── impermanence.nix
-│           └── impermanence-server.nix
+│       └── optional/              # Feature modules
+│           ├── backup.nix         # Restic backups
+│           ├── binary-cache.nix   # nix-serve / harmonia
+│           ├── hardening.nix      # auditd + AIDE (servers, not lyra)
+│           ├── impermanence.nix         # Ephemeral root (desktop)
+│           └── impermanence-server.nix  # Ephemeral root (server)
 ├── hosts/
-│   ├── orion/
-│   │   ├── adguardhome.nix
-│   │   ├── nsd.nix
-│   │   ├── unbound.nix
-│   │   └── wireguard.nix
-│   ├── lyra/
-│   │   ├── honeypot.nix
-│   │   ├── crowdsec.nix
-│   │   └── dashboard.nix
-│   ├── eridanus/
-│   ├── caelum/
-│   ├── andromeda/
-│   ├── horologium/
-│   └── vela/
+│   ├── orion/                     # Router
+│   │   ├── adguardhome.nix        # DNS frontend, named clients, blocklists
+│   │   ├── nsd.nix                # Authoritative DNS, split-horizon
+│   │   ├── unbound.nix            # Recursive resolver, DNSSEC, DoT
+│   │   └── wireguard.nix          # Home VLAN gateway peer
+│   ├── lyra/                      # VPS
+│   │   ├── honeypot.nix           # endlessh + fake services
+│   │   ├── crowdsec.nix           # IPS, custom honeypot parser/scenario
+│   │   ├── dashboard.nix          # Threat dashboard service + timer
+│   │   └── generate-dashboard.py  # Auto-ban + HTML generation
+│   ├── eridanus/                  # Nextcloud + binary cache + security hub
+│   │   ├── nextcloud.nix
+│   │   ├── wireguard.nix
+│   │   ├── security-dashboard.nix
+│   │   └── generate-security-dashboard.py
+│   ├── caelum/                    # Services (Immich, Audiobookshelf, Solibieb)
+│   ├── andromeda/                 # HA host
+│   ├── horologium/                # Media server
+│   └── vela/                      # Laptop
 └── pkgs/
-    ├── xesh-bootstrap/           # nixos-anywhere wrapper
-    └── xesh-postinstall/         # First-boot helper
+    ├── xesh-bootstrap/            # nixos-anywhere wrapper
+    └── xesh-postinstall/          # First-boot helper
 ```
 
 ---
 
-## Usage
+## 🚀 Usage
 
-**Deploy:**
-
+### Deploy to a host
 ```bash
-# Locally
+# Locally (on the machine)
 sudo nixos-rebuild switch --flake .#hostname
 
-# Remotely
+# Remotely from WSL/another machine
 nixos-rebuild switch --flake .#hostname \
   --target-host xeseuses@<ip> --use-remote-sudo
 ```
 
-**Provision a new machine:**
-
+### Provision a new machine
 ```bash
-# 1. Boot target from vanallenbelt USB
+# 1. Boot target from vanallenbelt USB (installer ISO)
 # 2. From WSL:
 nix run .#xesh-bootstrap -- \
   --hostname <newhost> \
   --target <ip> \
   --age-key /path/to/age-key.txt
 
-# 3. After first boot:
+# 3. After first boot on new machine:
 nix run /home/xeseuses/nixos-infra#xesh-postinstall
 ```
 
-**Secrets:**
-
+### Manage secrets
 ```bash
-sops secrets/secrets.yaml             # Edit (auto-decrypts)
-sops updatekeys secrets/secrets.yaml  # Re-encrypt after adding a host key
+sops secrets/secrets.yaml              # Edit secrets (auto-decrypts)
+sops updatekeys secrets/secrets.yaml   # Re-encrypt after adding a new host key
 ```
 
-**Build installer ISOs:**
-
+### Manual security operations
 ```bash
-# Installer ISO
+# Ban an IP immediately on lyra (don't wait for auto-ban)
+sudo cscli -c $(ls /nix/store/*-crowdsec.yaml | head -1) decisions add \
+  --ip 1.2.3.4 --duration 24h --reason "manual ban"
+
+# List active bans
+sudo cscli -c $(ls /nix/store/*-crowdsec.yaml | head -1) decisions list
+
+# Trigger dashboard regeneration
+sudo systemctl start honeypot-dashboard     # on lyra
+sudo systemctl start security-dashboard     # on eridanus
+```
+
+### Build installer ISOs
+```bash
+# Installer ISO (boot on target hardware)
 nix build .#nixosConfigurations.vanallenbelt.config.system.build.isoImage --print-out-paths
 
 # Keygen ISO (air-gapped age key generation)
@@ -172,23 +238,13 @@ nix build .#nixosConfigurations.kepler.config.system.build.isoImage --print-out-
 
 ---
 
-## Security
-
-- Secrets encrypted with SOPS + age, never plaintext in git
-- SSH key-only auth, password login disabled everywhere
-- Full disk encryption on mobile hosts (vela)
-- nftables default-drop on the router
-- All external services tunneled over WireGuard — zero open ports at home
-- endlessh SSH tarpit + honeypots on lyra
-- CrowdSec collaborative IPS with nftables bouncer
-- AdGuardHome DNS blocking on all VLANs
-
----
-
-## References
+## 📚 References
 
 - [NixOS Manual](https://nixos.org/manual/nixos/stable/)
 - [Disko](https://github.com/nix-community/disko)
 - [SOPS-nix](https://github.com/Mic92/sops-nix)
 - [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
+- [CrowdSec](https://www.crowdsec.net/) — collaborative IPS
+- [AIDE](https://aide.github.io/) — file integrity monitoring
 - [Swarsel/.dotfiles](https://swarsel.github.io/.dotfiles/) — architecture inspiration
+
