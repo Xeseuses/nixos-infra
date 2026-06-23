@@ -3,7 +3,6 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
-    ./ollama.nix
     ../../modules/nixos/optional/media-server.nix
     ../../modules/nixos/optional/nix-builder.nix
     ../../modules/nixos/optional/hardening.nix
