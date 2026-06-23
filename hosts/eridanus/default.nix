@@ -5,6 +5,7 @@
     ./wireguard.nix
     ./nextcloud.nix
     ./security-dashboard.nix 
+    ./hermes-agent.nix
     ../../modules/nixos/optional/hardening.nix
   ];
  

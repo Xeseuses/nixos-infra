@@ -4,6 +4,7 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
+    ./ollama.nix
     ../../modules/nixos/optional/hardening.nix
   ];
 

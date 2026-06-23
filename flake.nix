@@ -20,6 +20,7 @@
     nixos-anywhere.url = "github:nix-community/nixos-anywhere";
     nixos-anywhere.inputs.nixpkgs.follows = "nixpkgs";
 
+    hermes-agent.url = "github:NousResearch/hermes-agent";
   };
 
   outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, nixos-anywhere, ... }@inputs:
@@ -45,6 +46,7 @@
           nixos-hardware.nixosModules.common-pc-ssd
           impermanence.nixosModules.impermanence
           ./modules/nixos/optional/impermanence-server.nix
+          hermes-agent.nixosModules.default
         ];
       };
 

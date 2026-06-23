@@ -10,6 +10,7 @@ in
 {
   imports = [
     ./hardware-configuration.nix
+    ./ollama.nix
     ../../modules/nixos/optional/hardening.nix
   ];
 
