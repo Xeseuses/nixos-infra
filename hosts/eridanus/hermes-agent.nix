@@ -32,7 +32,7 @@
       model = {
         provider = "custom";
         base_url = "http://10.40.40.106:11434/v1";
-        default = "qwen2.5:14b-instruct-q4_K_M";
+        default = "qwen3:8b-q4_K_M";
         context_length = 65536;
         ollama_num_ctx = 65536;
       };

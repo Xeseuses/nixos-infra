@@ -99,7 +99,7 @@ services.ollama = {
     OLLAMA_CONTEXT_LENGTH = "65536";  # Hermes wants 64K minimum context
   };
   package = pkgs.ollama-cuda;
-  loadModels = [ "qwen2.5:14b-instruct-q4_K_M" ];
+  loadModels = [ "qwen3:8b-q4_K_M" ];
 };
 
   networking.firewall.checkReversePath = false;
