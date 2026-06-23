@@ -23,7 +23,7 @@
     hermes-agent.url = "github:NousResearch/hermes-agent";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, nixos-anywhere, ... }@inputs:
+  outputs = { self, nixpkgs, nixos-hardware, disko, sops-nix, impermanence, microvm, nixos-anywhere, hermes-agent, ... }@inputs:
   let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
