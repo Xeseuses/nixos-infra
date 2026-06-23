@@ -11,10 +11,7 @@
     host = "10.40.40.106";
     port = 11434;
 
-    # CUDA acceleration — requires hardware.nvidia / hardware.graphics
-    # configured elsewhere on this host already (graphics-nvidia-hybrid.nix
-    # or similar). This option just selects the CUDA-enabled package.
-    acceleration = "cuda";
+    package = pkgs.ollama-cuda;
 
     # Preload the model at service start so the first real request isn't
     # paying cold-load latency. Comment out if you'd rather load on demand.
