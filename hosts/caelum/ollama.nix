@@ -23,7 +23,5 @@
     };
   };
 
-  networking.firewall.interfaces."enp1s0".allowedTCPPorts = [ 11434 ];
-  # ^ Replace with caelum's actual VLAN40-tagged interface name if different.
 }
 

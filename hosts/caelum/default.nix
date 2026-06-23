@@ -47,12 +47,13 @@ in
     nftables.enable = true;
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 2283 13378 2335 8443 8080 9040 ];
+      allowedTCPPorts = [ 22 2283 13378 2335 8443 8080 9040];
       allowedUDPPorts = [ 3478 10001 9053 ];
       trustedInterfaces = [ "wg0" ];
     };
   };
 
+  networking.firewall.interfaces."enp2s0".allowedTCPPorts = [ 11434 ];
 
   networking.firewall.checkReversePath = false;
 
