@@ -90,16 +90,18 @@ hardware.nvidia = {
   services.xserver.videoDrivers = [ "nvidia" ];
 
   # === Ollama (GPU-accelerated, auto-unloads after 5min idle) ===
+
 services.ollama = {
   enable      = true;
-  host        = "0.0.0.0";
+  host        = "10.40.40.106";  # was 0.0.0.0 — scope to Servers VLAN only
   port        = 11434;
   environmentVariables = {
-    OLLAMA_KEEP_ALIVE = "5m";   # unload model from VRAM after 5min
+    OLLAMA_KEEP_ALIVE = "30m";   # keeping your existing preference
+    OLLAMA_CONTEXT_LENGTH = "65536";  # Hermes wants 64K minimum context
   };
-  package = pkgs.ollama-cuda;  
+  package = pkgs.ollama-cuda;
+  loadModels = [ "qwen2.5:14b-instruct-q4_K_M" ];
 };
-
 
   networking.firewall.checkReversePath = false;
 
