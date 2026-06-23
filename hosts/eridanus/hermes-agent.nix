@@ -9,15 +9,6 @@
 { config, lib, pkgs, ... }:
 
 {
-  # eridanus/default.nix already sets sops.defaultSopsFile to the shared
-  # ../../secrets/secrets.yaml — this just adds a key inside it, matching
-  # the namespaced-key convention used elsewhere (e.g. "lyra/wireguard/private-key").
-  #
-  # Add this to secrets/secrets.yaml first via `sops secrets/secrets.yaml`:
-  #
-  #   hermes/env: |
-  #       ANTHROPIC_API_KEY=sk-ant-your-key-here
-  #
   sops.secrets."hermes/env" = {
     # Match ownership to whatever user/group the hermes service runs as
     # (default "hermes"/"hermes" per the module's own defaults below).
