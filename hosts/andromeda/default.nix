@@ -51,7 +51,7 @@
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 ];
+      allowedTCPPorts = [ 22 11434 ];
       trustedInterfaces = [ "br0" "wg0" ];
     };
   };

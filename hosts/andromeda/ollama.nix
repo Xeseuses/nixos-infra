@@ -25,7 +25,5 @@
     };
   };
 
-  networking.firewall.interfaces."enp1s0".allowedTCPPorts = [ 11434 ];
-  # ^ Replace with andromeda's actual VLAN40-tagged interface name if different.
 }
 
