@@ -104,6 +104,8 @@
     # of the rollout (messaging gateway).
     # extraDependencyGroups = [ "messaging" ];
   };
+  
+  systemd.services.hermes-agent.serviceConfig.TimeoutStopSec = lib.mkForce "210s";
 
   # eridanus is already on the Servers VLAN per your topology; Hermes only
   # needs outbound to horologium/andromeda/caelum (all VLAN40, already
