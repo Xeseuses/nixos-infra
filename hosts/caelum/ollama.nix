@@ -13,7 +13,7 @@
     enable = true;
     host = "10.40.40.101"; # caelum's documented VLAN40 address
     port = 11434;
-    acceleration = false;
+    package = pkgs.ollama; # CPU-only — N100 has no usable GPU for this
 
     loadModels = [ "phi4-mini:q4_K_M" ];
 

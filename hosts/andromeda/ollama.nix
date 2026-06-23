@@ -12,8 +12,8 @@
     enable = true;
     host = "10.40.40.104"; # andromeda's documented VLAN40 address
     port = 11434;
-    acceleration = false; # N100 has no usable GPU for this — CPU inference only
-
+    package = pkgs.ollama; # CPU-only — N100 has no usable GPU for this
+ 
     loadModels = [ "qwen2.5:3b-instruct-q4_K_M" ];
 
     environmentVariables = {
