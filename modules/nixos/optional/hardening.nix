@@ -61,9 +61,8 @@
   environment.etc."aide.conf".text = ''
     # AIDE configuration for constellation hosts
     # Database locations
-    database=file:/var/lib/aide/aide.db
+    database_in=file:/var/lib/aide/aide.db
     database_out=file:/var/lib/aide/aide.db.new
-    database_new=file:/var/lib/aide/aide.db.new
     gzip_dbout=yes
 
     # Report output
