@@ -30,6 +30,7 @@
     settings = {
       # ── Primary model: horologium's RTX 3060 via Ollama's OpenAI-compatible API ──
       model = {
+        provider = "custom";
         base_url = "http://10.40.40.106:11434/v1";
         default = "qwen2.5:14b-instruct-q4_K_M";
       };
