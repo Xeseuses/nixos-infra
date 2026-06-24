@@ -57,6 +57,14 @@
         ollama_num_ctx = 65536;
       };
 
+      gateway = {
+  	platforms = {
+	    telegram = {
+      	    home_chat_id = "2075931733";
+          };
+        };
+      };
+
       # ── Fallback: Claude, only on primary-model failure, turn-scoped ──
       fallback_providers = [
         {
