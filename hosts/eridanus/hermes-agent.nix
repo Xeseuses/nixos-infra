@@ -63,6 +63,8 @@
       	    home_chat_id = "2075931733";
           };
         };
+      streaming = {
+        enabled = true;
       };
 
       # ── Fallback: Claude, only on primary-model failure, turn-scoped ──
