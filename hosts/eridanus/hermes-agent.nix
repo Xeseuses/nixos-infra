@@ -94,7 +94,7 @@
         compression = {
           provider = "custom";
           base_url = "http://10.40.40.101:11434/v1"; # caelum
-          model = "phi4-mini:q4_K_M";
+          model = "phi4-mini:3.8b-q4_K_M";
           # Per-task fallback if caelum's instance is down: try andromeda's
           # model before falling all the way through to the main agent model.
           fallback_chain = [
@@ -108,12 +108,12 @@
         skills_hub = {
           provider = "custom";
           base_url = "http://10.40.40.101:11434/v1"; # caelum
-          model = "phi4-mini:q4_K_M";
+          model = "phi4-mini:3.8b-q4_K_M";
         };
         mcp = {
           provider = "custom";
           base_url = "http://10.40.40.101:11434/v1"; # caelum
-          model = "phi4-mini:q4_K_M";
+          model = "phi4-mini:3.8b-q4_K_M";
         };
       };
 

@@ -15,7 +15,7 @@
     port = 11434;
     package = pkgs.ollama; # CPU-only — N100 has no usable GPU for this
 
-    loadModels = [ "phi4-mini:q4_K_M" ];
+    loadModels = [ "phi4-mini:3.8b-q4_K_M" ];
 
     environmentVariables = {
       OLLAMA_KEEP_ALIVE = "10m";
