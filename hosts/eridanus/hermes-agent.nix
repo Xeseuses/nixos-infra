@@ -102,10 +102,7 @@
 
     environmentFiles = [ config.sops.secrets."hermes/env".path ];
 
-    # Discord/Telegram/Slack support is opt-in at build time (Nix can't
-    # install these at runtime). Uncomment when you're ready for Week 2
-    # of the rollout (messaging gateway).
-    # extraDependencyGroups = [ "messaging" ];
+    extraDependencyGroups = [ "messaging" ];
   };
   
   systemd.services.hermes-agent.serviceConfig.TimeoutStopSec = lib.mkForce "210s";
