@@ -99,7 +99,6 @@ clients → AdGuardHome :53 (4 blocklists, named clients, per-group filtering)
 
 ### Perimeter defense (lyra)
 - **endlessh-go** SSH tarpit on port 22 — infinite banner loop traps bots indefinitely
-- **Real SSH** moved to port 22022
 - **Honeypot services** — fake FTP (21), telnet (23), MySQL (3306); logs + immediately identifies scanners
 - **CrowdSec** — collaborative IPS with nftables bouncer
 - **Auto-ban** — any IP hitting honeypot services 3+ times in 24h gets banned for 7 days automatically
