@@ -58,15 +58,14 @@
       };
 
       gateway = {
-  	platforms = {
-	    telegram = {
-      	    home_chat_id = "2075931733";
-          };
-        };
-      streaming = {
-        enabled = true;
-      };
-
+        platforms = {
+          telegram = { home_chat_id = "..."; };
+       };
+     };
+     streaming = {
+      enabled = true;
+     };
+      
       # ── Fallback: Claude, only on primary-model failure, turn-scoped ──
       fallback_providers = [
         {
