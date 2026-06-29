@@ -83,6 +83,11 @@
         bind_address: "10.200.0.3"
         port: 8888
         secret_key: "${config.sops.placeholder."searxng-secret-key"}"
+        # Enables the rate limiter (see services.searx.limiterSettings
+        # below for its actual behavior config) — per SearXNG's own docs,
+        # this is the separate on/off switch; limiterSettings alone does
+        # nothing without this.
+        limiter: true
 
       search:
         formats:
@@ -122,6 +127,46 @@
     # template above already contains every other setting we need, so
     # there's no separate `settings = { ... }` block below duplicating it.
     settingsFile = config.sops.templates."searxng-settings.yml".path;
+
+    # Rate limiting — added per this session's decision to expose this
+    # instance publicly via lyra with NO login wall (search is low-stakes
+    # vs. your other public services, but still worth blunting freeloading/
+    # abuse-relay risk without adding friction for yourself).
+    #
+    # IMPORTANT ORDERING NOTE: the limiter's ip_limit method identifies
+    # clients via the X-Forwarded-For header (confirmed in SearXNG's own
+    # docs — "a correct setup of the HTTP request headers X-Forwarded-For
+    # and X-Real-IP is essential"). Right now, this instance is reachable
+    # ONLY via the WireGuard tunnel with no reverse proxy in front of it —
+    # meaning every request currently arrives as if it came from lyra's
+    # own WireGuard IP, which would make IP-based rate limiting meaningless
+    # (everyone looks like the same "client"). This config is written
+    # correctly for the END STATE (after lyra's Caddy vhost is added and
+    # configured to forward the real client IP) — verify rate limiting
+    # actually distinguishes different real-world clients only AFTER that
+    # vhost exists, not before.
+    limiterSettings = {
+      real_ip = {
+        x_for = 1;
+        ipv4_prefix = 32;
+        ipv6_prefix = 56;
+      };
+      botdetection = {
+        ip_limit = {
+          # Don't rate-limit local/WireGuard-network traffic — this is
+          # specifically for the public-facing path through lyra.
+          filter_link_local = true;
+          link_token = true;
+        };
+        ip_lists = {
+          # Always allow traffic from caelum's own WireGuard subnet
+          # unrestricted — this covers Hermes' own queries from eridanus
+          # (10.200.0.7), which should never be rate-limited regardless of
+          # public traffic volume.
+          pass_ip = [ "10.200.0.0/24" ];
+        };
+      };
+    };
   };
 
   # Firewall: only allow the WireGuard interface to reach this port.
