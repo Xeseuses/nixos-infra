@@ -117,6 +117,7 @@
       };
 
       gateway = {
+        multiplex_profiles = true;
         platforms = {
           telegram = {
             home_chat_id = "REPLACE_WITH_YOUR_TELEGRAM_USER_ID";
