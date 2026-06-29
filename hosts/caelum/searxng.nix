@@ -81,7 +81,7 @@
 
       server:
         bind_address: "10.200.0.3"
-        port: 8080
+        port: 8888
         secret_key: "${config.sops.placeholder."searxng-secret-key"}"
 
       search:
@@ -129,6 +129,14 @@
   # this session) to be 10.200.0.3/24, matching the infra doc's WireGuard
   # topology table exactly — lyra already reaches caelum over this same
   # tunnel for two other services (Immich :2283, Audiobookshelf :13378).
-  networking.firewall.interfaces.wg0.allowedTCPPorts = [ 8080 ];
+  #
+  # PORT NOTE: 8080 was the original choice but collided with an existing
+  # UniFi Network Server/Controller already running on caelum (confirmed
+  # via `ss -tlnp` + browser redirect to :8443 — standard UniFi inform/
+  # management port pair). Moved to 8888, SearXNG's own conventional
+  # default port, to avoid the collision rather than picking an arbitrary
+  # number — also makes this instance's port immediately recognizable to
+  # anyone familiar with SearXNG's usual setup.
+  networking.firewall.interfaces.wg0.allowedTCPPorts = [ 8888 ];
 }
 
