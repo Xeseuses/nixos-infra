@@ -1,71 +1,53 @@
 # Hermes Agent orchestrator — runs on eridanus alongside Nextcloud/binary-cache/
 # security-dashboard. This host runs no LLM inference itself; it's the
-# control-plane process that calls out to horologium (primary) and
-# andromeda/caelum (auxiliary tasks) over the Servers VLAN.
+# control-plane process that calls out to horologium (primary), andromeda +
+# caelum (auxiliary tasks), andromeda again (HA-delegation fast path), and
+# Anthropic (emergency fallback only).
 #
 # Requires: inputs.hermes-agent.nixosModules.default added to eridanus's
-# module list in flake.nix (see flake-input-snippet.nix in this same dir).
+# module list in flake.nix.
+#
+# Requires: secrets/secrets.yaml (repo root) to contain, nested under a
+# `hermes:` key (NOT a flat "hermes/env" key — see note at bottom):
+#   hermes:
+#       env: |
+#           ANTHROPIC_API_KEY=sk-ant-...
+#           TELEGRAM_BOT_TOKEN=...
+#           TELEGRAM_ALLOWED_USERS=<your numeric telegram id>
+#           HASS_TOKEN=<long-lived access token from HA>
+#           HASS_URL=http://10.40.40.115:8123
 
 { config, lib, pkgs, ... }:
 
 {
-  # eridanus/default.nix already sets sops.defaultSopsFile to the shared
-  # ../../secrets/secrets.yaml — this just adds a key inside it, matching
-  # the namespaced-key convention used elsewhere (e.g. "lyra/wireguard/private-key").
-  #
-  # Add this to secrets/secrets.yaml first via `sops secrets/secrets.yaml`:
-  #
-  #   hermes/env: |
-  #       ANTHROPIC_API_KEY=sk-ant-your-key-here
-  #
   sops.secrets."hermes/env" = {
-    # Match ownership to whatever user/group the hermes service runs as
-    # (default "hermes"/"hermes" per the module's own defaults below).
     owner = "hermes";
     group = "hermes";
   };
 
   services.hermes-agent = {
     enable = true;
-
-    # Native systemd mode, not container mode — no need for self-modifying
-    # package installs here, and native mode gets the hardened systemd
-    # sandboxing (NoNewPrivileges, ProtectSystem=strict, PrivateTmp) for
-    # free. Matches the security posture of your other eridanus services.
-    container.enable = false;
-
-    addToSystemPackages = true; # lets you run `hermes chat` etc. interactively over SSH
+    container.enable = false; # native systemd mode — gets hardened sandboxing for free
+    addToSystemPackages = true;
 
     settings = {
       # ── Primary model: horologium's RTX 3060 via Ollama's OpenAI-compatible API ──
       model = {
-        provider = "custom";
+        provider = "custom"; # MANDATORY — omitting this causes Hermes to
+                              # misdetect the model string as Anthropic's
+                              # and crash trying to import the anthropic package
         base_url = "http://10.40.40.106:11434/v1";
         default = "qwen3:8b-q4_K_M";
-        # Qwen3 8B has the same 32K-native/YaRN-to-128K context architecture
-        # as Qwen2.5 14B (no architectural fix there), but its much smaller
-        # weights (~4.5GB vs ~9GB at Q4) leave far more of the 12GB VRAM
-        # budget free for the stretched 64K KV cache — this is what should
-        # actually fix the CPU-offload problem we hit with the 14B model
-        # (only 27/49 layers on GPU, ~1min/response). Verify after first
-        # load: `journalctl -u ollama | grep offload` should show all
-        # layers on GPU this time. Qwen3 8B-class models are specifically
-        # well-evaluated for tool-calling reliability (BFCL V4, Docker's
-        # agent-loop benchmark), which matters more for Hermes than raw
-        # parameter count.
+        # Both lines below are required TOGETHER. context_length satisfies
+        # Hermes' own pre-flight check on the model's declared capability.
+        # ollama_num_ctx is the separate, also-required instruction telling
+        # Ollama what to actually load the model with at runtime. Setting
+        # only one produces two different failure modes at two different
+        # stages — this was a real, two-step debugging process tonight.
         context_length = 65536;
         ollama_num_ctx = 65536;
       };
 
-      gateway = {
-        platforms = {
-          telegram = { home_chat_id = "..."; };
-       };
-     };
-     streaming = {
-      enabled = true;
-     };
-      
       # ── Fallback: Claude, only on primary-model failure, turn-scoped ──
       fallback_providers = [
         {
@@ -73,6 +55,19 @@
           model = "claude-sonnet-4-6";
         }
       ];
+
+      # ── Delegation: the fast path for HA-related delegate_task calls ──
+      # This is a GLOBAL setting — every delegate_task call uses this model
+      # unless Hermes ships per-task overrides in the future (not yet
+      # shipped as of tonight; tracked across several open upstream issues).
+      # SOUL.md below instructs Corvus to only delegate HA-type work this
+      # way, since this is the only delegation target configured.
+      delegation = {
+        model = "qwen2.5:1.5b-instruct-q4_K_M";
+        provider = "custom";
+        base_url = "http://10.40.40.104:11434/v1"; # andromeda
+        max_iterations = 10; # HA actions are simple, don't need 50 turns
+      };
 
       # ── Auxiliary tasks split across the two Beelink tiers ──
       auxiliary = {
@@ -96,12 +91,10 @@
           provider = "custom";
           base_url = "http://10.40.40.101:11434/v1"; # caelum
           model = "phi4-mini:3.8b-q4_K_M";
-          # Per-task fallback if caelum's instance is down: try andromeda's
-          # model before falling all the way through to the main agent model.
           fallback_chain = [
             {
               provider = "custom";
-              base_url = "http://10.40.40.104:11434/v1";
+              base_url = "http://10.40.40.104:11434/v1"; # andromeda, if caelum's down
               model = "qwen2.5:3b-instruct-q4_K_M";
             }
           ];
@@ -119,44 +112,58 @@
       };
 
       toolsets = [ "all" ];
+
       compression = {
         enabled = true;
-        threshold = 0.5; # matches the "compress at 50%" idea from the cost guide — genuinely useful regardless of model cost
+        threshold = 0.5;
       };
+
+      kanban = {
+       orchestrator_profile = "assistant";
+       default_assignee = "researcher";
+       auto_decompose = true;
+       auto_decompose_per_tick = 3;
+       auto_promote_children = true;
+       failure_limit = 5;
+       dispatch_in_gateway = true;
+       dispatch_interval_seconds = 60;
+      };
+
       memory = {
         memory_enabled = true;
         user_profile_enabled = true;
+      };
+
+      # No gateway.platforms.homeassistant block needed — the four ha_*
+      # tools (list_entities, get_state, list_services, call_service)
+      # activate automatically the moment HASS_TOKEN is set in the env
+      # file below. This block only matters if you later want PROACTIVE
+      # state-change notifications, which was deliberately declined.
+      gateway = {
+        platforms = {
+          telegram = {
+            home_chat_id = "REPLACE_WITH_YOUR_TELEGRAM_USER_ID";
+          };
+        };
       };
     };
 
     environmentFiles = [ config.sops.secrets."hermes/env".path ];
 
-    # Discord/Telegram/Slack support is opt-in at build time (Nix can't
-    # install these at runtime).
+    # Messaging dependency group — required for the Telegram client library
+    # to actually be built into the package. Already enabled (was commented
+    # out during initial setup, then turned on for the Telegram rollout).
     extraDependencyGroups = [ "messaging" ];
   };
 
-  # eridanus is already on the Servers VLAN per your topology; Hermes only
-  # needs outbound to horologium/andromeda/caelum (all VLAN40, already
-  # permitted by your existing forward policy) and outbound to
-  # api.anthropic.com for the fallback. No new firewall opening needed on
-  # eridanus itself unless you later expose the messaging gateway.
-
-  # Hermes' gateway has an internal drain_timeout of 180s (time it allows
-  # in-flight work to finish before a forceful stop), but the unit's
+  # Hermes' gateway has an internal drain_timeout of 180s, but the unit's
   # default TimeoutStopSec is shorter — systemd would kill the process
   # mid-drain. Match what the service itself warns it wants on startup.
   systemd.services.hermes-agent.serviceConfig.TimeoutStopSec = lib.mkForce "210s";
 
-  # SOUL.md (the agent's persona/identity file) is normally a hand-edited
-  # file living outside Nix control — this makes it declarative instead,
-  # so a from-scratch rebuild of eridanus doesn't lose the customization.
-  # The actual prose lives in ./SOUL.md alongside this module; edit that
-  # file and rebuild to change Corvus's personality.
-  #
-  # Runs after sops-install-secrets (which creates /var/lib/hermes) and
-  # before the hermes-agent service starts, so ownership is correct from
-  # the first write — no chown cleanup needed.
+  # SOUL.md (Corvus's personality + delegation instructions) deployed
+  # declaratively so a from-scratch host rebuild doesn't lose it. The file
+  # lives at hosts/eridanus/SOUL.md, next to this module.
   system.activationScripts.hermesSoul = {
     text = ''
       mkdir -p /var/lib/hermes/.hermes
@@ -166,5 +173,29 @@
     '';
     deps = [ "users" "groups" ];
   };
+
+  # If you ever add yourself to the hermes group for `hermes chat` access
+  # over SSH (needed once, to read /var/lib/hermes/.hermes/.env — files
+  # created by a USER session there get owned by that user, not "hermes",
+  # which silently breaks the service's own ability to read them):
+  # users.users.xeseuses.extraGroups = [ "hermes" ];  # add to existing list
+
+  # eridanus is already on the Servers VLAN; Hermes needs outbound to
+  # horologium/andromeda/caelum (all VLAN40, already permitted) and
+  # outbound to api.anthropic.com for the fallback. No new firewall
+  # opening needed on eridanus itself unless the messaging gateway needs
+  # inbound (it doesn't — Telegram is long-polled outbound).
 }
+
+# NOTE on the SOPS secret structure: the repo's convention (confirmed via
+# hosts/eridanus/default.nix's sops.defaultSopsFile) is ONE shared file at
+# secrets/secrets.yaml with slash-namespaced keys written as REAL YAML
+# NESTING — e.g.:
+#   hermes:
+#       env: |
+#           KEY=value
+# NOT a flat key literally named "hermes/env: |" — that's a different,
+# incompatible shape even though both resolve to the same "hermes/env"
+# string on the Nix side. This bit us once already (sops-install-secrets
+# error: "key 'hermes' cannot be found").
 

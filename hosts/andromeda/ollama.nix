@@ -1,29 +1,42 @@
-# Beelink N100 aux-tier model for Hermes Agent: title generation, command
-# approval classification, and triage specification. These are short,
-# low-reasoning tasks — a 3B model is plenty and keeps RAM footprint small
-# alongside the existing Home Assistant VM (capped at 2GB) on this host.
+# Beelink N100 (andromeda) — runs TWO models for two different purposes:
 #
-# Import this on andromeda alongside its existing homeassistant.nix module.
+# 1. qwen2.5:3b-instruct-q4_K_M — Hermes auxiliary tier A (title_generation,
+#    approval, triage_specifier), called directly by eridanus's hermes-agent
+#    config via auxiliary.<task>.base_url.
+#
+# 2. qwen2.5:1.5b-instruct-q4_K_M — the fast path for delegate_task calls
+#    Corvus makes for Home Assistant actions specifically (see SOUL.md and
+#    delegation block in hermes-agent.nix). Deliberately smaller than the
+#    aux-tier model since HA actions are narrow, single-purpose requests
+#    that don't need much reasoning depth — speed matters more here.
+#
+# Both run on the SAME Ollama instance (one service, two pulled models) —
+# Ollama loads/unloads models independently per-request, no need for two
+# separate services on one host.
 
 { config, lib, pkgs, ... }:
 
 {
   services.ollama = {
     enable = true;
-    host = "10.40.40.104"; # andromeda's documented VLAN40 address
+    host = "10.40.40.104"; # andromeda's VLAN40 address
     port = 11434;
     package = pkgs.ollama; # CPU-only — N100 has no usable GPU for this
- 
-    loadModels = [ "qwen2.5:3b-instruct-q4_K_M" ];
+
+    loadModels = [
+      "qwen2.5:3b-instruct-q4_K_M"
+      "qwen2.5:1.5b-instruct-q4_K_M"
+    ];
 
     environmentVariables = {
-      # Aux tasks are short-lived and bursty (a title-gen call, then idle).
-      # Shorter keep-alive than the RTX box so we don't hold RAM the HA VM
-      # might want, while still avoiding a cold load on every single call.
       OLLAMA_KEEP_ALIVE = "10m";
-      OLLAMA_CONTEXT_LENGTH = "8192"; # these tasks don't need long context
+      OLLAMA_CONTEXT_LENGTH = "8192"; # neither model needs long context for these tasks
     };
   };
 
+  # Port 11434 added to andromeda's existing networking.firewall.allowedTCPPorts
+  # list in default.nix (was [ 22 ], now [ 22 11434 ]) — no separate
+  # interface-scoped firewall block needed, matches the host's existing
+  # firewall-management pattern.
 }
 

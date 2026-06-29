@@ -88,19 +88,33 @@ hardware.nvidia = {
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # === Ollama (GPU-accelerated, auto-unloads after 5min idle) ===
+  # === Ollama (GPU-accelerated, auto-unloads after 30min idle) ===
 
-services.ollama = {
-  enable      = true;
-  host        = "10.40.40.106";  # was 0.0.0.0 — scope to Servers VLAN only
-  port        = 11434;
-  environmentVariables = {
-    OLLAMA_KEEP_ALIVE = "30m";   # keeping your existing preference
-    OLLAMA_CONTEXT_LENGTH = "65536";  # Hermes wants 64K minimum context
+  {
+  services.ollama = {
+    enable = true;
+    host = "10.40.40.106";       # VLAN40 only — was 0.0.0.0, tightened
+    port = 11434;
+    package = pkgs.ollama-cuda;  # NOT acceleration = "cuda" — that option
+                                  # was removed upstream, not just deprecated
+
+    loadModels = [ "qwen3:8b-q4_K_M" ];
+
+    environmentVariables = {
+      OLLAMA_KEEP_ALIVE = "30m";
+      # Stretches Qwen3 8B from its native 32K context to 64K (Hermes'
+      # stated minimum). Verified empirically: at 8B size this still fits
+      # fully on GPU (37/37 layers) — the same stretch on Qwen2.5 14B forced
+      # 22/49 layers onto CPU and produced ~1min responses. Don't try this
+      # context-length trick on a model bigger than ~9-10B on this card.
+      OLLAMA_CONTEXT_LENGTH = "65536";
+    };
   };
-  package = pkgs.ollama-cuda;
-  loadModels = [ "qwen3:8b-q4_K_M" ];
-};
+
+  # Port 11434 already exists in horologium's pre-existing
+  # networking.firewall.allowedTCPPorts list alongside the media-server
+  # ports — no new firewall config needed.
+}
 
   networking.firewall.checkReversePath = false;
 
