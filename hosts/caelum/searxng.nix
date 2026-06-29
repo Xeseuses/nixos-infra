@@ -67,27 +67,39 @@
     # service itself.
   };
 
-  sops.templates."searxng-settings.yml".content = ''
-    use_default_settings: true
+  sops.templates."searxng-settings.yml" = {
+    content = ''
+      use_default_settings: true
 
-    general:
-      debug: false
-      instance_name: "caelum-searxng"
-      donation_url: false
-      contact_url: false
-      privacypolicy_url: false
-      enable_metrics: false
+      general:
+        debug: false
+        instance_name: "caelum-searxng"
+        donation_url: false
+        contact_url: false
+        privacypolicy_url: false
+        enable_metrics: false
 
-    server:
-      bind_address: "10.200.0.3"
-      port: 8080
-      secret_key: "${config.sops.placeholder."searxng-secret-key"}"
+      server:
+        bind_address: "10.200.0.3"
+        port: 8080
+        secret_key: "${config.sops.placeholder."searxng-secret-key"}"
 
-    search:
-      formats:
-        - html
-        - json
-  '';
+      search:
+        formats:
+          - html
+          - json
+    '';
+    # CORRECTNESS FIX (caught via real activation error, not assumed): the
+    # first draft of this template had no owner/group, so the rendered
+    # file at /run/secrets/rendered/searxng-settings.yml defaulted to
+    # root-only permissions. The searx.service unit runs as the dedicated
+    # `searx` system user (the module's standard default), which could
+    # not read it — confirmed via PermissionError: [Errno 13] in
+    # searx.service's own startup traceback. Setting owner/group here so
+    # the actual runtime user of the service can read its own settings.
+    owner = "searx";
+    group = "searx";
+  };
   # VERIFIED (not just plausible): config.sops.placeholder.<name> and
   # sops.templates.<name>.content are confirmed real, current sops-nix
   # features per the official README (Mic92/sops-nix) — the exact pattern
