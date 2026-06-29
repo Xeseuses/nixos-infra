@@ -68,6 +68,18 @@ toolsets:
     - skills
     - todo
 
+# NEW (this session): web.search_backend — same gap as researcher's
+# config had. `web` was already in toolsets.enabled, but had no backend
+# wired up, so coder had no way to actually look up current documentation
+# or anything else online — this is the fix for that, per the user's
+# explicit request ("fix coder as well, to find up to date documentation
+# for coding tasks").
+#
+# Same SearXNG instance as researcher (caelum, over WireGuard) — search
+# only, no page-content extraction yet (deferred this session).
+web:
+  search_backend: "searxng"
+
 agent:
   disabled_toolsets:
     - homeassistant

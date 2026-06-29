@@ -55,6 +55,25 @@ toolsets:
   # toolsets.enabled list above is necessary but NOT sufficient by itself;
   # agent.disabled_toolsets below is the actually-enforced backstop.
 
+# NEW (this session): web.search_backend — this is the piece that was
+# ACTUALLY MISSING when researcher told a live user "I don't have a web
+# search tool available on this profile." `web` was correctly listed in
+# toolsets.enabled the whole time, but the tool has no backend wired up
+# without this. Confirmed via Hermes' own Web Search & Extract docs:
+# "web: search_backend: 'searxng'" is the per-capability key for which
+# provider answers web_search calls; SEARXNG_URL (in .env, see below)
+# tells it where that instance lives.
+#
+# CONFIRMED: SearXNG is SEARCH-ONLY — it has no web_extract/page-reading
+# capability of its own. extract_backend is deliberately left UNSET here,
+# per this session's explicit decision to defer that choice. If
+# researcher is asked to read/extract a specific page's full content
+# rather than just search, it will currently have no backend for that —
+# this is expected, not a bug, until a Firecrawl/Tavily/Exa key is added
+# later.
+web:
+  search_backend: "searxng"
+
 agent:
   disabled_toolsets:
     - terminal
