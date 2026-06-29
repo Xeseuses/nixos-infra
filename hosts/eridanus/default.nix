@@ -6,7 +6,6 @@
     ./nextcloud.nix
     ./security-dashboard.nix 
     ./hermes-agent.nix
-    ./searxng.nix
     ../../modules/nixos/optional/hardening.nix
   ];
  

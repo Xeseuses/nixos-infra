@@ -11,6 +11,7 @@ in
   imports = [
     ./hardware-configuration.nix
     ./ollama.nix
+    ./searxng.nix
     ../../modules/nixos/optional/hardening.nix
   ];
 
