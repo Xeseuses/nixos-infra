@@ -118,6 +118,9 @@
       "cloud.xesh.cc" = {
         extraConfig = "reverse_proxy 10.200.0.7:80";
       };
+      "search.xesh.cc" = {
+        extraConfig = "reverse_proxy 10.200.0.3:8888";
+      };
     };
 
    };
