@@ -92,13 +92,22 @@ let
         if builtins.isList corvusExecStart
         then builtins.head corvusExecStart
         else corvusExecStart;
-      # Strip "/bin/hermes" (and anything after it, like " gateway") off
-      # the end, leaving just the package root path.
-      binIndex = lib.strings.lastIndexOf "/bin/hermes" execStartStr;
+      # CORRECTNESS FIX (caught via real dry-build error): the first draft
+      # used `lib.strings.lastIndexOf`, which does not exist in nixpkgs —
+      # confirmed by checking the actual lib/strings.nix source rather than
+      # guessing a second time. nixpkgs' lib.strings has no generic
+      # "index of substring" helper at all; `splitString` is the correct,
+      # confirmed-real tool for this: split on the fixed marker "/bin/hermes"
+      # and take everything before it. Since a real package path never
+      # contains "/bin/hermes" as a substring of its own hash/name (Nix
+      # store paths are a fixed hash + derivation name, not arbitrary text),
+      # this is safe — splitString returns exactly 2 pieces for the expected
+      # input shape, and we take the first.
+      parts = lib.strings.splitString "/bin/hermes" execStartStr;
     in
-    if binIndex == null
-    then throw "hermes-agent.nix: could not extract package root from hermes-agent.service's ExecStart (${execStartStr}) — the real module's unit shape may have changed; update hermesPackageRoot's extraction logic in this file."
-    else builtins.substring 0 binIndex execStartStr;
+    if builtins.length parts < 2
+    then throw "hermes-agent.nix: could not find '/bin/hermes' in hermes-agent.service's ExecStart (${execStartStr}) — the real module's unit shape may have changed; update hermesPackageRoot's extraction logic in this file."
+    else builtins.elemAt parts 0;
   hermesPackage = pkgs.runCommand "hermes-agent-package-ref" { } ''
     ln -s ${lib.escapeShellArg hermesPackageRoot} $out
   '';
