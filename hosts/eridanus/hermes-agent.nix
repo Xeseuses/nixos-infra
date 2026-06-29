@@ -139,18 +139,18 @@
       # activate automatically the moment HASS_TOKEN is set in the env
       # file below. This block only matters if you later want PROACTIVE
       # state-change notifications, which was deliberately declined.
+     
       gateway = {
         platforms = {
           telegram = {
             home_chat_id = "REPLACE_WITH_YOUR_TELEGRAM_USER_ID";
           };
-           discord = {
-             allowed_channels = "1521123260899791012";
-             home_chat_id = "1521123260899791012";
+          discord = {
+            allowed_channels = "1521123260899791012";
+            home_chat_id = "1521123260899791012";
+          };
         };
-      };
-    };
-
+      }; 
     environmentFiles = [ config.sops.secrets."hermes/env".path ];
 
     # Messaging dependency group — required for the Telegram client library
