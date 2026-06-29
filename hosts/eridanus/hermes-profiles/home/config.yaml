@@ -1,0 +1,111 @@
+# hosts/eridanus/hermes-profiles/home/config.yaml
+#
+# Declarative config for the `home` Hermes profile.
+# Installed to /var/lib/hermes/.hermes/profiles/home/config.yaml by
+# hermes-profile-files.nix on every nixos-rebuild switch. FLAT OVERWRITE,
+# not a deep merge — see hermes-profile-files.nix's top-of-file note.
+#
+# home is served by Corvus's multiplexed gateway, same as coder/researcher
+# — but UNLIKE them, home has NO Discord presence at all (per the infra
+# doc's "What got built" table: "home — (no Discord) — Telegram/HA only").
+# So there is no discord: block in this file, deliberately.
+#
+# Also structurally different from coder/researcher:
+#   - home is NOT a Kanban worker. Per the infra doc: "home — standalone,
+#     Telegram/HA only, NOT a Kanban worker, can kanban_create to hand off
+#     to researcher." It operates independently and only ever reaches the
+#     Kanban system by filing a task for researcher, never by being
+#     assigned one.
+#   - home's model is andromeda's own Ollama instance (Qwen2.5 1.5B), NOT
+#     DeepSeek. This is a genuinely separate, smaller, local model — no
+#     external API key needed at all, since Ollama requires no auth on
+#     this network (same as Corvus's primary model on horologium).
+#
+# Sources for every value below:
+#   - model: ROLLOUT-NOTES-june29.md "What got built" table
+#     ("home — Qwen2.5 1.5B, andromeda (own Ollama instance)")
+#   - toolsets: ROLLOUT-NOTES-june29.md "What got built" table
+#     ("homeassistant, clarify, memory, session_search, skills, todo")
+#   - agent.disabled_toolsets: NEW for this session (per recommendation #3
+#     — extend the disabled_toolsets blacklist to all three profiles, not
+#     just researcher). home has no terminal/code_execution in
+#     toolsets.enabled either, so this is belt-and-suspenders here exactly
+#     as it is for researcher.
+
+model:
+  default: "qwen2.5:1.5b-instruct-q4_K_M"
+  provider: "custom"
+  base_url: "http://10.40.40.104:11434/v1"
+  # No key_env / api_key needed — andromeda's Ollama instance binds to its
+  # VLAN40 IP with no auth, same as horologium's primary model on Corvus.
+  # Confirm this is still true before first deploy — if andromeda's Ollama
+  # is ever put behind auth, this profile (and Corvus's own auxiliary
+  # blocks pointed at the same host) both need a key_env added together.
+  context_length: 65536
+  ollama_num_ctx: 65536
+  # Both required together per the infra doc's "Key Learnings" — context_length
+  # satisfies Hermes' own pre-flight 64K-minimum check; ollama_num_ctx is the
+  # actual per-request instruction telling Ollama to load with that context.
+  # Setting only one reproduces a different failure mode each time.
+
+toolsets:
+  enabled:
+    - homeassistant
+    - clarify
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - todo
+  # CORRECTION during this session: `kanban` was MISSING from the first
+  # draft of this list. Per Hermes' own kanban docs: "a regular hermes chat
+  # session has zero kanban_* tools in its schema unless the active profile
+  # explicitly enables the kanban toolset." Without this, home would have
+  # had NO way to call kanban_create at all — silently defeating the
+  # documented purpose of this profile (standalone, hands off to researcher
+  # via kanban_create when it hits something outside its scope). `kanban`
+  # is confirmed as a real toolset name in Hermes' own current toolset list
+  # (AGENTS.md): "browser, clarify, code_execution, ... homeassistant, ...
+  # kanban, memory, ... session_search, skills, ... todo, ...".
+  #
+  # Per the kanban docs, enabling this toolset on a non-worker profile like
+  # home grants the "(Orchestrators)" subset — kanban_list, kanban_create,
+  # kanban_link, kanban_unblock, kanban_comment on foreign tasks — NOT the
+  # task-scoped worker lifecycle tools (kanban_complete, kanban_block,
+  # kanban_heartbeat), which are only injected when HERMES_KANBAN_TASK is
+  # set by the dispatcher (i.e. only when actually spawned as a worker,
+  # which home never is). This matches the documented role exactly: home
+  # can create/route a task FOR researcher, but is never itself assigned
+  # or expected to complete one.
+  #
+  # No terminal, no code_execution, no web/browser/delegation beyond this
+  # — anything wider than this list is scope creep relative to the
+  # documented role.
+
+agent:
+  disabled_toolsets:
+    - terminal
+    - code_execution
+    - web
+    - browser
+    - computer_use
+  # NEW for this session, extending the disabled_toolsets backstop from
+  # researcher-only to all three profiles. home has the smallest attack
+  # surface of the three already (smallest model, fewest tools, no
+  # Discord), but the same "platform_toolsets.cli isn't reliably enforced
+  # on every gateway path" finding (#8) means this backstop should not be
+  # skipped just because home seems lower-risk on paper. Verify by testing
+  # a forbidden action through whatever surface home IS reachable on
+  # (Telegram), same as the verification done for researcher.
+
+# No discord: block — home has no Discord presence (Telegram/HA only).
+
+# No kanban: settings block — that belongs to Corvus's own config
+# (orchestrator_profile/default_assignee live there per the infra doc's
+# Next Steps). home is not an orchestrator and not a worker; it only uses
+# the kanban TOOLSET (added above) to file a task, never to configure
+# board-level routing behavior.
+
+display:
+  tool_progress: "all"
+

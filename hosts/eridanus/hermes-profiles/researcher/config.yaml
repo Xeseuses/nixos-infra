@@ -1,0 +1,92 @@
+# hosts/eridanus/hermes-profiles/researcher/config.yaml
+#
+# Declarative config for the `researcher` Hermes profile.
+# Installed to /var/lib/hermes/.hermes/profiles/researcher/config.yaml by
+# hermes-profile-files.nix on every nixos-rebuild switch. FLAT OVERWRITE,
+# not a deep merge — see hermes-profile-files.nix's top-of-file note.
+#
+# researcher is served by Corvus's multiplexed gateway — no separate
+# process or systemd service (see coder/config.yaml's header comment for
+# the full explanation; identical reasoning applies here).
+#
+# Sources for every value below:
+#   - model/provider: ROLLOUT-NOTES-june29.md "What got built" table.
+#     Same key_env correction as coder/config.yaml applies here — see that
+#     file's header comment for the full reasoning (upstream issue #8316).
+#   - toolsets: ROLLOUT-NOTES-june29.md "What got built" table
+#   - agent.disabled_toolsets: ROLLOUT-NOTES-discord-june29.md finding #8.
+#     UNLIKE coder/home, this is not a new addition — researcher already
+#     had this fix applied and TESTED on the imperative setup ("Verify by
+#     directly asking it to run a terminal command post-fix and confirming
+#     it correctly refuses"). Re-test after this declarative migration too
+#     — a working imperative fix is not proof the same fix survives being
+#     re-applied through Nix's flat-overwrite config rendering.
+#   - discord settings: same free_response_channels fix as coder, applied
+#     to #research using the channel ID provided by the user this session.
+
+model:
+  default: "deepseek-chat"
+  provider: "custom"
+  base_url: "https://api.deepseek.com"
+  key_env: "DEEPSEEK_API_KEY"
+  # NOTE: this is a SEPARATE DeepSeek API key/credential from coder's, by
+  # design — each profile's .env is fully isolated (per Hermes' profile
+  # docs: "each profile has its own memory store, session database, and
+  # skills directory — they are completely isolated"). Using the same
+  # DEEPSEEK_API_KEY variable NAME in both profiles' config.yaml is fine
+  # and expected (each profile resolves it from its own .env independently)
+  # — but confirm the underlying sops secret for researcher actually
+  # contains researcher's own key value, not a copy-pasted duplicate of
+  # coder's .env content.
+
+toolsets:
+  enabled:
+    - web
+    - browser
+    - vision
+    - delegation
+    - memory
+    - session_search
+    - skills
+    - todo
+  # Deliberately NO terminal, NO file, NO code_execution here — this is the
+  # exact restriction that finding #8 confirmed does NOT reliably apply via
+  # platform_toolsets.cli alone on the Discord gateway path. The
+  # toolsets.enabled list above is necessary but NOT sufficient by itself;
+  # agent.disabled_toolsets below is the actually-enforced backstop.
+
+agent:
+  disabled_toolsets:
+    - terminal
+    - code_execution
+    - homeassistant
+    - computer_use
+  # This is the full list already validated working in
+  # ROLLOUT-NOTES-discord-june29.md finding #8 — carried over verbatim,
+  # not reduced. terminal/code_execution are listed here AND correctly
+  # absent from toolsets.enabled above (belt-and-suspenders, matching the
+  # documented behavior that disabled_toolsets "applies after per-platform
+  # tool config... so a toolset listed here is always removed even if a
+  # platform's saved config still lists it").
+
+discord:
+  # SCOPE: restrict researcher to ONLY #research.
+  allowed_channels:
+    - "1521123390545723482"
+
+  # FIX (this session): same reasoning as coder — free-response mode
+  # removes the @mention gate and skips auto-threading, addressing the
+  # history_backfill batching/non-response symptom directly.
+  free_response_channels:
+    - "1521123390545723482"
+
+  auto_thread: true
+  reactions: true
+  history_backfill: true
+  history_backfill_limit: 50
+
+group_sessions_per_user: true
+
+display:
+  tool_progress: "all"
+

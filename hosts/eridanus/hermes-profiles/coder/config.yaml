@@ -1,0 +1,132 @@
+# hosts/eridanus/hermes-profiles/coder/config.yaml
+#
+# Declarative config for the `coder` Hermes profile.
+# Installed to /var/lib/hermes/.hermes/profiles/coder/config.yaml by
+# hermes-profile-files.nix on every nixos-rebuild switch. This is a FLAT
+# OVERWRITE, not a deep merge — any runtime self-modification the agent
+# makes to this file will be discarded on the next rebuild (see
+# hermes-profile-files.nix's top-of-file note).
+#
+# coder is served by Corvus's multiplexed gateway (gateway.multiplex_profiles
+# = true is set in Corvus's own config — see hosts/eridanus/hermes-agent.nix)
+# — there is NO separate gateway process or systemd service for this
+# profile. Corvus's one process enumerates every profile under
+# ~/.hermes/profiles/ and serves each under its own credentials.
+#
+# Sources for every value below:
+#   - model/provider: ROLLOUT-NOTES-june29.md, "What got built" table.
+#     IMPORTANT CORRECTION from this session: ROLLOUT-NOTES-june29.md
+#     finding #2 claimed provider: custom requires the raw key directly in
+#     model.api_key (not a named env var). This was checked against
+#     Hermes' own docs and found to be WRONG, or at least not the
+#     documented path — the correct, documented mechanism is `key_env:
+#     "VAR_NAME"`, which names an env var for Hermes to read at runtime.
+#     A literal api_key value in config.yaml is the exact anti-pattern
+#     flagged as a security bug in upstream issue #8316. Using key_env
+#     here instead of repeating the original finding's mistake.
+#   - toolsets: ROLLOUT-NOTES-june29.md "What got built" table
+#   - discord.free_response_channels: this conversation's Discord-bug fix
+#     (replaces require_mention + auto_thread, which were the actual root
+#     cause per Hermes' own docs on history_backfill + mention-gating)
+#   - agent.disabled_toolsets: ROLLOUT-NOTES-discord-june29.md finding #8,
+#     extended here from researcher-only to all three profiles per this
+#     session's recommendation #3. NOTE: every name below is an INDIVIDUAL
+#     toolset name, never a hermes-* platform bundle name — mixing those up
+#     silently empties ALL tools with no error (see upstream issue #33924,
+#     cited in this conversation). Double-check this list against
+#     `hermes tools list` after first deploy, not just by reading this file.
+
+model:
+  default: "deepseek-chat"
+  provider: "custom"
+  base_url: "https://api.deepseek.com"
+  # VERIFIED against Hermes docs (Fallback Providers page + upstream issue
+  # #8316): the correct mechanism for a custom provider's secret is
+  # `key_env`, naming an environment variable — NOT a literal `api_key`
+  # value in config.yaml, and NOT shell-style ${VAR} interpolation (which
+  # Hermes' YAML loader does not perform at all). Issue #8316 is filed
+  # specifically because hermes model's interactive flow writes the raw
+  # key into config.yaml instead of using key_env — i.e. key_env is the
+  # documented-correct pattern, and a literal api_key in this file would be
+  # the exact anti-pattern that issue is reporting as a security bug.
+  #
+  # DEEPSEEK_API_KEY itself lives in the profile's .env (populated via
+  # environmentFile / sops, same pattern as Corvus's hermes/env secret) —
+  # this key_env line just tells Hermes which variable name to read from
+  # that file at runtime.
+  key_env: "DEEPSEEK_API_KEY"
+
+toolsets:
+  enabled:
+    - terminal
+    - file
+    - code_execution
+    - web
+    - delegation
+    - memory
+    - session_search
+    - skills
+    - todo
+
+agent:
+  disabled_toolsets:
+    - homeassistant
+    - computer_use
+  # terminal and code_execution are intentionally NOT in disabled_toolsets —
+  # coder needs them. homeassistant/computer_use are blocked regardless of
+  # platform_toolsets.cli's reliability, per the confirmed Discord-gateway
+  # gap (ROLLOUT-NOTES-discord-june29.md finding #8).
+
+# Kanban worker — coordination is via Corvus's orchestrator, not this profile.
+# (No kanban: block needed here; orchestrator_profile/default_assignee live
+# in Corvus's own config per the infra doc's Next Steps.)
+
+discord:
+  # SCOPE: restrict coder to ONLY #coding, mirroring the pattern already
+  # used on Corvus (allowed_channels: "1521123260899791012" in
+  # hosts/eridanus/hermes-agent.nix) and matching the original June 29
+  # Discord rollout's intent (each profile's bot restricted to its own
+  # channel via discord.allowed_channels). This was MISSING from the first
+  # draft of this file — without it, coder could potentially respond
+  # anywhere it has channel visibility in the server, not just #coding.
+  #
+  # OPEN QUESTION, not yet confirmed against docs: under multiplexing, each
+  # profile's Discord events are presumably routed by which bot
+  # token/application received them (each profile has its own application),
+  # with allowed_channels layered on top as an authorization restriction —
+  # not used for profile disambiguation itself. This assumption hasn't been
+  # explicitly verified against Hermes' multiplexer docs for the Discord
+  # case specifically; flagging rather than asserting. If coder responds in
+  # channels it shouldn't, or a message in #coding is answered by the wrong
+  # profile, re-check this.
+  allowed_channels:
+    - "1521123324925579406"
+
+  # FIX (this session): #coding is a dedicated bot channel. Free-response
+  # mode removes the @mention gate entirely (every message triggers a turn
+  # immediately) AND skips auto-threading by design — this addresses both
+  # the "messages get silently batched via history_backfill and only the
+  # most recent one gets answered" symptom and the old auto_thread/
+  # home-channel confusion in one change, per Hermes' own discord.md docs.
+  free_response_channels:
+    - "1521123324925579406"
+
+  # auto_thread is irrelevant for channels listed in free_response_channels
+  # (they skip threading by design regardless of this setting), but leaving
+  # the global default in place explicitly rather than silently inheriting
+  # it, in case coder is ever @mentioned in some OTHER channel later.
+  auto_thread: true
+
+  reactions: true
+  history_backfill: true
+  history_backfill_limit: 50
+
+# group_sessions_per_user is a global (non-Discord-specific) gateway setting.
+# Default true is fine here — coder is realistically only ever messaged by
+# one person (you), so per-user session isolation costs nothing and is the
+# safer default if that ever changes.
+group_sessions_per_user: true
+
+display:
+  tool_progress: "all"
+
