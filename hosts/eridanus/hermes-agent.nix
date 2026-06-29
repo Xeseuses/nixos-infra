@@ -267,27 +267,56 @@ in
     extraDependencyGroups = [ "messaging" ];
   };
 
-  systemd.services.hermes-agent.serviceConfig.TimeoutStopSec = lib.mkForce "210s";
-
   # --- Secondary profiles: each a real systemd service ---------------
   # hermes-profile.nix returns a full module-shaped attrset per profile
   # (tmpfiles rules, an activationScript, AND a systemd.services entry this
   # time). Same manual-merge correctness note as before applies: these are
   # plain function calls, not `imports`, so system.activationScripts and
   # systemd.tmpfiles.rules are each assigned EXACTLY ONCE below, merged by
-  # hand with `//`/`++` — NOT lib.mkMerge. systemd.services is also merged
-  # by hand with `//`, which is safe here because each profile contributes
-  # a DIFFERENT key (hermes-coder, hermes-researcher, hermes-home) — no
-  # collision with each other or with hermes-agent itself.
+  # hand with `//`/`++` — NOT lib.mkMerge.
+  #
+  # CORRECTNESS FIX (caught via real dry-build error, not just reasoning):
+  # an earlier draft had `systemd.services.hermes-agent.serviceConfig.
+  # TimeoutStopSec = lib.mkForce "210s";` as ONE definition, and then
+  # `systemd.services = coderProfile... // ...;` as a SEPARATE definition
+  # further down — two assignments of the same top-level `systemd.services`
+  # option in one plain attrset, which is a hard Nix error ("attribute
+  # 'systemd.services' already defined"), not something the module system
+  # auto-merges in this context. Fixed by folding hermes-agent's own
+  # TimeoutStopSec override into the SAME single merged attrset as the
+  # three profiles below, via `lib.recursiveUpdate`, which correctly
+  # combines hermes-agent's nested serviceConfig with the three profiles'
+  # entirely separate top-level keys (hermes-coder, hermes-researcher,
+  # hermes-home) in one pass.
   systemd.tmpfiles.rules =
     coderProfile.systemd.tmpfiles.rules
     ++ researcherProfile.systemd.tmpfiles.rules
     ++ homeProfile.systemd.tmpfiles.rules;
 
-  systemd.services =
-    coderProfile.systemd.services
-    // researcherProfile.systemd.services
-    // homeProfile.systemd.services;
+  systemd.services = lib.recursiveUpdate
+    (coderProfile.systemd.services
+      // researcherProfile.systemd.services
+      // homeProfile.systemd.services)
+    {
+      hermes-agent.serviceConfig.TimeoutStopSec = lib.mkForce "210s";
+    };
+  # OPEN QUESTION, flagged rather than assumed away: lib.mkForce produces an
+  # internal marker that the MODULE SYSTEM's option-merging machinery is
+  # meant to resolve (it's how one module's definition can override another
+  # module's definition of the same option, with priority). The real
+  # `services.hermes-agent` module sets its own `systemd.services.
+  # hermes-agent` entry through normal `imports`-based module merging — but
+  # THIS file's override reaches the same path through a plain
+  # `lib.recursiveUpdate` on an ordinary attrset, outside that machinery.
+  # It's possible mkForce's marker is simply left unresolved here and
+  # TimeoutStopSec silently doesn't apply, rather than erroring. If dry-build
+  # passes but `systemctl show hermes-agent.service -p TimeoutStopSec` after
+  # a real switch doesn't show 210s (or whatever 1801-or-so default
+  # systemd/the module otherwise uses), that's this exact uncertainty
+  # manifesting — fix would be dropping mkForce here and using a plain
+  # value instead, since recursiveUpdate's last-value-wins behavior may
+  # already achieve the override without needing mkForce's priority marker
+  # at all in this non-module context.
 
   system.activationScripts = {
     hermesSoul = {
