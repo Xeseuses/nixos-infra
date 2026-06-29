@@ -2,16 +2,19 @@
 #
 # Declarative config for the `coder` Hermes profile.
 # Installed to /var/lib/hermes/.hermes/profiles/coder/config.yaml by
-# hermes-profile-files.nix on every nixos-rebuild switch. This is a FLAT
+# hermes-profile.nix on every nixos-rebuild switch. This is a FLAT
 # OVERWRITE, not a deep merge — any runtime self-modification the agent
 # makes to this file will be discarded on the next rebuild (see
-# hermes-profile-files.nix's top-of-file note).
+# hermes-profile.nix's top-of-file note).
 #
-# coder is served by Corvus's multiplexed gateway (gateway.multiplex_profiles
-# = true is set in Corvus's own config — see hosts/eridanus/hermes-agent.nix)
-# — there is NO separate gateway process or systemd service for this
-# profile. Corvus's one process enumerates every profile under
-# ~/.hermes/profiles/ and serves each under its own credentials.
+# CORRECTION (this session): coder previously ran via Corvus's
+# gateway.multiplex_profiles, with no separate process for this profile.
+# That architecture was abandoned after hands-on testing confirmed it's
+# dead code on this Hermes version (v0.17.0) — see hermes-agent.nix's
+# header comment for the full investigation. coder now runs as its OWN
+# systemd system service (hermes-coder.service), via hermes-profile.nix —
+# a real, separate process with its own bot token, matching the
+# documented "Profiles: Running Multiple Agents" architecture.
 #
 # Sources for every value below:
 #   - model/provider: ROLLOUT-NOTES-june29.md, "What got built" table.

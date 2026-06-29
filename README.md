@@ -1,5 +1,3 @@
-***
-
 # NixOS Infrastructure
 
 A fully declarative NixOS homelab, managed as code. The repository covers network, services, security, and host configuration across a small fleet of systems.
@@ -19,7 +17,7 @@ A fully declarative NixOS homelab, managed as code. The repository covers networ
 | --- | --- | --- | --- |
 | orion | Protectli VP2420 | Router, VLANs, DHCP, DNS, firewall | Live |
 | eridanus | Beelink EQ12 (N100, 16 GB) | Nextcloud, binary cache, security dashboard | Live |
-| caelum | Beelink EQ12 | Immich, Audiobookshelf, UniFi | Live |
+| caelum | Beelink EQ12 | Immich, Audiobookshelf, UniFi, SearXNG | Live |
 | andromeda | Beelink EQ12 | Home Assistant VM host | Live |
 | horologium | Custom system (i5-13500, 16 GB, ZFS) | Media server and automation stack | Live |
 | lyra | VPS | Reverse proxy, VPN hub, honeypot | Live |
@@ -46,6 +44,7 @@ Host-level hardening is enabled on selected systems, with encrypted storage and 
 - Audiobookshelf for audiobook hosting.
 - Jellyfin and related media tooling for streaming.
 - UniFi Network Application for access point management.
+- SearXNG for self-hosted, privacy-respecting web search.
 
 ## Repository Structure
 
@@ -109,3 +108,4 @@ nix build .#nixosConfigurations.<name>.config.system.build.isoImage --print-out-
 - [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
 - [CrowdSec](https://www.crowdsec.net/)
 - [AIDE](https://aide.github.io/)
+

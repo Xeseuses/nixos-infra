@@ -2,12 +2,16 @@
 #
 # Declarative config for the `researcher` Hermes profile.
 # Installed to /var/lib/hermes/.hermes/profiles/researcher/config.yaml by
-# hermes-profile-files.nix on every nixos-rebuild switch. FLAT OVERWRITE,
-# not a deep merge — see hermes-profile-files.nix's top-of-file note.
+# hermes-profile.nix on every nixos-rebuild switch. FLAT OVERWRITE, not a
+# deep merge — see hermes-profile.nix's top-of-file note.
 #
-# researcher is served by Corvus's multiplexed gateway — no separate
-# process or systemd service (see coder/config.yaml's header comment for
-# the full explanation; identical reasoning applies here).
+# CORRECTION (this session): the line below previously said researcher is
+# "served by Corvus's multiplexed gateway — no separate process or
+# systemd service." That described the multiplex_profiles architecture,
+# which was abandoned after hands-on testing confirmed it's dead code on
+# this Hermes version (v0.17.0) — see hermes-agent.nix's header comment
+# for the full investigation. researcher now runs as its OWN systemd
+# system service (hermes-researcher.service), via hermes-profile.nix.
 #
 # Sources for every value below:
 #   - model/provider: ROLLOUT-NOTES-june29.md "What got built" table.

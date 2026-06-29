@@ -2,13 +2,20 @@
 #
 # Declarative config for the `home` Hermes profile.
 # Installed to /var/lib/hermes/.hermes/profiles/home/config.yaml by
-# hermes-profile-files.nix on every nixos-rebuild switch. FLAT OVERWRITE,
-# not a deep merge — see hermes-profile-files.nix's top-of-file note.
+# hermes-profile.nix on every nixos-rebuild switch. FLAT OVERWRITE, not a
+# deep merge — see hermes-profile.nix's top-of-file note.
 #
-# home is served by Corvus's multiplexed gateway, same as coder/researcher
-# — but UNLIKE them, home has NO Discord presence at all (per the infra
-# doc's "What got built" table: "home — (no Discord) — Telegram/HA only").
-# So there is no discord: block in this file, deliberately.
+# CORRECTION (this session): home previously ran via Corvus's
+# gateway.multiplex_profiles, with no separate process for this profile.
+# That architecture was abandoned after hands-on testing confirmed it's
+# dead code on this Hermes version (v0.17.0) — see hermes-agent.nix's
+# header comment for the full investigation. home now runs as its OWN
+# systemd system service (hermes-home.service), via hermes-profile.nix.
+# It has NO Discord presence at all (per the infra doc's "What got built"
+# table: "home — (no Discord) — Telegram/HA only"). So there is no
+# discord: block in this file, deliberately. It also currently has no
+# Telegram token configured either (deliberate, this session) — it's an
+# idle process with no inbound chat surface unless/until that changes.
 #
 # Also structurally different from coder/researcher:
 #   - home is NOT a Kanban worker. Per the infra doc: "home — standalone,
