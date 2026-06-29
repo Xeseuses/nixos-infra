@@ -119,7 +119,7 @@
       };
 
       kanban = {
-       orchestrator_profile = "assistant";
+       orchestrator_profile = "default";
        default_assignee = "researcher";
        auto_decompose = true;
        auto_decompose_per_tick = 3;
