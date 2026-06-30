@@ -23,9 +23,6 @@
     };
   };
   
-  services.firecrawl-postgres.enable = true;
-  services.firecrawl-redis.enable = true;
-  services.firecrawl-api.enable = true;
 
   # === Custom Options ===
   asthrossystems = {
