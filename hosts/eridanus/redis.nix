@@ -13,12 +13,6 @@ in
       default = 6379;
       description = "Port Redis listens on.";
     };
-
-    dataDir = mkOption {
-      type = types.path;
-      default = "/var/lib/firecrawl/redis";
-      description = "Data directory for Redis persistence.";
-    };
   };
 
   config = mkIf cfg.enable {
@@ -26,11 +20,9 @@ in
       enable = true;
       port = cfg.port;
       bind = "127.0.0.1";
-      dataDir = cfg.dataDir;
       settings = {
         save = [ "900 1" "300 10" "60 10000" ];
       };
     };
   };
 }
-
