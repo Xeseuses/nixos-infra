@@ -7,7 +7,9 @@
 # NSD listens only on 127.0.0.1:5354
 # Unbound has stub-zones pointing to it
 # Clients never talk to NSD directly
+
 { ... }:
+
 {
   services.nsd = {
     enable     = true;
@@ -45,10 +47,10 @@
           cache       IN A    10.40.40.117
           horologium  IN A    10.40.40.106
           ha          IN A    10.40.40.115
-          
+
           ;-- Services --
           security    IN A    10.40.40.117
-   
+
           ; ── Management (VLAN30) ───────────────────────────────────────
           unifi-ap    IN A    10.40.30.120
 
@@ -101,7 +103,7 @@
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.xesh.cc. (
-                      2026060605  ; serial
+                      2026060606  ; serial — bumped (added search.xesh.cc, June 30)
                       3600        ; refresh
                       900         ; retry
                       604800      ; expire
@@ -114,12 +116,23 @@
           ; ── Via VPS proxy (TLS termination on VPS) ──────────────────────
           ha           IN A    77.42.83.12
           immich       IN A    77.42.83.12
-          cloud        IN A    77.42.83.12  
+          cloud        IN A    77.42.83.12
 
           ; ── Direct LAN access ───────────────────────────────────────────
+          ; Services hosted on caelum (10.40.40.101) that internal clients
+          ; can reach directly, bypassing lyra entirely. search.xesh.cc
+          ; ADDED June 30 — was missing from this zone, causing NXDOMAIN
+          ; for home clients (confirmed via `dig`) even though the public
+          ; wildcard at Porkbun made it resolve fine from outside the
+          ; home network. No TLS here — this is plain HTTP direct to
+          ; caelum's SearXNG instance on the LAN; only the public path via
+          ; lyra (https://search.xesh.cc, terminating TLS at Caddy) gets a
+          ; real certificate. That's consistent with audiobooks/solibieb's
+          ; existing split-horizon behavior below.
           audiobooks   IN A    10.40.40.101
           solibieb     IN A    10.40.40.101
-         
+          search       IN A    10.40.40.101
+
           threats      IN A    10.200.0.1
 
         '';
@@ -127,3 +140,4 @@
     };
   };
 }
+
