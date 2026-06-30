@@ -12,6 +12,7 @@ in
     ./hardware-configuration.nix
     ./ollama.nix
     ./searxng.nix
+    ./firecrawl.nix
     ../../modules/nixos/optional/hardening.nix
   ];
 
