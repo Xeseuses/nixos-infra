@@ -1,10 +1,16 @@
 # hosts/caelum/firecrawl.nix
 #
 # Self-hosted Firecrawl (web_extract backend for Hermes coder/researcher),
-# deployed via Podman + virtualisation.oci-containers — NOT native Nix
+# deployed via Docker + virtualisation.oci-containers — NOT native Nix
 # packages, after this session determined the real upstream architecture
 # is genuinely a 5-service Docker Compose application by design, not a
 # simple Node server + database that happened to be packaged with Docker.
+# Uses Docker rather than Podman specifically because caelum already runs
+# Docker for its existing UniFi container — oci-containers.backend is a
+# single host-wide setting, so this matches what's already there rather
+# than forcing a runtime split (see the correction note further down for
+# the full story — this was originally written for Podman and caught via
+# a real dry-build conflict error, not decided this way from the start).
 #
 # WHY DOCKER/PODMAN INSTEAD OF NATIVE NIX (read before "simplifying" this):
 #   An earlier attempt (this session, via Hermes' `coder` profile) tried
@@ -57,16 +63,21 @@
 
 {
   # ---------------------------------------------------------------------
-  # Podman, configured to provide a docker-compatible socket so
-  # virtualisation.oci-containers can drive it the same way it would
-  # drive real Docker.
+  # CORRECTION (caught via real dry-build error, not assumed): this was
+  # originally written for Podman, per this session's stated preference
+  # for rootless containers. That conflicted with caelum's EXISTING
+  # virtualisation.oci-containers.backend = "docker" (already set
+  # elsewhere in caelum's config, almost certainly for the UniFi
+  # container — oci-containers.backend is a single host-wide option, it
+  # cannot be "docker" for one service and "podman" for another). Rather
+  # than force a host-wide runtime migration just for this one new
+  # service, Firecrawl now uses Docker too, matching what's already
+  # running. No virtualisation.podman block needed here — Docker itself
+  # is presumably already enabled elsewhere in caelum's config for UniFi;
+  # this file does not redeclare virtualisation.docker.enable, since
+  # doing so redundantly (even with the same value) risked a second
+  # option-conflict error of the same shape we just hit.
   # ---------------------------------------------------------------------
-  virtualisation.podman = {
-    enable = true;
-    dockerCompat = true;
-    defaultNetwork.settings.dns_enabled = true;
-  };
-  virtualisation.oci-containers.backend = "podman";
 
   # ---------------------------------------------------------------------
   # Secrets
@@ -114,35 +125,39 @@
   # community pattern for exactly this situation (NixOS Discourse:
   # "Docker/Podman network create - Nix?").
   # ---------------------------------------------------------------------
-  systemd.services."podman-network-firecrawl" = {
+  systemd.services."docker-network-firecrawl" = {
     serviceConfig.Type = "oneshot";
     serviceConfig.RemainAfterExit = true;
     wantedBy = [ "multi-user.target" ];
     script = ''
-      ${pkgs.podman}/bin/podman network inspect firecrawl > /dev/null 2>&1 || \
-        ${pkgs.podman}/bin/podman network create firecrawl
+      ${pkgs.docker}/bin/docker network inspect firecrawl > /dev/null 2>&1 || \
+        ${pkgs.docker}/bin/docker network create firecrawl
     '';
   };
 
   # Every Firecrawl container needs this network created first. Listed
-  # individually per-container (via the `dependsOn`-equivalent systemd
-  # override below) rather than relying on oci-containers' own
+  # individually per-container rather than relying on oci-containers' own
   # `dependsOn` key alone, since that key only orders containers RELATIVE
   # TO EACH OTHER, not relative to this separate network-creation unit.
-  systemd.services."podman-firecrawl-redis".after = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-redis".requires = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-rabbitmq".after = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-rabbitmq".requires = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-nuq-postgres".after = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-nuq-postgres".requires = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-playwright".after = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-playwright".requires = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-api".after = [ "podman-network-firecrawl.service" ];
-  systemd.services."podman-firecrawl-api".requires = [ "podman-network-firecrawl.service" ];
+  #
+  # CORRECTED unit naming (docker-, not podman-) after switching backends —
+  # confirmed against nixpkgs' oci-containers.nix source: unit names are
+  # "${backend}-${containerName}.service", so with backend = "docker" the
+  # real unit names are "docker-firecrawl-<name>.service".
+  systemd.services."docker-firecrawl-redis".after = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-redis".requires = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-rabbitmq".after = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-rabbitmq".requires = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-nuq-postgres".after = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-nuq-postgres".requires = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-playwright".after = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-playwright".requires = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-api".after = [ "docker-network-firecrawl.service" ];
+  systemd.services."docker-firecrawl-api".requires = [ "docker-network-firecrawl.service" ];
   # CONFIRMED (not just inferred) against nixpkgs' own oci-containers.nix
   # source: each container's systemd unit is named
   # "${backend}-${containerName}.service" — i.e. exactly
-  # "podman-firecrawl-<name>.service" given backend = "podman" and our
+  # "docker-firecrawl-<name>.service" given backend = "docker" and our
   # container attribute names above. The dependsOn option itself is also
   # confirmed real, adding to both After= and Requires= automatically —
   # used correctly on firecrawl-api below without needing the manual
