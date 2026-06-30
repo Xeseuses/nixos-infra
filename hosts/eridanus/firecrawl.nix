@@ -66,13 +66,13 @@ in
 
     sha256 = mkOption {
       type = types.nonEmptyStr;
-      default = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      default = "sha256-LYkOOWSDI12YiOLfJXwoxt871jhPv8GgSe6HmfuprK8=";
       description = "SHA-256 hash of the firecrawl source. Set lib.fakeSha256 for first build, then replace with actual hash.";
     };
 
     npmDepsHash = mkOption {
       type = types.nonEmptyStr;
-      default = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      default = "sha256-LYkOOWSDI12YiOLfJXwoxt871jhPv8GgSe6HmfuprK8=";
       description = "SHA-256 hash of npm dependencies. Set lib.fakeSha256 for first build, then replace with actual hash.";
     };
 
