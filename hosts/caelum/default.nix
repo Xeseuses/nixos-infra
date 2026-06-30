@@ -10,6 +10,7 @@ in
 {
   imports = [
     ./hardware-configuration.nix
+    ./swap.nix
     ./ollama.nix
     ./searxng.nix
     ./firecrawl.nix
