@@ -103,7 +103,9 @@
           $TTL 300
 
           @   IN SOA  orion.lan. hostmaster.xesh.cc. (
-                      2026060606  ; serial — bumped (added search.xesh.cc, June 30)
+                      2026060607  ; serial — moved search.xesh.cc to the
+                                  ; via-VPS-proxy group (June 30, second fix —
+                                  ; direct-to-caelum was wrong, see note below)
                       3600        ; refresh
                       900         ; retry
                       604800      ; expire
@@ -117,21 +119,29 @@
           ha           IN A    77.42.83.12
           immich       IN A    77.42.83.12
           cloud        IN A    77.42.83.12
+          search       IN A    77.42.83.12
 
           ; ── Direct LAN access ───────────────────────────────────────────
           ; Services hosted on caelum (10.40.40.101) that internal clients
-          ; can reach directly, bypassing lyra entirely. search.xesh.cc
-          ; ADDED June 30 — was missing from this zone, causing NXDOMAIN
-          ; for home clients (confirmed via `dig`) even though the public
-          ; wildcard at Porkbun made it resolve fine from outside the
-          ; home network. No TLS here — this is plain HTTP direct to
-          ; caelum's SearXNG instance on the LAN; only the public path via
-          ; lyra (https://search.xesh.cc, terminating TLS at Caddy) gets a
-          ; real certificate. That's consistent with audiobooks/solibieb's
-          ; existing split-horizon behavior below.
+          ; can reach directly, bypassing lyra entirely.
+          ;
+          ; search.xesh.cc was ORIGINALLY added here (June 30), pointing
+          ; directly at caelum — this was WRONG and has been moved above,
+          ; to the via-VPS-proxy group instead. SearXNG's NixOS service is
+          ; deliberately bound only to caelum's WireGuard interface
+          ; (10.200.0.3:8888), not its LAN interface — unlike
+          ; audiobooks/solibieb, which DO have something listening on
+          ; caelum's LAN IP directly. Pointing search.xesh.cc at
+          ; 10.40.40.101 produced a connection timeout (port 8888 was
+          ; never open or listening on the LAN interface at all), and even
+          ; if it had connected, it would have been a second, separate,
+          ; uncertified HTTP path inconsistent with how ha/immich/cloud
+          ; behave. Routing through lyra instead means search.xesh.cc now
+          ; works identically at home and away — same HTTPS cert, same
+          ; Caddy vhost, same WireGuard tunnel hop already used for the
+          ; external path, with no second access pattern to maintain.
           audiobooks   IN A    10.40.40.101
           solibieb     IN A    10.40.40.101
-          search       IN A    10.40.40.101
 
           threats      IN A    10.200.0.1
 
