@@ -6,9 +6,6 @@
     ./nextcloud.nix
     ./security-dashboard.nix 
     ./hermes-agent.nix
-    ./redis.nix
-    ./postgres.nix
-    ./firecrawl.nix
     ../../modules/nixos/optional/hardening.nix
   ];
  
