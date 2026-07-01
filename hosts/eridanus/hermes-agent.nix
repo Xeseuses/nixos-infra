@@ -272,6 +272,8 @@ in
       };
     };
 
+    extraPythonPackages = ps: [ ps.firecrawl-py ];
+
     environmentFiles = [ config.sops.secrets."hermes/env".path ];
     extraDependencyGroups = [ "messaging" ];
   };
