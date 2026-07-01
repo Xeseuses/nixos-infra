@@ -272,10 +272,9 @@ in
       };
     };
 
-    extraPythonPackages = [ pkgs.python3Packages.firecrawl-py ];
 
     environmentFiles = [ config.sops.secrets."hermes/env".path ];
-    extraDependencyGroups = [ "messaging" ];
+    extraDependencyGroups = [ "messaging" "firecrawl" ];
   };
 
   # --- Secondary profiles: each a real systemd service ---------------
