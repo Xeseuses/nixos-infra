@@ -38,6 +38,13 @@ let
     soulMd = ./hermes-profiles/home/SOUL.md;
     envSecretPath = config.sops.secrets."hermes-home-env".path;
   };
+  senseiProfile = import ./hermes-profile.nix {
+    profileName = "sensei";
+    inherit config lib pkgs hermesPackage;
+    configYaml = ./hermes-profiles/sensei/config.yaml;
+    soulMd = ./hermes-profiles/sensei/SOUL.md;
+    envSecretPath = config.sops.secrets."hermes-sensei-env".path;
+  };
 in
 {
   sops.secrets."hermes/env" = {
@@ -54,6 +61,10 @@ in
     group = "hermes";
   };
   sops.secrets."hermes-home-env" = {
+    owner = "hermes";
+    group = "hermes";
+  };
+  sops.secrets."hermes-sensei-env" = {
     owner = "hermes";
     group = "hermes";
   };
@@ -165,6 +176,10 @@ in
             home_chat_id = "REPLACE_WITH_YOUR_TELEGRAM_USER_ID";
           };
           discord = {
+            # This block is Corvus's (default profile) own Discord presence
+            # (#corvus) — unrelated to sensei's. Sensei's Discord config
+            # lives entirely in hermes-profiles/sensei/config.yaml, same as
+            # coder/researcher.
             allowed_channels = [ "1521123068557131830" ];
             free_response_channels = [ "1521123068557131830" ];
             home_chat_id = "1521123068557131830";
@@ -180,12 +195,14 @@ in
   systemd.tmpfiles.rules =
     coderProfile.systemd.tmpfiles.rules
     ++ researcherProfile.systemd.tmpfiles.rules
-    ++ homeProfile.systemd.tmpfiles.rules;
+    ++ homeProfile.systemd.tmpfiles.rules
+    ++ senseiProfile.systemd.tmpfiles.rules;
 
   systemd.services = lib.recursiveUpdate
     (coderProfile.systemd.services
       // researcherProfile.systemd.services
-      // homeProfile.systemd.services)
+      // homeProfile.systemd.services
+      // senseiProfile.systemd.services)
     {
       hermes-agent.serviceConfig.TimeoutStopSec = lib.mkForce "210s";
       hermes-dashboard = {
@@ -217,7 +234,8 @@ in
     };
   } // coderProfile.system.activationScripts
     // researcherProfile.system.activationScripts
-    // homeProfile.system.activationScripts;
+    // homeProfile.system.activationScripts
+    // senseiProfile.system.activationScripts;
 
   # users.users.xeseuses.extraGroups = [ "hermes" ];  # add to existing list if needed
 }

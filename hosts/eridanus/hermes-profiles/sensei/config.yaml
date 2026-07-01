@@ -1,0 +1,83 @@
+# hosts/eridanus/hermes-profiles/sensei/config.yaml
+#
+# Declarative config for the `sensei` Hermes profile.
+# Installed to /var/lib/hermes/.hermes/profiles/sensei/config.yaml by
+# hermes-profile.nix on every nixos-rebuild switch. FLAT OVERWRITE, not a
+# deep merge — see hermes-profile.nix's top-of-file note.
+#
+# Sensei is a standalone Japanese-tutor profile, not a Kanban worker —
+# same category as `home`, not `coder`/`researcher`. No kanban_*
+# toolsets, no delegation.
+#
+# model/provider: DeepSeek direct API, same pattern as coder/researcher
+# (deliberate choice this session — avoids contending with horologium's
+# already-tuned 64K/37-layer primary tier for what's an open-ended
+# conversational workload). key_env, not a literal api_key — same
+# correction documented in coder/config.yaml's header (upstream issue
+# #8316).
+
+model:
+  default: "deepseek-chat"
+  provider: "custom"
+  base_url: "https://api.deepseek.com"
+  key_env: "DEEPSEEK_API_KEY"
+  # Own DeepSeek key, isolated from coder's and researcher's per the
+  # per-profile-.env convention — confirm the sops secret for sensei
+  # actually holds sensei's own key value, not a copy of another
+  # profile's.
+
+toolsets:
+  enabled:
+    - skills
+    - memory
+    - session_search
+    - todo
+  # Deliberately NO web, browser, vision, delegation, or kanban_* —
+  # SOUL.md's scope section rules out web search explicitly, and Sensei
+  # isn't a Kanban worker. memory/session_search are kept so it can
+  # recall prior lesson context across sessions — drop them too if you'd
+  # rather each conversation start clean.
+
+agent:
+  disabled_toolsets:
+    - terminal
+    - code_execution
+    - web
+    - homeassistant
+    - computer_use
+  # Same belt-and-suspenders backstop as researcher/coder — necessary
+  # because platform_toolsets.cli restrictions do NOT reliably apply to
+  # the Discord gateway (finding #8, already validated on researcher).
+  # terminal/code_execution/web are correctly absent from toolsets.enabled
+  # above too, but this is the layer that's actually enforced.
+
+discord:
+  # SCOPE: restrict sensei to ONLY #japans.
+  allowed_channels:
+    - "1521976227265515581"
+
+  free_response_channels:
+    - "1521976227265515581"
+
+  # OPEN QUESTION — not resolved by what's in front of me: your real
+  # researcher/config.yaml (above) has auto_thread: true, but the June 29
+  # rollout notes describe auto_thread: false as the actual fix for the
+  # "spawns a thread every time" / "no home channel" bug (auto-created
+  # threads have a different channel ID than the parent). I can't tell
+  # whether researcher intentionally reverted to true, or whether that's
+  # drift nobody's caught yet. Defaulting to false here since Sensei is
+  # one continuous tutoring conversation, not per-query threads — but
+  # check what researcher is actually running successfully with before
+  # coder commits this value.
+  auto_thread: false
+  reactions: true
+  history_backfill: true
+  history_backfill_limit: 50
+
+group_sessions_per_user: true
+
+display:
+  tool_progress: "errors"
+  # researcher uses "all" — set to "errors" here since sensei runs almost
+  # no tools; change to "all" if you'd rather see every tool call anyway.
+
