@@ -168,6 +168,8 @@ in
     extraDependencyGroups = [ "messaging" "firecrawl" ];
   };
 
+
+
   sops.secrets."hermes-dashboard-env" = {
   owner = "hermes";
   group = "hermes";
@@ -219,3 +221,4 @@ systemd.services.hermes-dashboard = {
 
   # users.users.xeseuses.extraGroups = [ "hermes" ];  # add to existing list if needed
 }
+
