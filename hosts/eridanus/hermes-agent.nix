@@ -230,7 +230,7 @@ in
         };
       };
 
-      toolsets = [ "all" ];
+      toolsets = [ "all" "kanban" ];
 
       compression = {
         enabled = true;
@@ -264,10 +264,12 @@ in
           telegram = {
             home_chat_id = "REPLACE_WITH_YOUR_TELEGRAM_USER_ID";
           };
-          discord = {
-            allowed_channels = "1521123260899791012";
-            home_chat_id = "1521123260899791012";
-          };
+	 discord = {
+  	allowed_channels = [ "1521123068557131830" ];
+  	free_response_channels = [ "1521123068557131830" ];
+	home_chat_id = "1521123068557131830";
+	 };
+         };
         };
       };
     };

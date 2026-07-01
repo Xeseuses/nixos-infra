@@ -53,6 +53,8 @@ toolsets:
     - session_search
     - skills
     - todo
+    - kanban
+
   # Deliberately NO terminal, NO file, NO code_execution here — this is the
   # exact restriction that finding #8 confirmed does NOT reliably apply via
   # platform_toolsets.cli alone on the Discord gateway path. The
