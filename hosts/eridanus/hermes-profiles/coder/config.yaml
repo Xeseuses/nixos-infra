@@ -82,6 +82,7 @@ toolsets:
 # only, no page-content extraction yet (deferred this session).
 web:
   search_backend: "searxng"
+  extract_backend: "firecrawl"
 
 agent:
   disabled_toolsets:
