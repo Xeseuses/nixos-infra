@@ -70,7 +70,11 @@ toolsets:
     - session_search
     - skills
     - todo
-    - kanban
+    - kanban_create
+    - kanban_complete
+    - kanban_block
+    - kanban_comment
+
 
 # NEW (this session): web.search_backend — same gap as researcher's
 # config had. `web` was already in toolsets.enabled, but had no backend

@@ -53,7 +53,10 @@ toolsets:
     - session_search
     - skills
     - todo
-    - kanban
+    - kanban_create
+    - kanban_complete
+    - kanban_block
+    - kanban_comment 
 
   # Deliberately NO terminal, NO file, NO code_execution here — this is the
   # exact restriction that finding #8 confirmed does NOT reliably apply via
