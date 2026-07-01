@@ -50,6 +50,7 @@
 
           ;-- Services --
           security    IN A    10.40.40.117
+          hermes      IN A    10.40.40.117
 
           ; ── Management (VLAN30) ───────────────────────────────────────
           unifi-ap    IN A    10.40.30.120

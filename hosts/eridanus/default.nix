@@ -88,6 +88,8 @@
   # === Networking ===
    
   networking.hostName = "eridanus";
+  
+  networking.firewall.allowedTCPPorts = [ 9119 ];
 
   # === User Configuration ===
   users.users.xeseuses = {

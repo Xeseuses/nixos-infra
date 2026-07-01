@@ -168,6 +168,28 @@ in
     extraDependencyGroups = [ "messaging" "firecrawl" ];
   };
 
+  sops.secrets."hermes-dashboard-env" = {
+  owner = "hermes";
+  group = "hermes";
+};
+
+systemd.services.hermes-dashboard = {
+  description = "Hermes Agent Web Dashboard";
+  after = [ "hermes-agent.service" "network-online.target" ];
+  wants = [ "network-online.target" ];
+  wantedBy = [ "multi-user.target" ];
+  serviceConfig = {
+    Type = "simple";
+    User = "hermes";
+    Group = "hermes";
+    EnvironmentFile = config.sops.secrets."hermes-dashboard-env".path;
+    ExecStart = "${hermesPackage}/bin/hermes dashboard --no-open --host 10.40.40.117 --port 9119 --insecure";
+    Restart = "on-failure";
+    RestartSec = 10;
+  };
+};
+
+
   systemd.tmpfiles.rules =
     coderProfile.systemd.tmpfiles.rules
     ++ researcherProfile.systemd.tmpfiles.rules
@@ -197,4 +219,3 @@ in
 
   # users.users.xeseuses.extraGroups = [ "hermes" ];  # add to existing list if needed
 }
-
