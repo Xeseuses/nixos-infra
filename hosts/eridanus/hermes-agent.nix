@@ -153,6 +153,11 @@ in
         user_profile_enabled = true;
       };
 
+
+     skills = {
+      always_load = [ "kanban-orchestrator" ];
+      };
+
       gateway = {
         multiplex_profiles = false;
         platforms = {
