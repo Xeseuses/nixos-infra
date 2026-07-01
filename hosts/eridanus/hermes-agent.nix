@@ -193,7 +193,7 @@ in
           User = "hermes";
           Group = "hermes";
           EnvironmentFile = config.sops.secrets."hermes-dashboard-env".path;
-          ExecStart = "${hermesPackage}/bin/hermes dashboard --no-open --host 10.40.40.117 --port 9119 --insecure --allowed-hosts hermes.lan";
+          ExecStart = "${hermesPackage}/bin/hermes dashboard --no-open --host 10.40.40.117 --port 9119 --insecure";
           Restart = "on-failure";
           RestartSec = 10;
         };
