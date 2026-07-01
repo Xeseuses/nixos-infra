@@ -130,7 +130,7 @@ in
         };
       };
 
-      toolsets = [ "all" "kanban" ];
+      toolsets = [ "all" "kanban" "web" ];
 
       compression = {
         enabled = true;
